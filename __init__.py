@@ -28,7 +28,109 @@ bl_info = {
     "category" : "Generic"
 }
 
+def delete_obj(obj):
+    obj = bpy.data.objects[camera_object_name]
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.delete()
+
+
+def remove_spincamera():
+    if is_object_valid(camera_object_name):
+        delete_obj(bpy.data.objects[camera_object_name])
+    if is_object_valid(curve_object_name):
+        delete_obj(bpy.data.objects[curve_object_name])
+
+def setup_spincamera(self, context):
+    # get selected object 
+    obj = bpy.context.object
+    
+    create_camera()
+
+    radius = get_track_radius(obj)
+    create_bezier_circle(radius, obj.location)
+    
+    # order matters
+    set_camera_follow()
+    
+    set_camera_track(obj)
+
+def setup_spinobject():
+    obj = bpy.context.object
+
+    add_keyframes(obj, 100)
+
+    create_camera()
+
+    radius = get_track_radius(obj)
+    bpy.data.objects[camera_object_name].location = obj.location + Vector((radius, 0, 0)) 
+
+    set_camera_track(obj)
+
+def add_keyframes(obj, num_frames):
+    # Convert rotation amount to radians
+    rotation_amount_radians = radians(360)
+
+    # Create keyframes
+    for frame in range(num_frames + 1):
+        bpy.context.scene.frame_set(frame)
+        obj.rotation_euler[2] = rotation_amount_radians * frame / num_frames
+        obj.keyframe_insert(data_path="rotation_euler", index=2)
+
+    # Set the scene's end frame
+    bpy.context.scene.frame_end = num_frames
+
+
 class MyProperties(bpy.types.PropertyGroup):
+    degrees: bpy.props.EnumProperty(
+        name="Nr of degrees",
+        description="Number of degrees between frames",
+        items= [('1', "1", ""),
+                ('2', "2", ""),
+                ('3', "3", ""),
+                ('5', "5", ""),
+                ('6', "6", ""),
+                ('8', "8", ""),
+                ('10', "10", ""),
+                ('15', "15", ""),
+                ('30', "30", ""),
+                ('45', "45", ""),
+                ('60', "60", ""),
+                ('90', "90", ""),
+        ],
+        default=3
+    )
+
+    adjust_timeline: bpy.props.BoolProperty(
+        name="Adjust timeline Start/End",
+        description= "Adjust the length of the timeline",
+        default=True,
+    )
+
+    nr_frames: bpy.props.IntProperty(
+        name="# of frames",
+        description="Number of keyframes",
+        default = 100,
+    )
+
+    start_frame: bpy.props.IntProperty(
+        name="Start frame",
+        description="Starting keyframe",
+        default = 1
+    )
+
+    add_stage: bpy.props.BoolProperty(
+        name="Add Stage",
+        description="See stage menu",
+        default=False
+    )
+
+    add_lighting_setup: bpy.props.BoolProperty(
+        name="Add Lighting Setup",
+        description="See lighting setup",
+        default=False
+    )
+
     object_up_axis: bpy.props.EnumProperty(
         name= "Object UP axis",
         description= "In case you object is not alligned with the camera, change the up axis.", 
@@ -41,11 +143,31 @@ class MyProperties(bpy.types.PropertyGroup):
     movement_type : bpy.props.EnumProperty(
         name= "Movement type",
         description= "Select wether the objects or the camera spins.",
-        items= [('OP1', "Object rotates", "The camera stays in place and object rotates",'WORLD_DATA', 0),
-                ('OP2', "Camera rotates", "The object stays in place and camera rotates",'WORLD_DATA', 1),
-               
+        items= [('OP1', "Object rotates", "The camera stays in place and object rotates",0),
+                ('OP2', "Camera rotates", "The object stays in place and camera rotates",1),    
+        ],
+        update=setup_spincamera
+    )
+
+
+    interpolation_type: bpy.props.EnumProperty(
+        name= "Interpolation",
+        description= "Select the interpolation between the keyframes.",
+        items= [('Linear', "", "The animation moves at constant speed",'WORLD_DATA', 0),
+                ('Bezier_fast', "", "The animation start and ends fast",'WORLD_DATA', 1),
+                ('Bezier_slow', "", "The animation start and ends slow",'WORLD_DATA', 1),               
         ]
     )
+
+    length_type: bpy.props.EnumProperty(
+        name= "Length",
+        description= "Select the start and end keyframes or by degrees.",
+        items= [('Keyframes', "", "",'WORLD_DATA', 0),
+                ('Degrees', "", "",'WORLD_DATA', 1),
+        ]
+    ) # type: ignore
+
+
 
 class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_label = "SpinWiz"
@@ -82,21 +204,54 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
             column.operator("object.documentation", text="Output")
             layout.separator()
 
-            box = layout.box()
-            box.prop(spin_settings, "movement_type")
+            options = layout.box()
+            split = options.split(factor=0.5)
+            col = split.column()
+            col.label(text="Movement type")
+            col = split.column()
+            col.prop(spin_settings, "movement_type", text="")
+            
+            split = options.split(factor=0.75)
+            col = split.column()
+            col.label(text="Object UP axis")
+            col = split.column()
+            col.prop(spin_settings, "object_up_axis", text="")
 
-            row = box.row(align=True)
+            row = options.row(align=True)
             row.label(text="Interpolation")
-            row.prop(spin_settings, "movement_type", expand=True, icon_only=True, icon="BLENDER")
+            row.prop(spin_settings, "interpolation_type", expand=True, icon_only=True)
 
+            row = options.row(align=True)
+            row.label(text="Lenght")
+            row.prop(spin_settings, "length_type", expand=True, icon_only=True)
+
+            if spin_settings.length_type == "Keyframes":
+                options.label(text="by Number of Keyframes")
+                row = options.row(align=True)
+                row.prop(spin_settings, "nr_frames")
+                row.separator()
+                row.prop(spin_settings, "start_frame")
+
+            else:   
+                options.label(text="by Degrees")
+                row = options.row(align=True)
+                split = row.split(factor=0.75)
+                col = split.column()
+                col.label(text="Nr of degrees")
+                col = split.column()
+                col.prop(spin_settings, "degrees", text="")
+
+                options.label(text="This will generate "+ str(int(360 / int(spin_settings.degrees))) +" frames")
+                
+            options.prop(spin_settings, "adjust_timeline")
+
+            add_stage = layout.box()
+            add_stage.prop(spin_settings, "add_stage")
+            
+            add_ligthing_setup = layout.box()
+            add_ligthing_setup.prop(spin_settings, "add_lighting_setup")
             
 
-
-            row = layout.row()
-            row.operator("object.spin_object",
-                            text="Spin selected object")    
-            
-            layout.separator()
         # documentation button
         row = layout.row()
         row.operator("object.documentation",
@@ -112,67 +267,8 @@ class OBJECT_OT_documentation(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class OBJECT_OT_spin_object(bpy.types.Operator):
-    bl_idname = "object.spin_object"
-    bl_label = "Spin object"
-    bl_description = "Spin the object around by 360 degrees"
 
-    def add_keyframes(self, obj, num_frames):
-        # Convert rotation amount to radians
-        rotation_amount_radians = radians(360)
-
-        # Create keyframes
-        for frame in range(num_frames + 1):
-            bpy.context.scene.frame_set(frame)
-            obj.rotation_euler[2] = rotation_amount_radians * frame / num_frames
-            obj.keyframe_insert(data_path="rotation_euler", index=2)
-
-        # Set the scene's end frame
-        bpy.context.scene.frame_end = num_frames
-
-    def execute(self, context):
-        obj = context.object
-
-        self.add_keyframes(obj, 100)
-
-        create_camera()
-
-        radius = get_track_radius(obj)
-        bpy.data.objects[camera_object_name].location = obj.location + Vector((radius, 0, 0)) 
-
-        set_camera_track(obj)
-
-
-
-        return {'FINISHED'}
-
-
-class OBJECT_OT_add_360_spinner_camera(bpy.types.Operator):
-    bl_idname = "object.add_360_spinner_camera"
-    bl_label = "Add 360 Spinner Camera"
-    bl_description = "Add a camera at (0, 0, 0) with rotation (0, 0, 0) named '360 Spinner Camera'"
-
-
-    def execute(self, context):
-        # get selected object 
-        obj = context.object
-        
-        create_camera()
-
-   
-        radius = get_track_radius(obj)
-        create_bezier_circle(radius, obj.location)
-        
-        
-        # order matters
-        set_camera_follow()
-        
-        set_camera_track(obj)
-
-        return {'FINISHED'}
-
-
-class_list = [MyProperties, VIEW3D_PT_main_panel, OBJECT_OT_add_360_spinner_camera, OBJECT_OT_spin_object, OBJECT_OT_documentation]
+class_list = [MyProperties, VIEW3D_PT_main_panel, OBJECT_OT_documentation]
 
 def register():
     for cls in class_list:
