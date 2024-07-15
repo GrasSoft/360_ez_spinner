@@ -27,13 +27,25 @@ bl_info = {
     "warning" : "",
     "category" : "Generic"
 }
+def movement_type(self, context):
+    scene = context.scene
+    spin_settings = scene.spin_settings
+
+    if spin_settings.movement_type == "object":
+        remove_spincamera()
+        setup_spinobject()
+    else:
+        remove_spincamera()
+        setup_spincamera()        
 
 def delete_obj(obj):
-    obj = bpy.data.objects[camera_object_name]
-    obj.select_set(True)
-    bpy.context.view_layer.objects.active = obj
-    bpy.ops.object.delete()
-
+    # Remove object from all collections it is linked to
+    for collection in obj.users_collection:
+        collection.objects.unlink(obj)
+    
+    # Delete the object if it has no other users
+    if obj.users == 0:
+        bpy.data.objects.remove(obj)
 
 def remove_spincamera():
     if is_object_valid(camera_object_name):
@@ -41,7 +53,7 @@ def remove_spincamera():
     if is_object_valid(curve_object_name):
         delete_obj(bpy.data.objects[curve_object_name])
 
-def setup_spincamera(self, context):
+def setup_spincamera():
     # get selected object 
     obj = bpy.context.object
     
@@ -143,10 +155,10 @@ class MyProperties(bpy.types.PropertyGroup):
     movement_type : bpy.props.EnumProperty(
         name= "Movement type",
         description= "Select wether the objects or the camera spins.",
-        items= [('OP1', "Object rotates", "The camera stays in place and object rotates",0),
-                ('OP2', "Camera rotates", "The object stays in place and camera rotates",1),    
+        items= [('object', "Object rotates", "The camera stays in place and object rotates",0),
+                ('camera', "Camera rotates", "The object stays in place and camera rotates",1),    
         ],
-        update=setup_spincamera
+        update=movement_type
     )
 
 
