@@ -6,6 +6,77 @@ import math
 camera_object_name = "360 Spinner Camera"
 curve_object_name = "Camera Track Curve"
 
+def reset_obj(obj):
+    obj.rotation_euler = (0,0,0)     
+
+def delete_obj(obj):
+    # Remove object from all collections it is linked to
+    for collection in obj.users_collection:
+        collection.objects.unlink(obj)
+    
+    # Delete the object if it has no other users
+    if obj.users == 0:
+        bpy.data.objects.remove(obj)
+
+def reset_anim():
+    bpy.context.scene.frame_set(0)
+
+def remove_all_keyframes(obj):
+    # Check if the object has animation data
+    if obj.animation_data:
+        action = obj.animation_data.action
+        if action:
+            # Iterate through each FCurve and remove it
+            for fcurve in action.fcurves:
+                action.fcurves.remove(fcurve)
+
+
+def remove_spincamera():
+    if is_object_valid(camera_object_name):
+        delete_obj(bpy.data.objects[camera_object_name])
+    if is_object_valid(curve_object_name):
+        delete_obj(bpy.data.objects[curve_object_name])
+
+def setup_spincamera():
+    # get selected object 
+    obj = bpy.context.object
+    
+    create_camera()
+
+    radius = get_track_radius(obj)
+    create_bezier_circle(radius, obj.location)
+    
+    # order matters
+    set_camera_follow()
+    
+    set_camera_track(obj)
+
+def setup_spinobject():
+    obj = bpy.context.object
+
+    add_keyframes(obj, 100)
+
+    create_camera()
+
+    radius = get_track_radius(obj)
+    bpy.data.objects[camera_object_name].location = obj.location + Vector((radius, 0, 0)) 
+
+    set_camera_track(obj)
+
+def add_keyframes(obj, num_frames):
+    # Convert rotation amount to radians
+    rotation_amount_radians = radians(360)
+
+    # Create keyframes
+    for frame in range(num_frames + 1):
+        bpy.context.scene.frame_set(frame)
+        obj.rotation_euler[2] = rotation_amount_radians * frame / num_frames
+        obj.keyframe_insert(data_path="rotation_euler", index=2)
+
+    # Set the scene's end frame
+    bpy.context.scene.frame_end = num_frames
+
+
 
 # Function to check if the object is valid
 def is_object_valid(object_name):
@@ -13,6 +84,10 @@ def is_object_valid(object_name):
 
 
 def create_bezier_circle(radius, origin):
+
+    selected_objects = bpy.context.selectable_objects
+    active_objects = bpy.context.view_layer.objects.active
+
     # Calculate control points
     control_point = radius * (4 * (math.sqrt(2) - 1) / 3)
 
@@ -56,6 +131,14 @@ def create_bezier_circle(radius, origin):
 
     # Close the spline to make it cyclic
     spline.use_cyclic_u = True
+
+    # Restore the selection and active object
+    for obj in selected_objects:
+        obj.select_set(True)
+
+    bpy.context.view_layer.objects.active = active_objects
+    if active_objects:
+        active_objects.select_set(True)
 
     return curve_object
 
@@ -134,9 +217,21 @@ def get_track_radius(obj):
     return max(distance_height, distance_width)
 
 def create_camera():
+    # Store references to the currently selected and active objects
+    selected_objects = bpy.context.selected_objects
+    active_objects = bpy.context.view_layer.objects.active
+
     bpy.ops.object.camera_add()
     camera_object = bpy.context.active_object
 
     camera_object.name = camera_object_name
     camera_object.data.name = camera_object_name
+
+    # Restore the selection and active object
+    for obj in selected_objects:
+        obj.select_set(True)
+
+    bpy.context.view_layer.objects.active = active_objects
+    if active_objects:
+        active_objects.select_set(True)
 
