@@ -33,7 +33,68 @@ bl_info = {
 }
 
 def menu_items(panel, layout):
+    row = layout.row()
+    preview_menu = preview_collections["menu"]
 
+    column = row.column()
+    column.operator("object.documentation", text="Motion Setup", icon_value=preview_menu["motion_menu"].icon_id)
+    column = row.column()
+    column.operator("object.documentation", text="Output", icon_value=preview_menu["output_menu"].icon_id)
+
+def select_movement_type(panel, layout):
+    spin_settings = bpy.context.scene.spin_settings
+
+    split = layout.split(factor=0.5)
+    col = split.column()
+    col.label(text="Movement type")
+    col = split.column()
+    col.prop(spin_settings, "movement_type", text="")
+
+def select_interpolation_type(panel, layout):
+    spin_settings = bpy.context.scene.spin_settings
+    
+    row = layout.row(align=True)
+    row.scale_x = 1.6
+    row.label(text="Interpolation")
+    row.prop(spin_settings, "interpolation_type", expand=True, icon_only=True)
+
+def select_length_type(panel, layout):
+    spin_settings = bpy.context.scene.spin_settings
+    options = layout
+
+    row = options.row(align=True)
+    row.label(text="Length")
+    row.prop(spin_settings, "length_type", expand=True, icon_only=True)
+
+    if spin_settings.length_type == "Keyframes":
+        options.label(text="by Number of Keyframes")
+        row = options.row(align=True)
+        row.prop(spin_settings, "nr_frames")
+        row.separator()
+        row.prop(spin_settings, "start_frame")
+
+    else:   
+        options.label(text="by Degrees")
+        row = options.row(align=True)
+        split = row.split(factor=0.75)
+        col = split.column()
+        col.label(text="Nr of degrees")
+        col = split.column()
+        col.prop(spin_settings, "degrees", text="")
+
+        options.label(text="This will generate "+ str(int(360 / int(spin_settings.degrees))) +" frames")
+
+def no_selection_warning(panel, layout):
+    row = layout.row(align=True)
+    row.alignment = "CENTER"
+    row.label(text="Please select a suitable object")  
+
+def documentation(panel, layout):
+    # documentation button
+    row = layout.row()
+    row.operator("object.documentation",
+                    text="Documentation",
+                    icon_value=preview_collections["documentation"]["documentation"].icon_id) 
 
 class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_label = "SpinWiz"
@@ -52,70 +113,38 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         layout = self.layout
         layout.scale_y = 1.2
         
-
+        # check if there are any selected objects (TODO: check if the selected object is an actual object)
         if len(bpy.context.selected_objects) == 0:
-            row = layout.row(align=True)
-            row.alignment = "CENTER"
-            row.label(text="Please select a suitable object")        
+            no_selection_warning(self, layout)      
         else:
-            layout.separator()
             row = layout.row()
+            row.operator("object.spin_wiz_setup",
+                         text="Setup for Active Objects",
+                         icon_value=preview_collections["logo"]["logo"].icon_id)
 
-            preview_menu = preview_collections["menu"]
-
-            column = row.column()
-            column.operator("object.documentation", text="Motion Setup", icon_value=preview_menu["motion_menu"].icon_id)
-            column = row.column()
-            column.operator("object.documentation", text="Output", icon_value=preview_menu["output_menu"].icon_id)
             layout.separator()
 
-            options = layout.box()
-            split = options.split(factor=0.5)
-            col = split.column()
-            col.label(text="Movement type")
-            col = split.column()
-            col.prop(spin_settings, "movement_type", text="")
+            # Motion and Output menu selectors 
+            menu_items(self, layout)
             
+            layout.separator()
 
-            row = options.row(align=True)
-            row.scale_x = 1.6
-            row.label(text="Interpolation")
-            row.prop(spin_settings, "interpolation_type", expand=True, icon_only=True)
+            # create the box where the options are
+            options = layout.box()
 
-            row = options.row(align=True)
-            row.label(text="Lenght")
-            row.prop(spin_settings, "length_type", expand=True, icon_only=True)
+            select_movement_type(self, options)
+            select_interpolation_type(self, options)
+            select_length_type(self, options)
 
-            if spin_settings.length_type == "Keyframes":
-                options.label(text="by Number of Keyframes")
-                row = options.row(align=True)
-                row.prop(spin_settings, "nr_frames")
-                row.separator()
-                row.prop(spin_settings, "start_frame")
-
-            else:   
-                options.label(text="by Degrees")
-                row = options.row(align=True)
-                split = row.split(factor=0.75)
-                col = split.column()
-                col.label(text="Nr of degrees")
-                col = split.column()
-                col.prop(spin_settings, "degrees", text="")
-
-                options.label(text="This will generate "+ str(int(360 / int(spin_settings.degrees))) +" frames")
-                
+                            
             add_stage = layout.box()
             add_stage.prop(spin_settings, "add_stage")
             
             add_ligthing_setup = layout.box()
             add_ligthing_setup.prop(spin_settings, "add_lighting_setup")
             
-
         # documentation button
-        row = layout.row()
-        row.operator("object.documentation",
-                        text="Documentation",
-                        icon_value=preview_collections["documentation"]["documentation"].icon_id)    
+        documentation(self, layout)   
 
 
 class OBJECT_OT_documentation(bpy.types.Operator):
@@ -126,9 +155,84 @@ class OBJECT_OT_documentation(bpy.types.Operator):
     def execute(self, context):
         return {"FINISHED"}
 
+def create_pivot(collection):
+    # Store originally selected objects
+    original_selection = bpy.context.selected_objects[:]
+
+    # Deselect all objects first
+    bpy.ops.object.select_all(action='DESELECT')
+
+    # Select objects that do not have parents
+    objects_to_parent = [obj for obj in original_selection if obj.parent is None]
+
+    # Create an empty object
+    bpy.ops.object.empty_add(location=(0, 0, 0))  # You can adjust the location as needed
+    empty_obj = bpy.context.object
+
+    #unlink from scene collection
+    bpy.context.scene.collection.objects.unlink(empty_obj)
+    collection.objects.link(empty_obj)
 
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation]
+    # Make the empty object the parent of each selected object
+    for obj in objects_to_parent:
+        obj.select_set(True)
+        obj.parent = empty_obj
+
+    # Deselect all objects at the end
+    bpy.ops.object.select_all(action='DESELECT')
+
+# create a new collection, copy the selected objects inside it and hide the rest of the scene objects  
+def create_copy_and_hide():
+    # Create a new collection for the copied objects
+    new_collection = bpy.data.collections.new("SpinWiz")
+    bpy.context.scene.collection.children.link(new_collection)
+
+    # Get selected objects
+    selected_objects = bpy.context.selected_objects
+    
+    for original_obj in selected_objects: 
+        # Create a new object by copying the original
+        new_obj = original_obj.copy()
+        new_obj.data = original_obj.data.copy()  # Also copy mesh data if needed
+        
+        # Remove the new object from all collections it is currently part of
+        for col in new_obj.users_collection:
+            col.objects.unlink(new_obj)  
+        
+        # Link the new object to the new collection
+        new_collection.objects.link(new_obj)
+        
+        # Optionally, you can make the new object the active object
+        bpy.context.view_layer.objects.active = new_obj
+        new_obj.select_set(True)
+       
+    # Hide all collections except the new one
+    for collection in bpy.context.scene.collection.children:
+        if collection != new_collection:
+            collection.hide_viewport = True
+            collection.hide_render = True
+    
+            
+    # Hide all objects in the scene of the current context, that are not in any collection
+    for obj in bpy.context.scene.collection.objects:
+        obj.hide_viewport = True
+        obj.hide_render = True
+
+    return new_collection
+
+class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
+    bl_idname = "object.spin_wiz_setup"
+    bl_label = "Spin Wiz Setup"
+    bl_description = "This operator creates the setup for Spin Wiz"
+
+    def execute(self, context):
+        collection = create_copy_and_hide()
+        # create_pivot(collection)
+
+        return {"FINISHED"}
+
+class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup]
 
 def register():
     import_custom_icons()
@@ -148,5 +252,6 @@ def unregister():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
     preview_collections.clear()
+
 if __name__ == "__main__":
     register()
