@@ -16,10 +16,16 @@ from bpy.types import Context
 from mathutils import Vector
 from math import pi, radians
 import math
+
+
 from .helper_functions import *
+
 from .custom_icons import *
+
 from .properties import *
 
+from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup
+from .operators.documentation import OBJECT_OT_documentation
 
 bl_info = {
     "name" : "360_spinner",
@@ -145,92 +151,6 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
             
         # documentation button
         documentation(self, layout)   
-
-
-class OBJECT_OT_documentation(bpy.types.Operator):
-    bl_idname = "object.documentation"
-    bl_label = "Documentation"
-    bl_description = "Go to documentation"
-
-    def execute(self, context):
-        return {"FINISHED"}
-
-def create_pivot(collection):
-    # Store originally selected objects
-    original_selection = bpy.context.selected_objects[:]
-
-    # Deselect all objects first
-    bpy.ops.object.select_all(action='DESELECT')
-
-    # Select objects that do not have parents
-    objects_to_parent = [obj for obj in original_selection if obj.parent is None]
-
-    # Create an empty object
-    bpy.ops.object.empty_add(location=(0, 0, 0))  # You can adjust the location as needed
-    empty_obj = bpy.context.object
-
-    #unlink from scene collection
-    bpy.context.scene.collection.objects.unlink(empty_obj)
-    collection.objects.link(empty_obj)
-
-
-    # Make the empty object the parent of each selected object
-    for obj in objects_to_parent:
-        obj.select_set(True)
-        obj.parent = empty_obj
-
-    # Deselect all objects at the end
-    bpy.ops.object.select_all(action='DESELECT')
-
-# create a new collection, copy the selected objects inside it and hide the rest of the scene objects  
-def create_copy_and_hide():
-    # Create a new collection for the copied objects
-    new_collection = bpy.data.collections.new("SpinWiz")
-    bpy.context.scene.collection.children.link(new_collection)
-
-    # Get selected objects
-    selected_objects = bpy.context.selected_objects
-    
-    for original_obj in selected_objects: 
-        # Create a new object by copying the original
-        new_obj = original_obj.copy()
-        new_obj.data = original_obj.data.copy()  # Also copy mesh data if needed
-        
-        # Remove the new object from all collections it is currently part of
-        for col in new_obj.users_collection:
-            col.objects.unlink(new_obj)  
-        
-        # Link the new object to the new collection
-        new_collection.objects.link(new_obj)
-        
-        # Optionally, you can make the new object the active object
-        bpy.context.view_layer.objects.active = new_obj
-        new_obj.select_set(True)
-       
-    # Hide all collections except the new one
-    for collection in bpy.context.scene.collection.children:
-        if collection != new_collection:
-            collection.hide_viewport = True
-            collection.hide_render = True
-    
-            
-    # Hide all objects in the scene of the current context, that are not in any collection
-    for obj in bpy.context.scene.collection.objects:
-        obj.hide_viewport = True
-        obj.hide_render = True
-
-    return new_collection
-
-class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
-    bl_idname = "object.spin_wiz_setup"
-    bl_label = "Spin Wiz Setup"
-    bl_description = "This operator creates the setup for Spin Wiz"
-
-    def execute(self, context):
-        collection = create_copy_and_hide()
-        # create_pivot(collection)
-
-        return {"FINISHED"}
 
 class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup]
 

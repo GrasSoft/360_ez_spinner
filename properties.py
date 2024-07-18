@@ -1,5 +1,7 @@
 import bpy
 from .custom_icons import *
+from .helper_functions import *
+from .naming_convetions import *
 
 #____________________________ FUNCTIONS RETURNING ITEMS
 
@@ -46,7 +48,6 @@ def movement_type(self, context):
     scene = context.scene
     spin_settings = scene.spin_settings
     
-    remove_all_keyframes(context.object)        
     remove_spincamera()
         
     if spin_settings.movement_type == "object":
