@@ -2,12 +2,13 @@ import bpy
 from .custom_icons import *
 from .helper_functions import *
 from .naming_convetions import *
+from .helper_functions import *
 
 #____________________________ FUNCTIONS RETURNING ITEMS
 
 def interpolation_items(self, context):
     return  [
-                ('Linear', "", "The animation moves at constant speed", preview_collections["interpolation"]["linear"].icon_id, 0),
+                ('LINEAR', "", "The animation moves at constant speed", preview_collections["interpolation"]["linear"].icon_id, 0),
                 ('Bezier_fast', "", "The animation start and ends fast",preview_collections["interpolation"]["bezier_fast"].icon_id, 1),
                 ('Bezier_slow', "", "The animation start and ends slow",preview_collections["interpolation"]["bezier_slow"].icon_id, 2),               
         ]
@@ -44,27 +45,44 @@ def movement_type_items(self, context):
 #____________________________ UPDATE FUNCTIONS
 
 
-def movement_type(self, context):
+def update_movement_type(self, context):
     scene = context.scene
     spin_settings = scene.spin_settings
     
-    remove_spincamera()
+    remove_camera()
+    reset_anim()
+    # reset_obj(context.object)
         
     if spin_settings.movement_type == "object":
-       setup_spinobject()
+        setup_spinobject()
+        # this removes the keyframes from the other object
+        if is_object_valid(cam_pivot_object_name) :
+            bpy.data.objects[cam_pivot_object_name].animation_data.action = None
     else:
-       setup_spincamera()  
+        setup_spincamera()  
 
-    reset_anim()
-    reset_obj(context.object)
-
-
-
-def adjust_keyframes_degrees(self, context):
-    remove_all_keyframes(context.object)
-    add_keyframes(context.object, int(360 / int(context.scene.spin_settings.degrees)))
+        if is_object_valid(pivot_object_name):
+            bpy.data.objects[pivot_object_name].animation_data.action = None
+    
 
 
+def update_adjust_keyframes(self, context):
+    # these all work on actions
+    remove_keyframes()
+    add_keyframes()
+    update_movement_type(self, context)
+
+
+
+
+# give degrees, update nr of frames
+def update_nr_frames(self, context):
+    self.nr_frames = int(360 / int(self.degrees))    
+
+
+
+def update_start_frame(self, context):
+    context.scene.frame_start = self.start_frame
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_properties(bpy.types.PropertyGroup):
@@ -73,19 +91,22 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         description="Number of degrees between frames",
         items=degrees_items, 
         default=3,
-        update=adjust_keyframes_degrees
+        update=update_nr_frames
     )# type: ignore
 
     nr_frames: bpy.props.IntProperty(
         name="# of frames",
         description="Number of keyframes",
-        default = 100,
+        default = 72,
+        update=update_adjust_keyframes
     )# type: ignore
 
     start_frame: bpy.props.IntProperty(
         name="Start frame",
         description="Starting keyframe",
-        default = 1
+        default = 0,
+        min=0,
+        update=update_start_frame
     )# type: ignore
 
     add_stage: bpy.props.BoolProperty(
@@ -104,7 +125,7 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         name= "Movement type",
         description= "Select wether the objects or the camera spins.",
         items= movement_type_items,
-        update=movement_type
+        update=update_movement_type
     ) # type: ignore
 
 

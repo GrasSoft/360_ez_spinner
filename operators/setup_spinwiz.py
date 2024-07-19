@@ -1,6 +1,14 @@
 import bpy
 
 from ..naming_convetions import *
+from ..helper_functions import *
+from ..properties import update_movement_type
+
+def create_action():
+    # Create a new action
+    bpy.data.actions.new(name=action_name)
+
+    add_keyframes()
 
 def create_pivot(collection):
     # Create an empty object
@@ -87,6 +95,9 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
 
     def execute(self, context):
         collection = create_copy_and_hide()
+        create_action()
+
+        update_movement_type(self, context)
 
         return {"FINISHED"}
 

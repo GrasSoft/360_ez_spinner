@@ -9,6 +9,8 @@ def reset_obj(obj):
     obj.rotation_euler = (0,0,0)     
 
 def delete_obj(obj):
+    obj = bpy.data.objects[obj]
+
     # Remove object from all collections it is linked to
     for collection in obj.users_collection:
         collection.objects.unlink(obj)
@@ -20,54 +22,109 @@ def delete_obj(obj):
 def reset_anim():
     bpy.context.scene.frame_set(0)
 
-def remove_spincamera():
+def remove_camera():
+    if is_object_valid(cam_pivot_object_name):
+        delete_obj(cam_pivot_object_name)
     if is_object_valid(camera_object_name):
-        delete_obj(bpy.data.objects[camera_object_name])
+        delete_obj(camera_object_name)
     if is_object_valid(curve_object_name):
-        delete_obj(bpy.data.objects[curve_object_name])
+        delete_obj(curve_object_name)
+
+def create_cam_pivot():
+    # Create an empty object
+    bpy.ops.object.empty_add(location=bpy.data.objects[pivot_object_name].location)  # Location of the other pivot
+    empty_obj = bpy.context.object
+
+    empty_obj.name = cam_pivot_object_name
+
+    # remove object from any collection it is currently in
+    for col in empty_obj.users_collection:
+        col.objects.unlink(empty_obj)  
+    
+    bpy.data.collections[collection_name].objects.link(empty_obj)
+
+    return empty_obj
+
+def make_obj_active(obj):
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
 
 def setup_spincamera():
-    # get pivot point to look at 
-    obj = bpy.data.objects[pivot_object_name]
-    
+    # camera that will rotate around the object
     create_camera()
+
+    # the pivot, parent of the camera
+    pivot = create_cam_pivot()
+
+    if pivot.animation_data is None:
+        pivot.animation_data_create()
+    
+    pivot.animation_data.action = bpy.data.actions[action_name]
 
     # TODO: temp change
     # radius = get_track_radius(obj)
     # create_bezier_circle(radius, obj.location)
     radius = 5
-    bpy.data.objects[camera_object_name].location = obj.location + Vector((radius, 0, 0))
+    bpy.data.objects[camera_object_name].location = pivot.location + Vector((radius, 0, 0))
 
     # set the pivot point as the parent so that the rotation is the same
-    bpy.data.objects[camera_object_name].parent = obj
+    bpy.data.objects[camera_object_name].parent = pivot
 
-    set_camera_track(obj)
+    set_camera_track(pivot)
+
+    make_obj_active(pivot)
+
 
 def setup_spinobject():
-    obj = bpy.data.objects[pivot_object_name]
-
-    add_keyframes(obj, 100)
-
     create_camera()
+
+    pivot = bpy.data.objects[pivot_object_name] 
+
+    if pivot.animation_data is None:
+        pivot.animation_data_create()
+
+    pivot.animation_data.action = bpy.data.actions[action_name]   
+
     # TODO: temp change
     #radius = get_track_radius(obj)
     radius = 5
-    bpy.data.objects[camera_object_name].location = obj.location + Vector((radius, 0, 0)) 
+    bpy.data.objects[camera_object_name].location = pivot.location + Vector((radius, 0, 0)) 
 
-    set_camera_track(obj)
+    set_camera_track(pivot)
 
-def add_keyframes(obj, num_frames):
+    make_obj_active(pivot)
+
+def add_keyframes():
+    spin_settings = bpy.context.scene.spin_settings
+    num_frames = (spin_settings.nr_frames)
+    action = bpy.data.actions[action_name]
+
     # Convert rotation amount to radians
     rotation_amount_radians = radians(360)
 
     # Create keyframes
     for frame in range(num_frames + 1):
-        bpy.context.scene.frame_set(frame)
-        obj.rotation_euler[2] = rotation_amount_radians * frame / num_frames
-        obj.keyframe_insert(data_path="rotation_euler", index=2)
+        fcurve = action.fcurves.find("rotation_euler", index=2)
+        if fcurve is None:
+            fcurve = action.fcurves.new(data_path="rotation_euler", index=2)
+        
+        rotation_value = rotation_amount_radians * frame / num_frames
+        keyframe_point = fcurve.keyframe_points.insert(frame, rotation_value)
+        keyframe_point.interpolation = spin_settings.interpolation_type
 
     # Set the scene's end frame
+    bpy.context.scene.frame_start = 0
     bpy.context.scene.frame_end = num_frames
+
+def remove_keyframes():
+    action = bpy.data.actions[action_name]
+
+    fcurve = action.fcurves.find("rotation_euler", index=2)
+    if fcurve is None:
+        return 
+    else:
+        fcurve.keyframe_points.clear()
 
 
 

@@ -102,6 +102,15 @@ def documentation(panel, layout):
                     text="Documentation",
                     icon_value=preview_collections["documentation"]["documentation"].icon_id) 
 
+def is_selection_valid():
+    # Iterate through the selected objects
+    
+    for obj in bpy.context.selected_objects:
+        print([col.name for col in obj.users_collection])
+        if (obj.type == 'MESH' or obj.type == "EMPTY") : # and not collection_name in [col.name for col in obj.users_collection]:
+            return True
+    return False
+
 class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_label = "SpinWiz"
     bl_idname = "VIEW3D_PT_main_panel"
@@ -120,7 +129,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         layout.scale_y = 1.2
         
         # check if there are any selected objects (TODO: check if the selected object is an actual object)
-        if len(bpy.context.selected_objects) == 0:
+        if not is_selection_valid():
             no_selection_warning(self, layout)      
         else:
             row = layout.row()
