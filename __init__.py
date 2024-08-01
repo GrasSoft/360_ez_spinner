@@ -106,10 +106,14 @@ def is_selection_valid():
     # Iterate through the selected objects
     
     for obj in bpy.context.selected_objects:
-        print([col.name for col in obj.users_collection])
         if (obj.type == 'MESH' or obj.type == "EMPTY") : # and not collection_name in [col.name for col in obj.users_collection]:
             return True
     return False
+
+def is_selection_setup():
+    obj =  bpy.context.active_object
+    if obj.name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name]:
+        return True
 
 class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_label = "SpinWiz"
@@ -132,31 +136,32 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         if not is_selection_valid():
             no_selection_warning(self, layout)      
         else:
-            row = layout.row()
-            row.operator("object.spin_wiz_setup",
+            if not is_selection_setup():
+                row = layout.row()
+                row.operator("object.spin_wiz_setup",
                          text="Setup for Active Objects",
                          icon_value=preview_collections["logo"]["logo"].icon_id)
+            else:
+                layout.separator()
 
-            layout.separator()
+                # Motion and Output menu selectors 
+                menu_items(self, layout)
+                
+                layout.separator()
 
-            # Motion and Output menu selectors 
-            menu_items(self, layout)
-            
-            layout.separator()
+                # create the box where the options are
+                options = layout.box()
 
-            # create the box where the options are
-            options = layout.box()
+                select_movement_type(self, options)
+                select_interpolation_type(self, options)
+                select_length_type(self, options)
 
-            select_movement_type(self, options)
-            select_interpolation_type(self, options)
-            select_length_type(self, options)
-
-                            
-            add_stage = layout.box()
-            add_stage.prop(spin_settings, "add_stage")
-            
-            add_ligthing_setup = layout.box()
-            add_ligthing_setup.prop(spin_settings, "add_lighting_setup")
+                                
+                add_stage = layout.box()
+                add_stage.prop(spin_settings, "add_stage")
+                
+                add_ligthing_setup = layout.box()
+                add_ligthing_setup.prop(spin_settings, "add_lighting_setup")
             
         # documentation button
         documentation(self, layout)   

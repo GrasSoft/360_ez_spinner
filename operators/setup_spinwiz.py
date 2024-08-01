@@ -4,6 +4,7 @@ from ..naming_convetions import *
 from ..helper_functions import *
 from ..properties import update_movement_type
 
+
 def create_action():
     # Create a new action
     bpy.data.actions.new(name=action_name)

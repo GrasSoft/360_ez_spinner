@@ -95,27 +95,33 @@ def setup_spinobject():
 
     make_obj_active(pivot)
 
+ 
 def add_keyframes():
     spin_settings = bpy.context.scene.spin_settings
     num_frames = (spin_settings.nr_frames)
     action = bpy.data.actions[action_name]
-
-    # Convert rotation amount to radians
-    rotation_amount_radians = radians(360)
+    
+    # offset is the offset of the start frame of the animation
+    offset = int(spin_settings.start_frame)
 
     # Create keyframes
-    for frame in range(num_frames + 1):
-        fcurve = action.fcurves.find("rotation_euler", index=2)
-        if fcurve is None:
-            fcurve = action.fcurves.new(data_path="rotation_euler", index=2)
-        
-        rotation_value = rotation_amount_radians * frame / num_frames
-        keyframe_point = fcurve.keyframe_points.insert(frame, rotation_value)
-        keyframe_point.interpolation = spin_settings.interpolation_type
+    fcurve = action.fcurves.find("rotation_euler", index=2)
+    if fcurve is None:
+        fcurve = action.fcurves.new(data_path="rotation_euler", index=2)
+
+    # initial frame
+    rotation_value = radians(0)
+    keyframe_point = fcurve.keyframe_points.insert(offset, rotation_value)
+    keyframe_point.interpolation = spin_settings.interpolation_type
+
+    # end frame    
+    rotation_value = radians(360)
+    keyframe_point = fcurve.keyframe_points.insert(num_frames + offset + 1, rotation_value)
+    keyframe_point.interpolation = spin_settings.interpolation_type
 
     # Set the scene's end frame
-    bpy.context.scene.frame_start = 0
-    bpy.context.scene.frame_end = num_frames
+    bpy.context.scene.frame_start = offset
+    bpy.context.scene.frame_end = num_frames + offset
 
 def remove_keyframes():
     action = bpy.data.actions[action_name]

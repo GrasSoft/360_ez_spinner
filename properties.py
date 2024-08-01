@@ -9,8 +9,8 @@ from .helper_functions import *
 def interpolation_items(self, context):
     return  [
                 ('LINEAR', "", "The animation moves at constant speed", preview_collections["interpolation"]["linear"].icon_id, 0),
-                ('Bezier_fast', "", "The animation start and ends fast",preview_collections["interpolation"]["bezier_fast"].icon_id, 1),
-                ('Bezier_slow', "", "The animation start and ends slow",preview_collections["interpolation"]["bezier_slow"].icon_id, 2),               
+                ('BEZIER', "", "The animation start and ends fast",preview_collections["interpolation"]["bezier_fast"].icon_id, 1),
+                ('BEZIER', "", "The animation start and ends slow",preview_collections["interpolation"]["bezier_slow"].icon_id, 2),               
         ]
 
 def length_items(self, context):
@@ -83,6 +83,47 @@ def update_nr_frames(self, context):
 
 def update_start_frame(self, context):
     context.scene.frame_start = self.start_frame
+    remove_keyframes()
+    add_keyframes()
+
+
+
+def slow_bezier(self, context):
+    action = bpy.data.actions[action_name]
+    fcurve = action.fcurves.find("rotation_euler", index=2)
+    end_frame = fcurve.keyframe_points[1]
+
+    start_frame = fcurve.keyframe_points[0]
+    start_frame.handle_right_type = "ALIGNED"
+    start_frame.handle_right.x = int(self.nr_frames / 2)
+    start_frame.handle_right.y = 0
+
+    start_frame.handle_left_type = "ALIGNED"
+    start_frame.handle_left.x = self.start_frame - 1
+    start_frame.handle_left.y = 0
+
+
+    end_frame.handle_left_type = "ALIGNED"
+    end_frame.handle_left.x = int(self.nr_frames / 2)
+    end_frame.handle_left.y = radians(360)
+
+    end_frame.handle_right_type = "ALIGNED"
+    end_frame.handle_right.x = self.nr_frames + 2
+    end_frame.handle_right.y = radians(360)
+
+
+def update_interpolation(self, context):
+    # update the keyframes to have the other interpolation
+    remove_keyframes()
+    add_keyframes()
+
+    for item in interpolation_items(self, context):
+        if self.interpolation_type == item[0]:
+            if item[4] == 1:
+                slow_bezier(self, context)
+            elif item[4] == 2: 
+                return  
+
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_properties(bpy.types.PropertyGroup):
@@ -98,14 +139,15 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         name="# of frames",
         description="Number of keyframes",
         default = 72,
+        min=1,
         update=update_adjust_keyframes
     )# type: ignore
 
     start_frame: bpy.props.IntProperty(
         name="Start frame",
         description="Starting keyframe",
-        default = 0,
-        min=0,
+        default = 1,
+        min=1,
         update=update_start_frame
     )# type: ignore
 
@@ -132,7 +174,8 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
     interpolation_type: bpy.props.EnumProperty(
         name= "Interpolation",
         description= "Select the interpolation between the keyframes.",
-        items=interpolation_items
+        items=interpolation_items,
+        update=update_interpolation
     ) # type: ignore
 
     length_type: bpy.props.EnumProperty(
