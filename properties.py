@@ -41,7 +41,11 @@ def movement_type_items(self, context):
             ('camera', "Camera rotates", "The object stays in place and camera rotates",1),    
         ]
 
-
+def menu_items(self, context):
+    return [
+        ('motion_setup', "Motion Setup", "Here is a panel with all the options regarding the 360 movement", preview_collections["menu"]["motion_menu"].icon_id, 0),
+        ('output_setup', "Output Setup", "Here is a panel with all the options regarding 360 output", preview_collections["menu"]["output_menu"].icon_id, 1),
+    ]
 #____________________________ UPDATE FUNCTIONS
 
 
@@ -127,6 +131,12 @@ def update_interpolation(self, context):
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_properties(bpy.types.PropertyGroup):
+    menu_options: bpy.props.EnumProperty(
+        name="Menu Options",
+        items=menu_items,
+        default=0
+    )# type: ignore
+
     degrees: bpy.props.EnumProperty(
         name="Nr of degrees",
         description="Number of degrees between frames",

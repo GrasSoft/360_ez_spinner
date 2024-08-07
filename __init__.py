@@ -145,24 +145,33 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                 layout.separator()
 
                 # Motion and Output menu selectors 
-                menu_items(self, layout)
-                
-                layout.separator()
+                # menu_items(self, layout)
 
-                # create the box where the options are
-                options = layout.box()
+                row = layout.row()
+                row.prop(spin_settings, "menu_options", expand=True)
 
-                select_movement_type(self, options)
-                select_interpolation_type(self, options)
-                select_length_type(self, options)
+                match spin_settings.menu_options:
+                    case 'motion_setup':
+                        layout.separator()
 
-                                
-                add_stage = layout.box()
-                add_stage.prop(spin_settings, "add_stage")
-                
-                add_ligthing_setup = layout.box()
-                add_ligthing_setup.prop(spin_settings, "add_lighting_setup")
-            
+                        # create the box where the options are
+                        options = layout.box()
+
+                        select_movement_type(self, options)
+                        select_interpolation_type(self, options)
+                        select_length_type(self, options)
+
+                                        
+                        add_stage = layout.box()
+                        add_stage.prop(spin_settings, "add_stage")
+                        
+                        add_ligthing_setup = layout.box()
+                        add_ligthing_setup.prop(spin_settings, "add_lighting_setup")
+
+                    case 'output_setup':
+                        layout.separator()
+                        layout.label(text="Output menu")
+
         # documentation button
         documentation(self, layout)   
 
