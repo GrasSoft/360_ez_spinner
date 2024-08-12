@@ -17,15 +17,15 @@ from mathutils import Vector
 from math import pi, radians
 import math
 
-
 from .helper_functions import *
 
-from .custom_icons import *
+from .icon_setup.custom_icons import *
 
 from .properties import *
 
 from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup
 from .operators.documentation import OBJECT_OT_documentation
+from .operators.output import OBJECT_OT_output
 
 bl_info = {
     "name" : "360_spinner",
@@ -37,6 +37,12 @@ bl_info = {
     "warning" : "",
     "category" : "Generic"
 }
+
+def simple_button(panel, layout):
+    row = layout.row()
+    row.operator("object.documentation", text="Button")
+    row.enabled = False
+
 
 def menu_items(panel, layout):
     row = layout.row()
@@ -94,6 +100,12 @@ def no_selection_warning(panel, layout):
     row = layout.row(align=True)
     row.alignment = "CENTER"
     row.label(text="Please select a suitable object")  
+
+def send_to_output(panel, layout):
+    # send to output button
+    row = layout.row()
+    row.operator("object.output", 
+                    text="Send to output queue",)
 
 def documentation(panel, layout):
     # documentation button
@@ -164,18 +176,42 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                                         
                         add_stage = layout.box()
                         add_stage.prop(spin_settings, "add_stage")
+
+                        if spin_settings.add_stage:
+                            add_stage.label(text="Stage Shape")
+                            add_stage.prop                                            
                         
-                        add_ligthing_setup = layout.box()
-                        add_ligthing_setup.prop(spin_settings, "add_lighting_setup")
+                        ligthing_setup_box = layout.box()
+                        ligthing_setup_box.prop(spin_settings, "add_lighting_setup")
+
+                        if spin_settings.add_lighting_setup:
+                            # thumbnail of the world used
+                            ligthing_setup_box.template_preview(bpy.context.scene.world)
+
+                            ligthing_setup_box.label(text=bpy.context.scene.world.name)
+
+                            ligthing_setup_box.prop(bpy.data.worlds[world_name].node_tree.nodes["Mapping"].inputs[2], "default_value", index=2, text="Rotation")
+
+                            ligthing_setup_box.prop(bpy.data.worlds[world_name].node_tree.nodes["Background"].inputs[1], "default_value", text="Strength")
+
+                        layout.separator()
+
+                        send_to_output(self, layout)
+
+                        layout.separator()
 
                     case 'output_setup':
                         layout.separator()
                         layout.label(text="Output menu")
+                        
+                        simple_button(self, layout)
+
+
 
         # documentation button
         documentation(self, layout)   
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup]
+class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output]
 
 def register():
     import_custom_icons()

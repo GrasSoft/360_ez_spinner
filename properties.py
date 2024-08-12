@@ -1,8 +1,14 @@
 import bpy
-from .custom_icons import *
+from .icon_setup.custom_icons import *
 from .helper_functions import *
 from .naming_convetions import *
 from .helper_functions import *
+
+from .lighting_setup.lighting_setup import *
+
+from .stage_setup.stage_setup import *
+
+from .settings.current_settings import *
 
 #____________________________ FUNCTIONS RETURNING ITEMS
 
@@ -128,6 +134,18 @@ def update_interpolation(self, context):
             elif item[4] == 2: 
                 return  
 
+def update_lighting(self, context):
+    if self.add_lighting_setup:
+        import_world()
+    else:
+        reset_world()
+
+def update_stage(self, context):
+    if self.add_stage:
+        import_stage()
+    else:
+        reset_stage()
+
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_properties(bpy.types.PropertyGroup):
@@ -148,7 +166,7 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
     nr_frames: bpy.props.IntProperty(
         name="# of frames",
         description="Number of keyframes",
-        default = 72,
+        default = current_length,
         min=1,
         update=update_adjust_keyframes
     )# type: ignore
@@ -156,28 +174,31 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
     start_frame: bpy.props.IntProperty(
         name="Start frame",
         description="Starting keyframe",
-        default = 1,
         min=1,
-        update=update_start_frame
+        update=update_start_frame,
+        default=current_start_frame,
     )# type: ignore
 
     add_stage: bpy.props.BoolProperty(
         name="Add Stage",
         description="See stage menu",
-        default=False
+        default=current_has_stage,
+        update=update_stage
     )# type: ignore
 
     add_lighting_setup: bpy.props.BoolProperty(
         name="Add Lighting Setup",
         description="See lighting setup",
-        default=False
+        update=update_lighting,
+        default=current_has_lighting_setup
     ) # type: ignore
 
     movement_type : bpy.props.EnumProperty(
         name= "Movement type",
         description= "Select wether the objects or the camera spins.",
         items= movement_type_items,
-        update=update_movement_type
+        update=update_movement_type,
+        default=current_movement_type
     ) # type: ignore
 
 
@@ -185,13 +206,15 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         name= "Interpolation",
         description= "Select the interpolation between the keyframes.",
         items=interpolation_items,
-        update=update_interpolation
+        update=update_interpolation,
+        default=current_interpolation
     ) # type: ignore
 
     length_type: bpy.props.EnumProperty(
         name= "Length",
         description= "Select the start and end keyframes or by degrees.",
-        items= length_items
+        items= length_items,
+        default=current_length_type
     ) # type: ignore
 
 
