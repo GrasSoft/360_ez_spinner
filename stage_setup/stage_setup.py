@@ -40,7 +40,7 @@ def add_camera():
     
 
 def reset_stage():
-    if bpy.data.objects[stage_name] is not None:
+    if stage_name in bpy.data.objects:
         bpy.data.objects.remove(bpy.data.objects[stage_name])
 
     

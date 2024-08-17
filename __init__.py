@@ -40,9 +40,14 @@ bl_info = {
 
 def simple_button(panel, layout):
     row = layout.row()
-    row.operator("object.documentation", text="Button")
-    row.enabled = False
-
+    
+    
+    col = row.column()
+    col.operator("object.documentation", text="SpinWiz_Master")
+    col.enabled = False
+    
+    col = row.column()
+    row.operator("object.documentation", text="", icon="TRASH")
 
 def menu_items(panel, layout):
     row = layout.row()
@@ -95,6 +100,25 @@ def select_length_type(panel, layout):
         col.prop(spin_settings, "degrees", text="")
 
         options.label(text="This will generate "+ str(int(360 / int(spin_settings.degrees))) +" frames")
+        
+def panel_camera_options(panel, layout):
+    options = layout
+    
+    options.separator()
+    
+    spin_settings = bpy.context.scene.spin_settings
+                        
+    # camera settings
+    
+    options.label(text="Current: " + get_current_camera(bpy.context).name)
+    
+    options.prop(spin_settings, "camera_height", text="Camera Height")
+
+    row = options.row()
+    col = row.column()
+    col.prop(spin_settings, "camera_focal_length", text="Focal Length")
+    col = row.column()
+    col.prop(spin_settings, "camera_distance", text="Distance")
 
 def no_selection_warning(panel, layout):
     row = layout.row(align=True)
@@ -124,8 +148,9 @@ def is_selection_valid():
 
 def is_selection_setup():
     obj =  bpy.context.active_object
-    if obj.name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name]:
-        return True
+    for name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name]:
+        if name in obj.name:
+            return True
 
 class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_label = "SpinWiz"
@@ -172,17 +197,19 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                         select_movement_type(self, options)
                         select_interpolation_type(self, options)
                         select_length_type(self, options)
-
+                        
+                        # camera options
+                        panel_camera_options(self, options)
                                         
                         add_stage = layout.box()
                         add_stage.prop(spin_settings, "add_stage")
 
                         if spin_settings.add_stage:
-                            add_stage.label(text="Stage Shape")
-                            add_stage.prop                                            
+                            add_stage.label(text="Stage Shape")                                           
                         
                         ligthing_setup_box = layout.box()
                         ligthing_setup_box.prop(spin_settings, "add_lighting_setup")
+                        
 
                         if spin_settings.add_lighting_setup:
                             # thumbnail of the world used
@@ -204,7 +231,8 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                         layout.separator()
                         layout.label(text="Output menu")
                         
-                        simple_button(self, layout)
+                        box = layout.box()
+                        simple_button(self, box)
 
 
 
@@ -231,6 +259,7 @@ def unregister():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
     preview_collections.clear()
+    
 
 if __name__ == "__main__":
     register()

@@ -10,6 +10,8 @@ from .stage_setup.stage_setup import *
 
 from .settings.current_settings import *
 
+from .settings.settings_defaults import *
+
 #____________________________ FUNCTIONS RETURNING ITEMS
 
 def interpolation_items(self, context):
@@ -73,6 +75,8 @@ def update_movement_type(self, context):
 
         if is_object_valid(pivot_object_name):
             bpy.data.objects[pivot_object_name].animation_data.action = None
+
+    update_current_settings()
     
 
 
@@ -82,12 +86,16 @@ def update_adjust_keyframes(self, context):
     add_keyframes()
     update_movement_type(self, context)
 
+    update_current_settings()
+
 
 
 
 # give degrees, update nr of frames
 def update_nr_frames(self, context):
-    self.nr_frames = int(360 / int(self.degrees))    
+    self.nr_frames = int(360 / int(self.degrees)) 
+
+    update_current_settings()   
 
 
 
@@ -95,6 +103,8 @@ def update_start_frame(self, context):
     context.scene.frame_start = self.start_frame
     remove_keyframes()
     add_keyframes()
+
+    update_current_settings()
 
 
 
@@ -133,6 +143,8 @@ def update_interpolation(self, context):
                 slow_bezier(self, context)
             elif item[4] == 2: 
                 return  
+            
+    update_current_settings()
 
 def update_lighting(self, context):
     if self.add_lighting_setup:
@@ -140,12 +152,53 @@ def update_lighting(self, context):
     else:
         reset_world()
 
+    update_current_settings()
+
 def update_stage(self, context):
     if self.add_stage:
         import_stage()
     else:
         reset_stage()
 
+    update_current_settings()
+
+def update_camera_height(self, context):
+    cam_obj = get_current_camera(context)
+    
+        
+    if cam_obj is not None:
+        cam_obj.location.z =  self.camera_height
+
+
+def update_camera_distance(self, context):
+    cam_obj = get_current_camera(context)
+    
+    if cam_obj is not None:
+        cam_obj.location.x = self.camera_distance
+        
+def update_camera_focal_length(self, context):
+    cam_obj = get_current_camera(context)
+    
+    if cam_obj is not None:
+        cam_obj.data.lens = self.camera_focal_length
+        
+#____________________________ HELPERT FUNCTIONS
+
+def get_current_camera(context):
+    selected_obj = context.object
+    
+    current_collection = selected_obj.users_collection[0]
+    
+    cam_obj = None
+    
+    for obj in current_collection.objects:
+        if camera_object_name in obj.name:
+            cam_obj = obj
+            break
+        
+    return cam_obj
+
+            
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_properties(bpy.types.PropertyGroup):
@@ -159,16 +212,16 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         name="Nr of degrees",
         description="Number of degrees between frames",
         items=degrees_items, 
+        update=update_nr_frames,
         default=3,
-        update=update_nr_frames
     )# type: ignore
 
     nr_frames: bpy.props.IntProperty(
         name="# of frames",
         description="Number of keyframes",
-        default = current_length,
         min=1,
-        update=update_adjust_keyframes
+        update=update_adjust_keyframes,
+        default = default_length,
     )# type: ignore
 
     start_frame: bpy.props.IntProperty(
@@ -176,21 +229,21 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         description="Starting keyframe",
         min=1,
         update=update_start_frame,
-        default=current_start_frame,
+        default=default_start_frame,
     )# type: ignore
 
     add_stage: bpy.props.BoolProperty(
         name="Add Stage",
         description="See stage menu",
-        default=current_has_stage,
-        update=update_stage
+        update=update_stage,
+        default=default_has_stage,
     )# type: ignore
 
     add_lighting_setup: bpy.props.BoolProperty(
         name="Add Lighting Setup",
         description="See lighting setup",
         update=update_lighting,
-        default=current_has_lighting_setup
+        default=default_has_lighting_setup
     ) # type: ignore
 
     movement_type : bpy.props.EnumProperty(
@@ -198,7 +251,7 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         description= "Select wether the objects or the camera spins.",
         items= movement_type_items,
         update=update_movement_type,
-        default=current_movement_type
+        default=default_movement_type
     ) # type: ignore
 
 
@@ -207,14 +260,35 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         description= "Select the interpolation between the keyframes.",
         items=interpolation_items,
         update=update_interpolation,
-        default=current_interpolation
+        default=default_interpolation
     ) # type: ignore
 
     length_type: bpy.props.EnumProperty(
         name= "Length",
         description= "Select the start and end keyframes or by degrees.",
         items= length_items,
-        default=current_length_type
+        default=default_length_type
     ) # type: ignore
 
+    camera_height: bpy.props.FloatProperty(
+        name= "Camera Height",
+        description= "Sets the height of the camera",
+        default = 0,
+        subtype='DISTANCE',
+        update = update_camera_height, 
+    )# type: ignore
 
+    camera_distance: bpy.props.FloatProperty(
+        name= "Camera Distance",
+        description= "Sets the distance from the camera to the object",
+        subtype='DISTANCE',
+        default = 5,
+        update= update_camera_distance
+    )# type: ignore
+    
+    camera_focal_length: bpy.props.FloatProperty(
+        name = "Camera Focal Length",
+        description= "Sets the focal length of the camera",
+        default= 50,
+        update=update_camera_focal_length
+    )# type: ignore

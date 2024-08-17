@@ -20,7 +20,9 @@ def import_world():
         autoselect = False
     )
     global original_world
-    original_world = bpy.context.scene.world.name
+    
+    if bpy.context.scene.world is not None:
+        original_world = bpy.context.scene.world.name
 
     bpy.context.scene.world = bpy.data.worlds[world_name]
 
@@ -30,6 +32,7 @@ def reset_world():
     else:
         bpy.context.scene.world = bpy.data.worlds[original_world]
 
-    world = bpy.data.worlds[world_name]
-    bpy.data.worlds.remove(world)
+    if world_name in bpy.data.worlds:
+        world = bpy.data.worlds[world_name]
+        bpy.data.worlds.remove(world)
     
