@@ -25,7 +25,7 @@ from .properties import *
 
 from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup
 from .operators.documentation import OBJECT_OT_documentation
-from .operators.output import OBJECT_OT_output
+from .operators.output import *
 
 bl_info = {
     "name" : "360_spinner",
@@ -38,16 +38,7 @@ bl_info = {
     "category" : "Generic"
 }
 
-def simple_button(panel, layout):
-    row = layout.row()
-    
-    
-    col = row.column()
-    col.operator("object.documentation", text="SpinWiz_Master")
-    col.enabled = False
-    
-    col = row.column()
-    row.operator("object.documentation", text="", icon="TRASH")
+
 
 def menu_items(panel, layout):
     row = layout.row()
@@ -124,12 +115,6 @@ def no_selection_warning(panel, layout):
     row = layout.row(align=True)
     row.alignment = "CENTER"
     row.label(text="Please select a suitable object")  
-
-def send_to_output(panel, layout):
-    # send to output button
-    row = layout.row()
-    row.operator("object.output", 
-                    text="Send to output queue",)
 
 def documentation(panel, layout):
     # documentation button
@@ -223,7 +208,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
 
                         layout.separator()
 
-                        send_to_output(self, layout)
+                        panel_operator_add_to_output(self, layout)
 
                         layout.separator()
 
@@ -231,15 +216,14 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                         layout.separator()
                         layout.label(text="Output menu")
                         
-                        box = layout.box()
-                        simple_button(self, box)
+                        panel_output_list(self, layout)
 
-
+                        layout.separator()
 
         # documentation button
         documentation(self, layout)   
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output]
+class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output]
 
 def register():
     import_custom_icons()

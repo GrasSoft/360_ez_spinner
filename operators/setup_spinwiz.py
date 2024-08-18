@@ -79,15 +79,26 @@ def create_copy_and_hide():
     # Hide all collections except the new one
     for collection in bpy.context.scene.collection.children:
         if collection != new_collection:
-            collection.hide_viewport = True
-            collection.hide_render = True
-    
+            # Hide the collection in the active view layer
+            for view_layer in bpy.context.scene.view_layers:
+                layer_collection = view_layer.layer_collection.children.get(collection.name)
             
-    # Hide all objects in the scene of the current context, that are not in any collection
-    for obj in bpy.context.scene.collection.objects:
-        obj.hide_viewport = True
-        obj.hide_render = True
-
+                if layer_collection:
+                    layer_collection.hide_viewport = True
+            collection.hide_render = True
+       
+       
+    # Get the default "Scene Collection"
+    scene_collection = bpy.context.scene.collection
+   
+    # Iterate through all objects in the scene
+    for obj in bpy.context.scene.objects:
+         # Check if the object is only in the "Scene Collection" and not in any other collections
+        if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
+            # Hide the object from the viewport using hide_set
+            obj.hide_set(True)
+            obj.hide_render = True
+                
     return new_collection
 
 def add_settings(name):
