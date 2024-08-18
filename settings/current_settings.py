@@ -21,7 +21,6 @@ class CurrentSettings():
         self.current_has_lighting_setup = has_lighting_setup
 
 
-list_current_settings = {}
 
 previous_settings = CurrentSettings()
 
@@ -34,12 +33,11 @@ def update_current_settings():
     spin_settings = bpy.context.scene.spin_settings
 
     if selected_obj:
-        if selected_obj.users_collection[0].name in list_current_settings:
-            list_current_settings[selected_obj.users_collection[0].name] = CurrentSettings(spin_settings.length_type, spin_settings.nr_frames, spin_settings.start_frame,
-                                                                                                spin_settings.interpolation_type, spin_settings.movement_type, spin_settings.add_stage, spin_settings.add_lighting_setup)
             global previous_settings
 
-            previous_settings = list_current_settings[selected_obj.users_collection[0].name]
+            previous_settings = CurrentSettings(spin_settings.length_type, spin_settings.nr_frames, spin_settings.start_frame,
+                                                spin_settings.interpolation_type, spin_settings.movement_type, spin_settings.add_stage, spin_settings.add_lighting_setup)
+
                         
 def update_properties():
     spin_settings = bpy.context.scene.spin_settings

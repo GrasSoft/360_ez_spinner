@@ -5,8 +5,67 @@ import math
 
 from .naming_convetions import *
 
+
+#__________________________________________ CONTEXT FUNCTIONS
+# functions that help setup and update the correct objects and properties
+
+# this function gets the current collection based on the selected object
+def get_current_collection():
+    return bpy.context.object.users_collection[0]
+    
+def get_current_camera():
+    collection = get_current_collection()
+        
+    for obj in collection.objects:
+        if camera_object_name in obj.name:
+            return obj
+        
+def get_current_pivot():
+    collection = get_current_collection()
+        
+    for obj in collection.objects:
+        if pivot_object_name in obj.name:
+            return obj
+
+
+def get_current_camera_pivot():
+    collection = get_current_collection()
+        
+    for obj in collection.objects:
+        if cam_pivot_object_name in obj.name:
+            return obj
+
+def get_suffix_difference(str1, str2):
+    # Find the common prefix length
+    common_length = min(len(str1), len(str2))
+    
+    for i in range(common_length):
+        if str1[i] != str2[i]:
+            # Return the part of str2 that comes after the common prefix
+            return str2[i:]
+    
+    # If one string is a prefix of the other, return the suffix of str2
+    return str2[common_length:]
+
+def get_current_action():
+    collection = get_current_collection()
+    
+    suffix = get_suffix_difference(collection.name, collection_name)
+    
+    name = action_name + suffix
+    
+    return bpy.data.actions[name]    
+
+#__________________________________________ HELPER FUNCTIONS
+    
+
 def reset_obj(obj):
     obj.rotation_euler = (0,0,0)     
+    
+def reset_anim():
+    bpy.context.scene.frame_set(0)
+
+
 
 def delete_obj(obj):
     obj = bpy.data.objects[obj]
@@ -18,21 +77,28 @@ def delete_obj(obj):
     # Delete the object if it has no other users
     if obj.users == 0:
         bpy.data.objects.remove(obj)
+                
+# Function to check if the object is valid
+def is_object_valid(object_name):
+    return object_name in bpy.data.objects
 
-def reset_anim():
-    bpy.context.scene.frame_set(0)
 
 def remove_camera():
-    if is_object_valid(cam_pivot_object_name):
-        delete_obj(cam_pivot_object_name)
-    if is_object_valid(camera_object_name):
-        delete_obj(camera_object_name)
-    if is_object_valid(curve_object_name):
-        delete_obj(curve_object_name)
+    cam_pivot = get_current_camera_pivot()
+    camera = get_current_camera()
+    
+    if cam_pivot is not None:
+        delete_obj(cam_pivot.name)
+
+    if camera is not None:
+        delete_obj(camera.name)
 
 def create_cam_pivot():
+    collection = get_current_collection()
+    
     # Create an empty object
-    bpy.ops.object.empty_add(location=bpy.data.objects[pivot_object_name].location)  # Location of the other pivot
+    bpy.ops.object.empty_add(location=bpy.context.object.location)  # Location of the other pivot
+    
     empty_obj = bpy.context.object
 
     empty_obj.name = cam_pivot_object_name
@@ -41,8 +107,8 @@ def create_cam_pivot():
     for col in empty_obj.users_collection:
         col.objects.unlink(empty_obj)  
     
-    bpy.data.collections[collection_name].objects.link(empty_obj)
-
+    collection.objects.link(empty_obj)
+    
     return empty_obj
 
 def make_obj_active(obj):
@@ -50,9 +116,11 @@ def make_obj_active(obj):
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
 
-def setup_spincamera():
+def setup_spincamera():  
     # camera that will rotate around the object
     create_camera()
+    
+    camera = get_current_camera()
 
     # the pivot, parent of the camera
     pivot = create_cam_pivot()
@@ -60,36 +128,38 @@ def setup_spincamera():
     if pivot.animation_data is None:
         pivot.animation_data_create()
     
-    pivot.animation_data.action = bpy.data.actions[action_name]
+    pivot.animation_data.action = get_current_action()
 
     # TODO: temp change
     # radius = get_track_radius(obj)
     # create_bezier_circle(radius, obj.location)
     radius = 5
-    bpy.data.objects[camera_object_name].location = pivot.location + Vector((radius, 0, 0))
+    camera.location = pivot.location + Vector((radius, 0, 0))
 
     # set the pivot point as the parent so that the rotation is the same
-    bpy.data.objects[camera_object_name].parent = pivot
+    camera.parent = pivot
 
     set_camera_track(pivot)
 
-    make_obj_active(pivot)
+    make_obj_active(get_current_pivot())
 
 
 def setup_spinobject():
     create_camera()
 
-    pivot = bpy.data.objects[pivot_object_name] 
+    camera = get_current_camera()
+
+    pivot = get_current_pivot()
 
     if pivot.animation_data is None:
         pivot.animation_data_create()
 
-    pivot.animation_data.action = bpy.data.actions[action_name]   
+    pivot.animation_data.action = get_current_action() 
 
     # TODO: temp change
     #radius = get_track_radius(obj)
     radius = 5
-    bpy.data.objects[camera_object_name].location = pivot.location + Vector((radius, 0, 0)) 
+    camera.location = pivot.location + Vector((radius, 0, 0)) 
 
     set_camera_track(pivot)
 
@@ -99,7 +169,7 @@ def setup_spinobject():
 def add_keyframes():
     spin_settings = bpy.context.scene.spin_settings
     num_frames = (spin_settings.nr_frames)
-    action = bpy.data.actions[action_name]
+    action = get_current_action()
     
     # offset is the offset of the start frame of the animation
     offset = int(spin_settings.start_frame)
@@ -124,7 +194,7 @@ def add_keyframes():
     bpy.context.scene.frame_end = num_frames + offset
 
 def remove_keyframes():
-    action = bpy.data.actions[action_name]
+    action = get_current_action()
 
     fcurve = action.fcurves.find("rotation_euler", index=2)
     if fcurve is None:
@@ -133,14 +203,9 @@ def remove_keyframes():
         fcurve.keyframe_points.clear()
 
 
-
-# Function to check if the object is valid
-def is_object_valid(object_name):
-    return object_name in bpy.data.objects
-
 def set_camera_track(target):
 
-    camera_object = bpy.data.objects[camera_object_name]
+    camera_object = get_current_camera()
     # Add a 'Track To' constraint to the camera
     track_to = camera_object.constraints.new(type='TRACK_TO')
 
@@ -152,7 +217,7 @@ def set_camera_track(target):
     track_to.up_axis = 'UP_Y'                   # Y axis is considered up
 
 def get_camera_information():
-    camera_object = bpy.data.objects[camera_object_name]
+    camera_object = get_current_camera()
 
     render_settings = bpy.context.scene.render
 
@@ -168,7 +233,7 @@ def get_camera_information():
     return (aspect_ratio_correction, sensor_width_half, sensor_height_half)
 
 def get_track_radius(obj):
-    camera_object = bpy.data.objects[camera_object_name]
+    camera_object = get_current_camera()
 
 
     (aspect_ratio_correction, sensor_width_half, sensor_height_half) = get_camera_information()
@@ -188,6 +253,11 @@ def create_camera():
     selected_objects = bpy.context.selected_objects
     active_objects = bpy.context.view_layer.objects.active
 
+    # get the collection name from the collection of the current selected object
+    collection = get_current_collection()
+    collection_name = collection.name
+    
+
     bpy.ops.object.camera_add()
     camera_object = bpy.context.active_object
 
@@ -195,9 +265,10 @@ def create_camera():
     camera_object.data.name = camera_object_name
 
     for col in camera_object.users_collection:
-        col.objects.unlink(camera_object)    
+        col.objects.unlink(camera_object)   
+           
         
-    bpy.data.collections[collection_name].objects.link(camera_object)
+    collection.objects.link(camera_object)
 
     # Restore the selection and active object
     for obj in selected_objects:
@@ -206,63 +277,6 @@ def create_camera():
     bpy.context.view_layer.objects.active = active_objects
     if active_objects:
         active_objects.select_set(True)
+        
 
-def create_bezier_circle(radius, origin):
-
-    selected_objects = bpy.context.selectable_objects
-    active_objects = bpy.context.view_layer.objects.active
-
-    # Calculate control points
-    control_point = radius * (4 * (math.sqrt(2) - 1) / 3)
-
-    # Create a new Bezier curve
-    curve_data = bpy.data.curves.new('BezierCircle', type='CURVE')
-    curve_data.dimensions = '3D'
-    curve_data.resolution_u = 64
-
-    # Create a new object with the curve data
-    curve_object = bpy.data.objects.new('BezierCircle', curve_data)
-    bpy.context.collection.objects.link(curve_object)
-
-    # Create a spline for the Bezier curve
-    spline = curve_data.splines.new('BEZIER')
-    spline.bezier_points.add(3)  # Total 4 points for a circle
-
-    points = spline.bezier_points
-
-    # Define the points for the circle
-    points[0].co = (radius, 0.0, 0.0)
-    points[0].handle_right = (radius, control_point, 0.0)
-    points[0].handle_left = (radius, -control_point, 0.0)
-
-    points[1].co = (0.0, radius, 0.0)
-    points[1].handle_right = (-control_point, radius, 0.0)
-    points[1].handle_left = (control_point, radius, 0.0)
-
-    points[2].co = (-radius, 0.0, 0.0)
-    points[2].handle_right = (-radius, -control_point, 0.0)
-    points[2].handle_left = (-radius, control_point, 0.0)
-
-    points[3].co = (0.0, -radius, 0.0)
-    points[3].handle_right = (control_point, -radius, 0.0)
-    points[3].handle_left = (-control_point, -radius, 0.0)
-
-    # Set the origin of the curve
-    curve_object.location = origin
-
-    curve_object.name = curve_object_name
-    curve_object.data.name = curve_object_name
-
-    # Close the spline to make it cyclic
-    spline.use_cyclic_u = True
-
-    # Restore the selection and active object
-    for obj in selected_objects:
-        obj.select_set(True)
-
-    bpy.context.view_layer.objects.active = active_objects
-    if active_objects:
-        active_objects.select_set(True)
-
-    return curve_object
 

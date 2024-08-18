@@ -4,7 +4,6 @@ from ..naming_convetions import *
 from ..helper_functions import *
 from ..properties import update_movement_type
 
-from ..settings.current_settings import list_current_settings, previous_settings, update_properties
 
 def create_action():
     # Create a new action
@@ -101,8 +100,6 @@ def create_copy_and_hide():
                 
     return new_collection
 
-def add_settings(name):
-    list_current_settings[name] = previous_settings
 
 class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     bl_idname = "object.spin_wiz_setup"
@@ -112,11 +109,9 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     def execute(self, context):
         collection = create_copy_and_hide()
         
-        add_settings(collection.name)
-        
         create_action()
-
-        update_properties()             
+        
+        update_movement_type(self, context)
 
         return {"FINISHED"}
 

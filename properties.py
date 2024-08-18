@@ -8,8 +8,6 @@ from .lighting_setup.lighting_setup import *
 
 from .stage_setup.stage_setup import *
 
-from .settings.current_settings import *
-
 from .settings.settings_defaults import *
 
 #____________________________ FUNCTIONS RETURNING ITEMS
@@ -68,15 +66,17 @@ def update_movement_type(self, context):
     if spin_settings.movement_type == "object":
         setup_spinobject()
         # this removes the keyframes from the other object
-        if is_object_valid(cam_pivot_object_name) :
-            bpy.data.objects[cam_pivot_object_name].animation_data.action = None
+        
+        pivot = get_current_camera_pivot()
+        if pivot is not None:
+            pivot.animation_data.action = None
     else:
         setup_spincamera()  
 
-        if is_object_valid(pivot_object_name):
-            bpy.data.objects[pivot_object_name].animation_data.action = None
+        pivot = get_current_pivot()
+        if pivot is not None:
+            pivot.animation_data.action = None
 
-    update_current_settings()
     
 
 
@@ -86,7 +86,6 @@ def update_adjust_keyframes(self, context):
     add_keyframes()
     update_movement_type(self, context)
 
-    update_current_settings()
 
 
 
@@ -95,7 +94,6 @@ def update_adjust_keyframes(self, context):
 def update_nr_frames(self, context):
     self.nr_frames = int(360 / int(self.degrees)) 
 
-    update_current_settings()   
 
 
 
@@ -103,9 +101,6 @@ def update_start_frame(self, context):
     context.scene.frame_start = self.start_frame
     remove_keyframes()
     add_keyframes()
-
-    update_current_settings()
-
 
 
 def slow_bezier(self, context):
@@ -144,7 +139,6 @@ def update_interpolation(self, context):
             elif item[4] == 2: 
                 return  
             
-    update_current_settings()
 
 def update_lighting(self, context):
     if self.add_lighting_setup:
@@ -152,15 +146,12 @@ def update_lighting(self, context):
     else:
         reset_world()
 
-    update_current_settings()
-
 def update_stage(self, context):
     if self.add_stage:
         import_stage()
     else:
         reset_stage()
 
-    update_current_settings()
 
 def update_camera_height(self, context):
     cam_obj = get_current_camera(context)
