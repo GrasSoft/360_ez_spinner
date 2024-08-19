@@ -101,7 +101,7 @@ def panel_camera_options(panel, layout):
                         
     # camera settings
     
-    options.label(text="Current: " + get_current_camera(bpy.context).name)
+    options.label(text="Current: " + get_current_camera().name)
     
     options.prop(spin_settings, "camera_height", text="Camera Height")
 
@@ -223,7 +223,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         # documentation button
         documentation(self, layout)   
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output]
+class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select]
 
 def register():
     import_custom_icons()

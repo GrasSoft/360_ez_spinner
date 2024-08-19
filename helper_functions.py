@@ -134,7 +134,8 @@ def setup_spincamera():
     # radius = get_track_radius(obj)
     # create_bezier_circle(radius, obj.location)
     radius = 5
-    camera.location = pivot.location + Vector((radius, 0, 0))
+    if camera.location.x < pivot.location.x + radius: 
+        camera.location = pivot.location + Vector((radius, 0, 0))
 
     # set the pivot point as the parent so that the rotation is the same
     camera.parent = pivot
@@ -159,7 +160,8 @@ def setup_spinobject():
     # TODO: temp change
     #radius = get_track_radius(obj)
     radius = 5
-    camera.location = pivot.location + Vector((radius, 0, 0)) 
+    if camera.location.x < pivot.location.x + radius: 
+        camera.location = pivot.location + Vector((radius, 0, 0)) 
 
     set_camera_track(pivot)
 
@@ -263,11 +265,15 @@ def create_camera():
 
     camera_object.name = camera_object_name
     camera_object.data.name = camera_object_name
+    
+    # add properties
+    camera_settings = bpy.context.scene.spin_settings
+    camera_object.data.lens = camera_settings.camera_focal_length
+    camera_object.location = (camera_settings.camera_distance, 0, camera_settings.camera_height)
 
     for col in camera_object.users_collection:
         col.objects.unlink(camera_object)   
            
-        
     collection.objects.link(camera_object)
 
     # Restore the selection and active object

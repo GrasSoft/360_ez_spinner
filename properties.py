@@ -154,7 +154,7 @@ def update_stage(self, context):
 
 
 def update_camera_height(self, context):
-    cam_obj = get_current_camera(context)
+    cam_obj = get_current_camera()
     
         
     if cam_obj is not None:
@@ -162,34 +162,17 @@ def update_camera_height(self, context):
 
 
 def update_camera_distance(self, context):
-    cam_obj = get_current_camera(context)
+    cam_obj = get_current_camera()
     
     if cam_obj is not None:
         cam_obj.location.x = self.camera_distance
         
 def update_camera_focal_length(self, context):
-    cam_obj = get_current_camera(context)
+    cam_obj = get_current_camera()
     
     if cam_obj is not None:
         cam_obj.data.lens = self.camera_focal_length
-        
-#____________________________ HELPERT FUNCTIONS
-
-def get_current_camera(context):
-    selected_obj = context.object
-    
-    current_collection = selected_obj.users_collection[0]
-    
-    cam_obj = None
-    
-    for obj in current_collection.objects:
-        if camera_object_name in obj.name:
-            cam_obj = obj
-            break
-        
-    return cam_obj
-
-            
+                   
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_properties(bpy.types.PropertyGroup):

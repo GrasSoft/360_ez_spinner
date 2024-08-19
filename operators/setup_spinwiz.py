@@ -84,7 +84,6 @@ def create_copy_and_hide():
             
                 if layer_collection:
                     layer_collection.hide_viewport = True
-            collection.hide_render = True
        
        
     # Get the default "Scene Collection"
@@ -96,7 +95,6 @@ def create_copy_and_hide():
         if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
             # Hide the object from the viewport using hide_set
             obj.hide_set(True)
-            obj.hide_render = True
                 
     return new_collection
 
