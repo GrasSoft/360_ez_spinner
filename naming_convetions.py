@@ -6,3 +6,4 @@ cam_pivot_object_name = "SpinWiz_Mvr_Cam"
 collection_name = "SpinWiz_MasterC"
 action_name = "SpinWiz_Action"
 
+link_to_docs = "https://www.wikipedia.com"

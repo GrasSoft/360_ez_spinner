@@ -24,7 +24,7 @@ from .icon_setup.custom_icons import *
 from .properties import *
 
 from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup
-from .operators.documentation import OBJECT_OT_documentation
+
 from .operators.output import *
 
 bl_info = {
@@ -95,8 +95,6 @@ def select_length_type(panel, layout):
 def panel_camera_options(panel, layout):
     options = layout
     
-    options.separator()
-    
     spin_settings = bpy.context.scene.spin_settings
                         
     # camera settings
@@ -119,9 +117,9 @@ def no_selection_warning(panel, layout):
 def documentation(panel, layout):
     # documentation button
     row = layout.row()
-    row.operator("object.documentation",
+    row.operator("wm.url_open",
                     text="Documentation",
-                    icon_value=preview_collections["documentation"]["documentation"].icon_id) 
+                    icon_value=preview_collections["documentation"]["documentation"].icon_id).url = link_to_docs
 
 def is_selection_valid():
     # Iterate through the selected objects
@@ -176,15 +174,24 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                     case 'motion_setup':
                         layout.separator()
 
+
+                        layout.label(text="Camera options")
                         # create the box where the options are
                         options = layout.box()
-
+                        
+                        # camera options
+                        panel_camera_options(self, options)
+                        
+                        
+                        layout.label(text="Animation options")
+                        
+                        options = layout.box()
+                        
                         select_movement_type(self, options)
                         select_interpolation_type(self, options)
                         select_length_type(self, options)
                         
-                        # camera options
-                        panel_camera_options(self, options)
+                       
                                         
                         add_stage = layout.box()
                         add_stage.prop(spin_settings, "add_stage")
@@ -223,7 +230,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         # documentation button
         documentation(self, layout)   
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_documentation, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select]
+class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render]
 
 def register():
     import_custom_icons()

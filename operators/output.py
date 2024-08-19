@@ -44,9 +44,20 @@ def panel_output_list(panel, layout):
         box = layout.box()
         for name in output_list:
             output_row(panel, box, name)
+            
+        layout.separator()
+        layout.operator("object.render", text="Render output queue")
         
 
-#_____________________________ CLASS
+#_____________________________ CLASSES
+
+class OBJECTE_OT_render(bpy.types.Operator):
+    bl_idname = "object.render"
+    bl_label = "Render the list"
+    bl_description = "Render the list of output objects with the appropriate settings"
+    
+    def execute(self, context):
+        return {"FINISHED"}
 
 class OBJECT_OT_select(bpy.types.Operator):
     bl_idname = "object.select"
