@@ -2,8 +2,6 @@ import bpy
 
 from ..helper_functions import *
 
-from .render import *
-
 # array where all the names of collections will be kept with output files wiht settings will be kept
 output_list = []
 
