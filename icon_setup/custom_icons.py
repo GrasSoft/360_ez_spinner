@@ -5,6 +5,9 @@ icons_path = ""
 
 preview_collections = {}
 
+
+    
+
 def interpolation_icons():
     previews = bpy.utils.previews.new()
     global icons_path

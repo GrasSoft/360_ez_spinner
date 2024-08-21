@@ -138,7 +138,7 @@ def update_interpolation(self, context):
                 slow_bezier(self, context)
             elif item[4] == 2: 
                 return  
-            
+#_________________________________ LIGHTING            
 
 def update_lighting(self, context):
     if self.add_lighting_setup:
@@ -146,13 +146,23 @@ def update_lighting(self, context):
     else:
         reset_world()
 
+#_________________________________ STAGE
+
 def update_stage(self, context):
     if self.add_stage:
         import_stage()
     else:
         reset_stage()
 
+def update_stage_height_offset(self, context):
+    modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
+    modifier["Socket_3"] = self.stage_height_offset             
 
+def update_stage_subdivision(self, context):
+    modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
+    modifier["Socket_5"] = self.stage_subdivision 
+
+#________________________________ CAMERA
 def update_camera_height(self, context):
     cam_obj = get_current_camera()
     
@@ -265,4 +275,20 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         description= "Sets the focal length of the camera",
         default= 50,
         update=update_camera_focal_length
+    )# type: ignore
+
+    stage_height_offset: bpy.props.FloatProperty(
+        name = "Stage Height Offset",
+        description= "Sets the height of the stage",
+        update=update_stage_height_offset,
+        min = 0,
+        default = 15,
+    )# type: ignore
+
+    stage_subdivision: bpy.props.IntProperty(
+        name = "Stage Subdivisions",
+        description = "Sets the number of subdivisions",
+        min = 1,
+        default = 2,
+        update = update_stage_subdivision,
     )# type: ignore

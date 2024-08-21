@@ -2,6 +2,8 @@ import bpy
 
 from ..helper_functions import *
 
+from .render import *
+
 # array where all the names of collections will be kept with output files wiht settings will be kept
 output_list = []
 
@@ -44,20 +46,43 @@ def panel_output_list(panel, layout):
         box = layout.box()
         for name in output_list:
             output_row(panel, box, name)
-            
+
+        # output path selection            
+        layout.separator()
+
+        box = layout.box()
+        split = box.split(factor=0.75)
+        col = split.column()
+        col.label(text=output_filepath)
+
+        col = split.column()
+        col.operator("wm.open_path", text="Output path")
+
+        # begin render output
         layout.separator()
         layout.operator("object.render", text="Render output queue")
         
 
 #_____________________________ CLASSES
 
-class OBJECTE_OT_render(bpy.types.Operator):
-    bl_idname = "object.render"
-    bl_label = "Render the list"
-    bl_description = "Render the list of output objects with the appropriate settings"
+class OBJECT_OT_open_path(bpy.types.Operator):
+    bl_idname = "wm.open_path"
+    bl_label = "Open Path"
+    bl_description = "Open path where the renders will be saved"
+
+    filepath: bpy.props.StringProperty(subtype="FILE_PATH")
     
     def execute(self, context):
-        return {"FINISHED"}
+        global output_filepath
+
+        output_filepath = self.filepath
+
+        return {'FINISHED'}
+    
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
 
 class OBJECT_OT_select(bpy.types.Operator):
     bl_idname = "object.select"

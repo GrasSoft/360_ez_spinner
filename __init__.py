@@ -27,6 +27,8 @@ from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup
 
 from .operators.output import *
 
+from .operators.render import *
+
 bl_info = {
     "name" : "360_spinner",
     "author" : "Cristian Cutitei",
@@ -192,27 +194,12 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                         select_length_type(self, options)
                         
                        
-                                        
-                        add_stage = layout.box()
-                        add_stage.prop(spin_settings, "add_stage")
+                        # stage setup
+                        panel_stage_setup(self, layout)                            
 
-                        if spin_settings.add_stage:
-                            add_stage.label(text="Stage Shape")                                           
+                        # lighting setup
+                        panel_lighting_setup(self, layout)
                         
-                        ligthing_setup_box = layout.box()
-                        ligthing_setup_box.prop(spin_settings, "add_lighting_setup")
-                        
-
-                        if spin_settings.add_lighting_setup:
-                            # thumbnail of the world used
-                            ligthing_setup_box.template_preview(bpy.context.scene.world)
-
-                            ligthing_setup_box.label(text=bpy.context.scene.world.name)
-
-                            ligthing_setup_box.prop(bpy.data.worlds[world_name].node_tree.nodes["Mapping"].inputs[2], "default_value", index=2, text="Rotation")
-
-                            ligthing_setup_box.prop(bpy.data.worlds[world_name].node_tree.nodes["Background"].inputs[1], "default_value", text="Strength")
-
                         layout.separator()
 
                         panel_operator_add_to_output(self, layout)
@@ -230,7 +217,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         # documentation button
         documentation(self, layout)   
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render]
+class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
 
 def register():
     import_custom_icons()

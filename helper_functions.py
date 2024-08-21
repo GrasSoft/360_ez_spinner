@@ -12,14 +12,25 @@ from .naming_convetions import *
 # this function gets the current collection based on the selected object
 def get_current_collection():
     return bpy.context.object.users_collection[0]
+
+def get_current_stage():
+    collection = get_current_collection()
+
+    for obj in collection.objects:
+        if stage_name in obj.name:
+            return obj
     
+    return None
+
 def get_current_camera():
     collection = get_current_collection()
         
     for obj in collection.objects:
         if camera_object_name in obj.name:
             return obj
-        
+
+    return None
+  
 def get_current_pivot():
     collection = get_current_collection()
         
@@ -27,6 +38,7 @@ def get_current_pivot():
         if pivot_object_name in obj.name:
             return obj
 
+    return None
 
 def get_current_camera_pivot():
     collection = get_current_collection()
@@ -34,6 +46,8 @@ def get_current_camera_pivot():
     for obj in collection.objects:
         if cam_pivot_object_name in obj.name:
             return obj
+
+    return None
 
 def get_suffix_difference(str1, str2):
     # Find the common prefix length
@@ -58,6 +72,34 @@ def get_current_action():
 
 #__________________________________________ HELPER FUNCTIONS
     
+def get_collection_origin(pivot):
+    x, y, z = 0,0,0
+
+    for obj in pivot.children:
+        x += obj.location.x
+        y += obj.location.y
+        z += obj.location.z
+    l = len(pivot.children)
+
+    return (x/l, y/l, z/l)
+
+# the min and max coordinates in any direction, return a tuple    
+def get_collection_bounding_box(pivot):
+    # Initialize min and max values using the first corner
+    min_corner = list(pivot.location)
+    max_corner = list(pivot.location)
+
+    for obj in pivot.children:
+        bounding_box = obj.bound_box
+
+        for corner in bounding_box:
+            for i in range(3):  # X, Y, Z axes
+                min_corner[i] = min(min_corner[i], corner[i])
+                max_corner[i] = max(max_corner[i], corner[i])
+
+    return (min_corner, max_corner)
+
+
 
 def reset_obj(obj):
     obj.rotation_euler = (0,0,0)     
