@@ -23,7 +23,7 @@ from .icon_setup.custom_icons import *
 
 from .properties import *
 
-from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup
+from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup 
 
 from .operators.output import *
 
@@ -40,7 +40,7 @@ bl_info = {
     "category" : "Generic"
 }
 
-
+current_pivot = None
 
 def menu_items(panel, layout):
     row = layout.row()
@@ -125,11 +125,15 @@ def documentation(panel, layout):
 
 def is_selection_valid():
     # Iterate through the selected objects
-    
-    for obj in bpy.context.selected_objects:
+
+    for obj in bpy.context.view_layer.objects.selected:
         if (obj.type == 'MESH' or obj.type == "EMPTY") : # and not collection_name in [col.name for col in obj.users_collection]:
+            # update the current context such that the UI reflects the selection
+
             return True
     return False
+
+
 
 def is_selection_setup():
     obj =  bpy.context.active_object
@@ -143,6 +147,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'SpinWiz'
+
 
     def draw_header(self, context: Context):
         self.layout.label(text="", icon_value=preview_collections["logo"]["logo"].icon_id)
@@ -164,60 +169,87 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                          text="Setup for Active Objects",
                          icon_value=preview_collections["logo"]["logo"].icon_id)
             else:
-                layout.separator()
+                global current_pivot
 
-                # Motion and Output menu selectors 
-                # menu_items(self, layout)
+                if current_pivot is None:
+                    current_pivot = get_current_pivot()
 
-                row = layout.row()
-                row.prop(spin_settings, "menu_options", expand=True)
+                if current_pivot is not None and bpy.context.view_layer.objects.active.name != current_pivot.name:
+                    layout.separator()
 
-                match spin_settings.menu_options:
-                    case 'motion_setup':
-                        layout.separator()
+                    row = layout.row(align=True)
+                    row.label(text="The current selection has changed, refresh")
+                    row.operator("object.refresh", icon="WORLD_DATA")
+            
+                else:
+                    layout.separator()
+
+                    # Motion and Output menu selectors 
+                    # menu_items(self, layout)
+
+                    row = layout.row()
+                    row.prop(spin_settings, "menu_options", expand=True)
+
+                    match spin_settings.menu_options:
+                        case 'motion_setup':
+                            layout.separator()
 
 
-                        layout.label(text="Camera options")
-                        # create the box where the options are
-                        options = layout.box()
+                            layout.label(text="Camera options")
+                            # create the box where the options are
+                            options = layout.box()
+                            
+                            # camera options
+                            panel_camera_options(self, options)
+                            
+                            
+                            layout.label(text="Animation options")
+                            
+                            options = layout.box()
+                            
+                            select_movement_type(self, options)
+                            select_interpolation_type(self, options)
+                            select_length_type(self, options)
+                            
                         
-                        # camera options
-                        panel_camera_options(self, options)
-                        
-                        
-                        layout.label(text="Animation options")
-                        
-                        options = layout.box()
-                        
-                        select_movement_type(self, options)
-                        select_interpolation_type(self, options)
-                        select_length_type(self, options)
-                        
-                       
-                        # stage setup
-                        panel_stage_setup(self, layout)                            
+                            # stage setup
+                            panel_stage_setup(self, layout)                            
 
-                        # lighting setup
-                        panel_lighting_setup(self, layout)
-                        
-                        layout.separator()
+                            # lighting setup
+                            panel_lighting_setup(self, layout)
+                            
+                            layout.separator()
 
-                        panel_operator_add_to_output(self, layout)
+                            panel_operator_add_to_output(self, layout)
 
-                        layout.separator()
+                            layout.separator()
 
-                    case 'output_setup':
-                        layout.separator()
-                        layout.label(text="Output menu")
-                        
-                        panel_output_list(self, layout)
+                        case 'output_setup':
+                            layout.separator()
+                            layout.label(text="Output menu")
+                            
+                            panel_output_list(self, layout)
 
-                        layout.separator()
+                            layout.separator()
 
         # documentation button
         documentation(self, layout)   
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
+class OBJECT_OT_refresh(bpy.types.Operator):
+    bl_idname="object.refresh"
+    bl_description="refreshes the entire panel"
+    bl_label="Refresh"
+
+    def execute(self, context):
+        global current_pivot
+        
+        update_context()
+
+        current_pivot = get_current_pivot()
+
+        return {"FINISHED"}
+
+class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path, OBJECT_OT_refresh]
 
 def register():
     import_custom_icons()

@@ -5,22 +5,20 @@ from ..helper_functions import *
 # array where all the names of collections will be kept with output files wiht settings will be kept
 output_list = []
 
-#____________________________ HELPER FUNCTIONS
-
-def get_current_collection(context):
-    selected_obj = context.object
-    
-    if selected_obj is not None:
-        return selected_obj.users_collection[0].name
-
 
 #____________________________ PANEL FUNCTIONS
 
 def output_row(panel, layout, name):
+    collection = get_current_collection()
+
     row = layout.row()    
     
     col = row.column()
-    op = col.operator("object.select", text=name)
+
+    if collection.name == name:
+        op = col.operator("object.select", text=name, icon="CHECKMARK")
+    else:
+        op = col.operator("object.select", text=name)
     op.name = name
     
     col = row.column()
@@ -60,6 +58,59 @@ def panel_output_list(panel, layout):
         layout.separator()
         layout.operator("object.render", text="Render output queue")
         
+#_____________________________ HELPER FUNCTIONS
+
+def update_context():
+    collection = get_current_collection()
+
+    # update the settings such that htey reflect the selection
+    spin_settings = bpy.context.scene.spin_settings
+    spin_settings.menu_options = "motion_setup"
+    
+    # select camera
+    camera = get_current_camera()
+            
+    spin_settings.camera_height = camera.location.z
+    spin_settings.camera_distance = camera.location.x
+    spin_settings.camera_focal_length = camera.data.lens
+
+    # select stage
+    stage = get_current_stage()
+
+    if stage is not None:
+        spin_settings.has_stage = (stage is not None)
+        spin_settings.stage_height_offset = stage.modifiers.get("SpinWiz_StageCTRL")["Socket_3"]
+        spin_settings.stage_subdivision = stage.modifiers.get("SpinWiz_StageCTRL")["Socket_5"]
+
+    
+    # Hide all collections except the current one, make that vissible
+    for coll in bpy.context.scene.collection.children:
+        if collection != coll:
+            # Hide the collection in the active view layer
+            for view_layer in bpy.context.scene.view_layers:
+                layer_collection = view_layer.layer_collection.children.get(coll.name)
+            
+                if layer_collection:
+                    layer_collection.hide_viewport = True
+        else:
+            for view_layer in bpy.context.scene.view_layers:
+                layer_collection = view_layer.layer_collection.children.get(coll.name)
+            
+                if layer_collection:
+                    layer_collection.hide_viewport = False
+    
+    
+    # Get the default "Scene Collection"
+    scene_collection = bpy.context.scene.collection
+
+    # Iterate through all objects in the scene
+    for obj in bpy.context.scene.objects:
+        # Check if the object is only in the "Scene Collection" and not in any other collections
+        if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
+            # Hide the object from the viewport using hide_set
+            obj.hide_set(True)
+            
+
 
 #_____________________________ CLASSES
 
@@ -103,47 +154,7 @@ class OBJECT_OT_select(bpy.types.Operator):
         if pivot is not None:
             make_obj_active(pivot)
             
-        # update the settings such that htey reflect the selection
-        spin_settings = context.scene.spin_settings
-        spin_settings.menu_options = "motion_setup"
-        
-        # select camera
-        camera = None
-        for obj in collection.objects:
-            if camera_object_name in obj.name:
-                camera = obj
-                
-        spin_settings.camera_height = camera.location.z
-        spin_settings.camera_distance = camera.location.x
-        spin_settings.camera_focal_length = camera.data.lens
-        
-        # Hide all collections except the current one, make that vissible
-        for coll in bpy.context.scene.collection.children:
-            if collection != coll:
-                # Hide the collection in the active view layer
-                for view_layer in bpy.context.scene.view_layers:
-                    layer_collection = view_layer.layer_collection.children.get(coll.name)
-                
-                    if layer_collection:
-                        layer_collection.hide_viewport = True
-            else:
-                for view_layer in bpy.context.scene.view_layers:
-                    layer_collection = view_layer.layer_collection.children.get(coll.name)
-                
-                    if layer_collection:
-                        layer_collection.hide_viewport = False
-        
-        
-        # Get the default "Scene Collection"
-        scene_collection = bpy.context.scene.collection
-    
-        # Iterate through all objects in the scene
-        for obj in bpy.context.scene.objects:
-            # Check if the object is only in the "Scene Collection" and not in any other collections
-            if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
-                # Hide the object from the viewport using hide_set
-                obj.hide_set(True)
-            
+       
         
         return {"FINISHED"}            
 
@@ -156,8 +167,9 @@ class OBJECT_OT_output(bpy.types.Operator):
 
         global output_list
         
-        if get_current_collection(context) not in output_list:
-            output_list.append(get_current_collection(context))        
+        collection_name = get_current_collection().name
+        if collection_name not in output_list:
+            output_list.append(collection_name)        
         
         return {"FINISHED"}
     

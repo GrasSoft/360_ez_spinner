@@ -9,4 +9,4 @@ stage_name = "SpinWiz_Stage"
 
 link_to_docs = "https://www.wikipedia.com"
 
-output_filepath = "/home"
+output_filepath = "/tmp"

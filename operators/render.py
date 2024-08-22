@@ -6,6 +6,18 @@ from ..naming_convetions import *
 from .output import output_list
 
 def hide_render_others(name):
+    # hide the objects first
+    scene_collection = bpy.context.scene.collection
+    for obj in bpy.context.scene.objects:
+        # Get the collections that the object is in (excluding the scene collection)
+        collections = [col for col in obj.users_collection if col != scene_collection]
+
+        # If the object is only in the scene collection (no other collections), hide it from render
+        if not collections:
+            obj.hide_render = True
+
+    # hide the other collections and make the current one visible
+
     for collection in bpy.data.collections:
         if collection.name != name:
             collection.hide_render = True
@@ -17,7 +29,6 @@ def set_current_camera_as_render(name):
 
     for obj in collection.objects:
         if camera_object_name in obj.name:
-            print("Nigger")
             bpy.context.scene.camera = obj
             break
 
@@ -30,9 +41,11 @@ def run_subprocess(name):
         bpy.ops.wm.save_mainfile()
     else:
         # Save the current file under a new name
-        bpy.ops.wm.save_as_mainfile()
+        bpy.ops.wm.save_as_mainfile(filepath="/home/gras/blender")
 
-    output_path = "/tmp/" + name + "/" + name + "_"
+    global output_filepath
+    output_path = output_filepath + "/" + name + "/" + name + "_"
+    
     file_format = "PNG"
     render_command = [
         bpy.app.binary_path,   # Path to Blender executable

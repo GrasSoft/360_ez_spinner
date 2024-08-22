@@ -10,6 +10,8 @@ from .stage_setup.stage_setup import *
 
 from .settings.settings_defaults import *
 
+from .operators.output import update_context
+
 #____________________________ FUNCTIONS RETURNING ITEMS
 
 def interpolation_items(self, context):
@@ -137,7 +139,8 @@ def update_interpolation(self, context):
             if item[4] == 1:
                 slow_bezier(self, context)
             elif item[4] == 2: 
-                return  
+                return
+
 #_________________________________ LIGHTING            
 
 def update_lighting(self, context):
@@ -292,3 +295,4 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         default = 2,
         update = update_stage_subdivision,
     )# type: ignore
+

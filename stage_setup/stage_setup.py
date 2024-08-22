@@ -30,12 +30,16 @@ def import_stage():
      
 
 def link_stage_to_collection():
-    object = bpy.data.objects[stage_name]
+    object = None
+    for obj in bpy.context.scene.objects:
+        if len(obj.users_collection) == 1 and obj.users_collection[0] == bpy.context.scene.collection and stage_name in obj.name:
+            object = obj
+            break
 
     for col in object.users_collection:
         col.objects.unlink(object)  
 
-    bpy.context.scene.collection.children[collection_name].objects.link(object)   
+    get_current_collection().objects.link(object)   
 
 def add_camera():
     object = get_current_stage() 

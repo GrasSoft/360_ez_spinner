@@ -175,7 +175,7 @@ def setup_spincamera():
     # TODO: temp change
     # radius = get_track_radius(obj)
     # create_bezier_circle(radius, obj.location)
-    radius = 5
+    radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
         camera.location = pivot.location + Vector((radius, 0, 0))
 
@@ -201,7 +201,7 @@ def setup_spinobject():
 
     # TODO: temp change
     #radius = get_track_radius(obj)
-    radius = 5
+    radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
         camera.location = pivot.location + Vector((radius, 0, 0)) 
 
@@ -248,7 +248,6 @@ def remove_keyframes():
 
 
 def set_camera_track(target):
-
     camera_object = get_current_camera()
     # Add a 'Track To' constraint to the camera
     track_to = camera_object.constraints.new(type='TRACK_TO')
@@ -276,13 +275,15 @@ def get_camera_information():
 
     return (aspect_ratio_correction, sensor_width_half, sensor_height_half)
 
-def get_track_radius(obj):
+def get_track_radius():
     camera_object = get_current_camera()
-
 
     (aspect_ratio_correction, sensor_width_half, sensor_height_half) = get_camera_information()
 
-    dimension = max(obj.dimensions)/2
+    (min_corner, max_corner) = get_collection_bounding_box(get_current_pivot())
+
+    dimensions = [max_corner[0] - min_corner[0], max_corner[1] - min_corner[1], max_corner[2] - min_corner[2]]
+    dimension = max(dimensions)/2
     # This only applies in the case wehre the aspect ratio of the camera makes it so the height is lower than the, width (TODO check different cases)
     # Increase the margins of the object by increasing the dimensions of the object with a certain amount
     dimension += 0.5
