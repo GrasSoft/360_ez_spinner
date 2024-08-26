@@ -172,6 +172,8 @@ def update_lighting(self, context):
 def update_stage(self, context):
     if self.add_stage:
         import_stage()
+        update_stage_height_offset(self, context)
+        update_stage_subdivision(self, context)
     else:
         reset_stage()
 
@@ -186,6 +188,7 @@ def update_stage_subdivision(self, context):
         modifier["Socket_5"] = self.stage_subdivision 
 
 #________________________________ CAMERA
+
 def update_camera_height(self, context):
     cam_obj = get_current_camera()
     
