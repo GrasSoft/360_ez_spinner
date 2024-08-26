@@ -71,7 +71,34 @@ def get_current_action():
     return bpy.data.actions[name]    
 
 #__________________________________________ HELPER FUNCTIONS
+
+def hide_anything_but(new_collection):
     
+    # Hide all collections except the new one
+    for collection in bpy.context.scene.collection.children:
+        # Hide the collection in the active view layer
+        for view_layer in bpy.context.scene.view_layers:
+            layer_collection = view_layer.layer_collection.children.get(collection.name)
+        
+            if layer_collection:
+                if collection != new_collection:
+                    layer_collection.hide_viewport = True
+                else:
+                    layer_collection.hide_viewport = False
+            
+            
+       
+       
+    # Get the default "Scene Collection"
+    scene_collection = bpy.context.scene.collection
+   
+    # Iterate through all objects in the scene
+    for obj in bpy.context.scene.objects:
+        # Check if the object is only in the "Scene Collection" and not in any other collections
+        if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
+            # Hide the object from the viewport using hide_set
+            obj.hide_set(True)
+ 
 def get_collection_origin(pivot):
     x, y, z = 0,0,0
 
@@ -210,8 +237,9 @@ def setup_spinobject():
     make_obj_active(pivot)
 
  
-def add_keyframes():
-    spin_settings = bpy.context.scene.spin_settings
+def add_keyframes(): 
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
+    
     num_frames = (spin_settings.nr_frames)
     action = get_current_action()
     
@@ -259,6 +287,7 @@ def set_camera_track(target):
     track_to.track_axis = 'TRACK_NEGATIVE_Z'    # Camera looks along the -Z axis
     track_to.up_axis = 'UP_Y'                   # Y axis is considered up
 
+
 def get_camera_information():
     camera_object = get_current_camera()
 
@@ -274,6 +303,7 @@ def get_camera_information():
     sensor_height_half = camera_object.data.sensor_height/2/1000
 
     return (aspect_ratio_correction, sensor_width_half, sensor_height_half)
+
 
 def get_track_radius():
     camera_object = get_current_camera()
@@ -294,6 +324,8 @@ def get_track_radius():
     return max(distance_height, distance_width)
 
 def create_camera():
+    camera_settings = getattr(bpy.context.scene, get_current_collection().name)
+    
     # Store references to the currently selected and active objects
     selected_objects = bpy.context.selected_objects
     active_objects = bpy.context.view_layer.objects.active
@@ -310,7 +342,7 @@ def create_camera():
     camera_object.data.name = camera_object_name
     
     # add properties
-    camera_settings = bpy.context.scene.spin_settings
+    
     camera_object.data.lens = camera_settings.camera_focal_length
     camera_object.location = (camera_settings.camera_distance, 0, camera_settings.camera_height)
 

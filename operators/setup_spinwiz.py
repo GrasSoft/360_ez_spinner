@@ -2,7 +2,7 @@ import bpy
 
 from ..naming_convetions import *
 from ..helper_functions import *
-from ..properties import update_movement_type
+from ..properties import update_movement_type, SpinWiz_collection_properties
  
 
 def create_action():
@@ -75,26 +75,7 @@ def create_copy_and_hide():
         # Create a new object by copying the original
         duplicate_object_with_hierarchy(original_obj, parent=pivot, collection=new_collection) 
                
-    # Hide all collections except the new one
-    for collection in bpy.context.scene.collection.children:
-        if collection != new_collection:
-            # Hide the collection in the active view layer
-            for view_layer in bpy.context.scene.view_layers:
-                layer_collection = view_layer.layer_collection.children.get(collection.name)
-            
-                if layer_collection:
-                    layer_collection.hide_viewport = True
-       
-       
-    # Get the default "Scene Collection"
-    scene_collection = bpy.context.scene.collection
-   
-    # Iterate through all objects in the scene
-    for obj in bpy.context.scene.objects:
-         # Check if the object is only in the "Scene Collection" and not in any other collections
-        if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
-            # Hide the object from the viewport using hide_set
-            obj.hide_set(True)
+    hide_anything_but(new_collection)
                 
     return new_collection
 
@@ -107,9 +88,13 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     def execute(self, context):
         collection = create_copy_and_hide()
         
+        # order matters
+        setattr(bpy.types.Scene, get_current_collection().name, bpy.props.PointerProperty(type=SpinWiz_collection_properties))
+
         create_action()
         
         update_movement_type(self, context)
+        
 
         return {"FINISHED"}
 

@@ -56,10 +56,10 @@ def menu_items(self, context):
     ]
 #____________________________ UPDATE FUNCTIONS
 
-
 def update_movement_type(self, context):
     scene = context.scene
-    spin_settings = scene.spin_settings
+    current_collection = get_current_collection()
+    spin_settings = getattr(scene, get_current_collection().name)
     
     remove_camera()
     reset_anim()
@@ -78,25 +78,27 @@ def update_movement_type(self, context):
         pivot = get_current_pivot()
         if pivot is not None:
             pivot.animation_data.action = None
-
-    
-
+            
 
 def update_adjust_keyframes(self, context):
     # these all work on actions
     remove_keyframes()
     add_keyframes()
-    update_movement_type(self, context)
-
-
-
-
+    
+    # update_movement_type(self, context)
+    
+    action = get_current_action()
+    if self.movement_type == "object":
+        pivot = get_current_pivot()
+        pivot.animation_data.action = action 
+    else:
+        cam_pivot = get_current_camera_pivot()
+        cam_pivot.animation_data.action = action
+        
 
 # give degrees, update nr of frames
 def update_nr_frames(self, context):
     self.nr_frames = int(360 / int(self.degrees)) 
-
-
 
 
 def update_start_frame(self, context):
@@ -106,7 +108,7 @@ def update_start_frame(self, context):
 
 
 def slow_bezier(self, context):
-    action = bpy.data.actions[action_name]
+    action = get_current_action()
     fcurve = action.fcurves.find("rotation_euler", index=2)
     end_frame = fcurve.keyframe_points[1]
 
@@ -185,16 +187,11 @@ def update_camera_focal_length(self, context):
     
     if cam_obj is not None:
         cam_obj.data.lens = self.camera_focal_length
+        
                    
 #____________________________ PROPERTY CLASSES
 
-class SpinWiz_properties(bpy.types.PropertyGroup):
-    menu_options: bpy.props.EnumProperty(
-        name="Menu Options",
-        items=menu_items,
-        default=0
-    )# type: ignore
-
+class SpinWiz_collection_properties(bpy.types.PropertyGroup):
     degrees: bpy.props.EnumProperty(
         name="Nr of degrees",
         description="Number of degrees between frames",
@@ -240,7 +237,6 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         update=update_movement_type,
         default=default_movement_type
     ) # type: ignore
-
 
     interpolation_type: bpy.props.EnumProperty(
         name= "Interpolation",
@@ -294,5 +290,31 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         min = 1,
         default = 2,
         update = update_stage_subdivision,
+    )# type: ignore    
+
+
+
+
+
+
+
+
+
+
+class SpinWiz_properties(bpy.types.PropertyGroup):
+    menu_options: bpy.props.EnumProperty(
+        name="Menu Options",
+        items=menu_items,
+        default=0
     )# type: ignore
 
+    enable_render: bpy.props.BoolProperty(
+        name = "Enable Render",
+        description = "Enable render button after the last render is done",
+        default= True,
+    ) # type: ignore
+    
+    current_rendered_collection: bpy.props.StringProperty(
+        name = "Collection Name",
+        description = "Name of current collection being rendered",
+    ) # type: ignore

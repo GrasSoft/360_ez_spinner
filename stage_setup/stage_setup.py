@@ -55,16 +55,16 @@ def set_origin():
     stage.location.z = min_corner[2]
 
 def reset_stage():
-    if stage_name in bpy.data.objects:
-        bpy.data.objects.remove(bpy.data.objects[stage_name])
+    stage =  get_current_stage()
+    if stage is not None:
+        bpy.data.objects.remove(stage)
 
 #______________________________________________ PANEL FUNCTIONS 
 
 def panel_stage_setup(panel, layout):
-    spin_settings = bpy.context.scene.spin_settings
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
 
-    add_stage = layout.box()
-    add_stage.prop(spin_settings, "add_stage")
+    add_stage = layout
 
     if spin_settings.add_stage:
         add_stage.label(text="Stage Shape")

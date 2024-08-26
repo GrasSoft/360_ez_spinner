@@ -9,6 +9,9 @@ output_list = []
 #____________________________ PANEL FUNCTIONS
 
 def output_row(panel, layout, name):
+    scene = bpy.context.scene
+    spin_settings = scene.spin_settings
+
     collection = get_current_collection()
 
     row = layout.row()    
@@ -16,9 +19,16 @@ def output_row(panel, layout, name):
     col = row.column()
 
     if collection.name == name:
-        op = col.operator("object.select", text=name, icon="CHECKMARK")
+        if spin_settings.current_rendered_collection != name:
+            op = col.operator("object.select", text=name, depress=True)
+        else:
+            op = col.operator("object.select", text=name, depress=True, icon=get_render_progress_icon())
     else:
-        op = col.operator("object.select", text=name)
+        if spin_settings.current_rendered_collection != name:
+            op = col.operator("object.select", text=name)
+        else:
+            op = col.operator("object.select", text=name, icon=get_render_progress_icon())
+
     op.name = name
     
     col = row.column()
@@ -32,7 +42,7 @@ def panel_operator_add_to_output(panel, layout):
                     text="Send to output queue",)
 
 def panel_output_list(panel, layout):
-    
+    spin_settings = bpy.context.scene.spin_settings    
     
     global output_list
     
@@ -56,9 +66,38 @@ def panel_output_list(panel, layout):
 
         # begin render output
         layout.separator()
-        layout.operator("object.render", text="Render output queue")
+        row = layout.row()
+        op = row.operator("object.render", text="Render output queue")
+        row.enabled = spin_settings.enable_render
         
 #_____________________________ HELPER FUNCTIONS
+
+def get_render_progress_icon():
+    scene = bpy.context.scene
+    
+    print("nigger")
+    
+    # Get the start, end, and current frames
+    start_frame = scene.frame_start
+    end_frame = scene.frame_end
+    current_frame = scene.frame_current
+    
+    # Calculate the total number of frames
+    total_frames = end_frame - start_frame + 1
+    
+    # Determine the progress range based on the current frame
+    if current_frame < start_frame + 0.25 * total_frames:
+        # Less than a quarter of the way
+        return "OUTLINER_OB_CAMERA"
+    elif current_frame < start_frame + 0.5 * total_frames:
+        # Between a quarter and half of the way
+        return "RENDER_ANIMATION"
+    elif current_frame < start_frame + 0.75 * total_frames:
+        # Between half and three-quarters of the way
+        return "MODIFIER"
+    else:
+        # Between three-quarters and the end
+        return "FILE_TICK"
 
 def update_context():
     collection = get_current_collection()

@@ -40,7 +40,7 @@ bl_info = {
     "category" : "Generic"
 }
 
-current_pivot = None
+current_selection = None
 
 def menu_items(panel, layout):
     row = layout.row()
@@ -52,7 +52,8 @@ def menu_items(panel, layout):
     column.operator("object.documentation", text="Output", icon_value=preview_menu["output_menu"].icon_id)
 
 def select_movement_type(panel, layout):
-    spin_settings = bpy.context.scene.spin_settings
+    current_collection = get_current_collection()
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
 
     split = layout.split(factor=0.5)
     col = split.column()
@@ -61,7 +62,8 @@ def select_movement_type(panel, layout):
     col.prop(spin_settings, "movement_type", text="")
 
 def select_interpolation_type(panel, layout):
-    spin_settings = bpy.context.scene.spin_settings
+    current_collection = get_current_collection()
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
     
     row = layout.row(align=True)
     row.scale_x = 1.6
@@ -69,7 +71,9 @@ def select_interpolation_type(panel, layout):
     row.prop(spin_settings, "interpolation_type", expand=True, icon_only=True)
 
 def select_length_type(panel, layout):
-    spin_settings = bpy.context.scene.spin_settings
+    current_collection = get_current_collection()
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
+    
     options = layout
 
     row = options.row(align=True)
@@ -95,9 +99,13 @@ def select_length_type(panel, layout):
         options.label(text="This will generate "+ str(int(360 / int(spin_settings.degrees))) +" frames")
         
 def panel_camera_options(panel, layout):
-    options = layout
-    
-    spin_settings = bpy.context.scene.spin_settings
+    layout.label(text="Camera options")
+     
+    # create the box where the options are
+    options = layout.box()
+                                    
+    current_collection = get_current_collection()
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
                         
     # camera settings
     
@@ -125,21 +133,50 @@ def documentation(panel, layout):
 
 def is_selection_valid():
     # Iterate through the selected objects
-
+    correct_selection = True
+    
+    if is_selection_setup(bpy.context.active_object):
+        return True
+    
+    if len(bpy.context.view_layer.objects.selected) == 0:
+        return False
+    
     for obj in bpy.context.view_layer.objects.selected:
-        if (obj.type == 'MESH' or obj.type == "EMPTY") : # and not collection_name in [col.name for col in obj.users_collection]:
+        if not (obj.type == 'MESH') : # and not collection_name in [col.name for col in obj.users_collection]:
             # update the current context such that the UI reflects the selection
 
-            return True
+            correct_selection = False
+    return correct_selection
+
+
+def is_selection_setup(current_selection):
+    if current_selection is not None:
+        current_obj = current_selection
+        
+        # Traverse up the hierarchy until an object without a parent is found
+        while current_obj.parent is not None:
+            current_obj = current_obj.parent
+        
+        for name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name, stage_name]:
+            if name in current_obj.name:
+                return True
+        
     return False
 
+def is_camera(current_selection):
+    return current_selection.type == "CAMERA" or cam_pivot_object_name in current_selection.name
 
+def is_pivot(current_selection):
+    parent = current_selection
+    while parent.parent is not None:
+        parent = parent.parent
+        
+    return parent.type == "EMPTY" and pivot_object_name in parent.name
 
-def is_selection_setup():
-    obj =  bpy.context.active_object
-    for name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name]:
-        if name in obj.name:
-            return True
+def is_stage(current_selection):
+    return stage_name in current_selection.name
+        
+    
 
 class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_label = "SpinWiz"
@@ -155,54 +192,45 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
     def draw(self, context):
         scene = context.scene
         spin_settings = scene.spin_settings
-
+        
+        collection_settings = None
+        
+        current_selection = bpy.context.active_object
+        if collection_name in get_current_collection().name:
+            collection_settings = getattr(scene, get_current_collection().name)
+        
         layout = self.layout
+        
         layout.scale_y = 1.2
         
         # check if there are any selected objects (TODO: check if the selected object is an actual object)
         if not is_selection_valid():
             no_selection_warning(self, layout)      
         else:
-            if not is_selection_setup():
+            if not is_selection_setup(current_selection):
                 row = layout.row()
                 row.operator("object.spin_wiz_setup",
                          text="Setup for Active Objects",
                          icon_value=preview_collections["logo"]["logo"].icon_id)
             else:
-                global current_pivot
+                layout.separator()
 
-                if current_pivot is None:
-                    current_pivot = get_current_pivot()
+                # Motion and Output menu selectors 
+                # menu_items(self, layout)
 
-                if current_pivot is not None and bpy.context.view_layer.objects.active.name != current_pivot.name:
-                    layout.separator()
+                row = layout.row()
+                row.prop(spin_settings, "menu_options", expand=True)
 
-                    row = layout.row(align=True)
-                    row.label(text="The current selection has changed, refresh")
-                    row.operator("object.refresh", icon="WORLD_DATA")
-            
-                else:
-                    layout.separator()
-
-                    # Motion and Output menu selectors 
-                    # menu_items(self, layout)
-
-                    row = layout.row()
-                    row.prop(spin_settings, "menu_options", expand=True)
-
-                    match spin_settings.menu_options:
-                        case 'motion_setup':
-                            layout.separator()
-
-
-                            layout.label(text="Camera options")
-                            # create the box where the options are
-                            options = layout.box()
+                match spin_settings.menu_options:
+                    case 'motion_setup':
+                        layout.separator()
+                        if is_pivot(current_selection) or is_camera(current_selection):
                             
                             # camera options
-                            panel_camera_options(self, options)
+                            panel_camera_options(self, layout)
                             
-                            
+                        if is_pivot(current_selection):  
+                             
                             layout.label(text="Animation options")
                             
                             options = layout.box()
@@ -210,27 +238,32 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                             select_movement_type(self, options)
                             select_interpolation_type(self, options)
                             select_length_type(self, options)
+                          
                             
-                        
+                        if is_pivot(current_selection) or is_stage(current_selection):
+                            add_stage = layout.box()
+                            if is_pivot(current_selection):
+                                add_stage.prop(collection_settings, "add_stage")
                             # stage setup
-                            panel_stage_setup(self, layout)                            
+                            panel_stage_setup(self, add_stage)                            
 
+                        if is_pivot(current_selection):
                             # lighting setup
                             panel_lighting_setup(self, layout)
                             
-                            layout.separator()
+                        layout.separator()
 
-                            panel_operator_add_to_output(self, layout)
+                        panel_operator_add_to_output(self, layout)
 
-                            layout.separator()
+                        layout.separator()
 
-                        case 'output_setup':
-                            layout.separator()
-                            layout.label(text="Output menu")
-                            
-                            panel_output_list(self, layout)
+                    case 'output_setup':
+                        layout.separator()
+                        layout.label(text="Output menu")
+                        
+                        panel_output_list(self, layout)
 
-                            layout.separator()
+                        layout.separator()
 
         # documentation button
         documentation(self, layout)   
@@ -249,7 +282,16 @@ class OBJECT_OT_refresh(bpy.types.Operator):
 
         return {"FINISHED"}
 
-class_list = [SpinWiz_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path, OBJECT_OT_refresh]
+class_list = [SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path, OBJECT_OT_refresh]
+
+def update_current_selection(scene):
+    current_selection = bpy.context.view_layer.objects.active
+    
+    if is_selection_setup(current_selection):
+        hide_anything_but(current_selection.users_collection[0])
+        
+        
+        
 
 def register():
     import_custom_icons()
@@ -257,7 +299,9 @@ def register():
     for cls in class_list:
         bpy.utils.register_class(cls)
 
-        bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
+    bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
+    
+    bpy.app.handlers.depsgraph_update_post.append(update_current_selection)
 
 
 def unregister():

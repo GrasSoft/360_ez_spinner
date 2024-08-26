@@ -3,6 +3,8 @@ import os
 
 from ..naming_convetions import *
 
+from ..helper_functions import *
+
 original_world = None
 world_name = "SpinWiz_Wrld"
 
@@ -45,8 +47,8 @@ def load_thumbnail_lighting():
 #___________________________ PANEL FUNCTIONS
 
 def panel_lighting_setup(panel, layout):
-    spin_settings = bpy.context.scene.spin_settings
-
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
+     
     ligthing_setup_box = layout.box()
     ligthing_setup_box.prop(spin_settings, "add_lighting_setup")           
     
