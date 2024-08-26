@@ -224,6 +224,10 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                 match spin_settings.menu_options:
                     case 'motion_setup':
                         layout.separator()
+                        
+                        box = layout.box()
+                        box.prop(collection_settings, "use_global_settings", text="Use global settings, unchecking returns to defaults")
+                        
                         if is_pivot(current_selection) or is_camera(current_selection):
                             
                             # camera options

@@ -1,7 +1,9 @@
 import bpy
 
 from ..naming_convetions import *
+
 from ..helper_functions import *
+
 from ..properties import update_movement_type, SpinWiz_collection_properties
  
 
@@ -95,6 +97,8 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         
         update_movement_type(self, context)
         
+        # use global settings
+        use_settings_of_other(collection_name)
 
         return {"FINISHED"}
 

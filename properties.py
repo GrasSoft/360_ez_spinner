@@ -142,6 +142,22 @@ def update_interpolation(self, context):
                 slow_bezier(self, context)
             elif item[4] == 2: 
                 return
+            
+def update_use_global_settings(self, context):
+    # get first collection, it will act as global
+    global_collection = None
+    
+    for collection in bpy.data.collections:
+        if collection_name in collection.name:
+            global_collection = collection
+            break
+            
+    
+    if self.use_global_settings:
+        if global_collection is not None:
+            use_settings_of_other(global_collection.name)
+    else:
+        reset_default_settings()
 
 #_________________________________ LIGHTING            
 
@@ -160,12 +176,14 @@ def update_stage(self, context):
         reset_stage()
 
 def update_stage_height_offset(self, context):
-    modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
-    modifier["Socket_3"] = self.stage_height_offset             
+    if self.add_stage:
+        modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
+        modifier["Socket_3"] = self.stage_height_offset             
 
 def update_stage_subdivision(self, context):
-    modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
-    modifier["Socket_5"] = self.stage_subdivision 
+    if self.add_stage:
+        modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
+        modifier["Socket_5"] = self.stage_subdivision 
 
 #________________________________ CAMERA
 def update_camera_height(self, context):
@@ -192,6 +210,13 @@ def update_camera_focal_length(self, context):
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_collection_properties(bpy.types.PropertyGroup):
+    use_global_settings: bpy.props.BoolProperty(
+        name= "Use Global Settings",
+        description= "Use the settings of the first collection created",
+        default= True,
+        update= update_use_global_settings,
+    )# type: ignore
+    
     degrees: bpy.props.EnumProperty(
         name="Nr of degrees",
         description="Number of degrees between frames",
@@ -235,7 +260,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description= "Select wether the objects or the camera spins.",
         items= movement_type_items,
         update=update_movement_type,
-        default=default_movement_type
+        default=0
     ) # type: ignore
 
     interpolation_type: bpy.props.EnumProperty(
@@ -243,14 +268,14 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description= "Select the interpolation between the keyframes.",
         items=interpolation_items,
         update=update_interpolation,
-        default=default_interpolation
+        default=0
     ) # type: ignore
 
     length_type: bpy.props.EnumProperty(
         name= "Length",
         description= "Select the start and end keyframes or by degrees.",
         items= length_items,
-        default=default_length_type
+        default=0
     ) # type: ignore
 
     camera_height: bpy.props.FloatProperty(

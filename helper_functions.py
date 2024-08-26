@@ -5,6 +5,7 @@ import math
 
 from .naming_convetions import *
 
+from .settings.settings_defaults import *
 
 #__________________________________________ CONTEXT FUNCTIONS
 # functions that help setup and update the correct objects and properties
@@ -359,5 +360,41 @@ def create_camera():
     if active_objects:
         active_objects.select_set(True)
         
-
+def use_settings_of_other(collection_name):
+    prev_settings = getattr(bpy.context.scene, collection_name)
+    
+    current_collection = get_current_collection()
+    current_settings = getattr(bpy.context.scene, current_collection.name)
+    
+    current_settings.degrees = prev_settings.degrees
+    current_settings.nr_frames = prev_settings.nr_frames
+    current_settings.start_frame = prev_settings.start_frame
+    current_settings.add_stage = prev_settings.add_stage
+    current_settings.add_lighting_setup = prev_settings.add_lighting_setup
+    current_settings.movement_type = prev_settings.movement_type
+    current_settings.interpolation_type = prev_settings.interpolation_type
+    current_settings.length_type = prev_settings.length_type
+    current_settings.camera_height = prev_settings.camera_height
+    current_settings.camera_focal_length = prev_settings.camera_focal_length
+    current_settings.stage_height_offset = prev_settings.stage_height_offset
+    current_settings.stage_subdivision = prev_settings.stage_subdivision
+    
+    current_settings.camera_distance = get_current_camera().location.x
+    
+def reset_default_settings():
+    current_collection = get_current_collection()
+    current_settings = getattr(bpy.context.scene, current_collection.name)
+    
+    current_settings.degrees = default_degrees
+    current_settings.nr_frames = default_length
+    current_settings.start_frame = default_start_frame
+    current_settings.add_stage = default_has_stage
+    current_settings.add_lighting_setup = default_has_lighting_setup
+    current_settings.movement_type = default_movement_type
+    current_settings.interpolation_type = default_interpolation
+    current_settings.length_type = default_length_type
+    current_settings.camera_height = default_camera_height
+    current_settings.camera_focal_length = default_camera_focal_length
+    current_settings.stage_height_offset = default_stage_height_offset
+    current_settings.stage_subdivision = default_stage_subdivision   
 
