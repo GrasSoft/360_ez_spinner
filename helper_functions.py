@@ -11,8 +11,21 @@ from .settings.settings_defaults import *
 # functions that help setup and update the correct objects and properties
 
 # this function gets the current collection based on the selected object
+def get_current_world():
+    collection = get_current_collection()
+   
+    if "current_world" in collection: 
+        return bpy.data.worlds[collection["current_world"]]
+
+def get_original_world():
+    collection = get_current_collection()
+
+    if "original_world" in collection:    
+        return bpy.data.worlds[collection["original_world"]]
+
 def get_current_collection():
-    return bpy.context.object.users_collection[0]
+    if bpy.context.object is not None:
+        return bpy.context.object.users_collection[0]
 
 def get_current_stage():
     collection = get_current_collection()
@@ -366,35 +379,59 @@ def use_settings_of_other(collection_name):
     current_collection = get_current_collection()
     current_settings = getattr(bpy.context.scene, current_collection.name)
     
+    # animation settings
     current_settings.degrees = prev_settings.degrees
     current_settings.nr_frames = prev_settings.nr_frames
     current_settings.start_frame = prev_settings.start_frame
-    current_settings.add_stage = prev_settings.add_stage
-    current_settings.add_lighting_setup = prev_settings.add_lighting_setup
     current_settings.movement_type = prev_settings.movement_type
     current_settings.interpolation_type = prev_settings.interpolation_type
     current_settings.length_type = prev_settings.length_type
+    
+    # lighting settings
+    current_settings.add_lighting_setup = prev_settings.add_lighting_setup
+    current_settings.lighting_type = prev_settings.lighting_type
+    current_settings.lighting_hdr_strength = prev_settings.lighting_hdr_strength
+    current_settings.lighting_hdr_rotation = prev_settings.lighting_hdr_rotation
+    current_settings.lighting_gradient_height = prev_settings.lighting_gradient_height
+    current_settings.lighting_gradient_scale = prev_settings.lighting_gradient_scale
+    
+    # camera settings
     current_settings.camera_height = prev_settings.camera_height
     current_settings.camera_focal_length = prev_settings.camera_focal_length
+    current_settings.camera_distance = get_current_camera().location.x
+    
+    # stage settings
+    current_settings.add_stage = prev_settings.add_stage
     current_settings.stage_height_offset = prev_settings.stage_height_offset
     current_settings.stage_subdivision = prev_settings.stage_subdivision
     
-    current_settings.camera_distance = get_current_camera().location.x
     
 def reset_default_settings():
     current_collection = get_current_collection()
     current_settings = getattr(bpy.context.scene, current_collection.name)
     
+    # animation settings
     current_settings.degrees = default_degrees
     current_settings.nr_frames = default_length
     current_settings.start_frame = default_start_frame
-    current_settings.add_stage = default_has_stage
-    current_settings.add_lighting_setup = default_has_lighting_setup
-    current_settings.movement_type = default_movement_type
     current_settings.interpolation_type = default_interpolation
     current_settings.length_type = default_length_type
+    current_settings.movement_type = default_movement_type
+    
+    #lighting settings
+    current_settings.add_lighting_setup = default_has_lighting_setup
+    current_settings.lighting_type = default_lighting_type
+    current_settings.lighting_hdr_rotation = default_hdr_rotation
+    current_settings.lighting_hdr_strength = default_hdr_strength
+    current_settings.lighting_gradient_height = default_gradient_height
+    current_settings.lighting_gradient_scale = default_gradient_scale
+    
+    # camera settings
     current_settings.camera_height = default_camera_height
     current_settings.camera_focal_length = default_camera_focal_length
+    
+    # stage settings
+    current_settings.add_stage = default_has_stage
     current_settings.stage_height_offset = default_stage_height_offset
     current_settings.stage_subdivision = default_stage_subdivision   
 

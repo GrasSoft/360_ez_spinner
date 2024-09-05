@@ -19,7 +19,7 @@ import math
 
 from .helper_functions import *
 
-from .icon_setup.custom_icons import *
+from .blender_resources.media_setup.custom_media import *
 
 from .properties import *
 
@@ -299,6 +299,8 @@ def update_current_selection(scene):
 
 def register():
     import_custom_icons()
+    import_thumbnails()
+
 
     for cls in class_list:
         bpy.utils.register_class(cls)

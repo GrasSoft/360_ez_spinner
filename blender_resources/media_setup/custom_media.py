@@ -3,10 +3,12 @@ import os
 
 icons_path = ""
 
+thumbnails_path = ""
+
 preview_collections = {}
 
 
-    
+# Icons   
 
 def interpolation_icons():
     previews = bpy.utils.previews.new()
@@ -58,3 +60,18 @@ def import_custom_icons():
     menu_icons()
     documentation_icon()
 
+# Thumbnails
+
+def import_thumbnails():
+    global preview_collections
+    
+    global thumbnails_path
+    thumbnails_path = os.path.join(os.path.dirname(__file__), "../../lighting_setup/thumbnails")
+    
+    previews = bpy.utils.previews.new()
+    
+    previews.load("gradient", os.path.join(thumbnails_path, "gradient.png"), "IMAGE")
+    previews.load("hdr",      os.path.join(thumbnails_path, "studio_small_09.png"), "IMAGE")
+
+    preview_collections["thumbnail"] = previews
+    

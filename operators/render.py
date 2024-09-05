@@ -1,5 +1,6 @@
 import bpy
 import subprocess
+import functools
 
 from ..naming_convetions import *
 
@@ -7,10 +8,15 @@ from .output import output_list
 
 output_queue = []
 
-def hide_render_others(name):
+saved_window = None
+saved_area = None
+saved_screen = None
+
+def hide_render_others(name, scene):
+
     # hide the objects first
-    scene_collection = bpy.context.scene.collection
-    for obj in bpy.context.scene.objects:
+    scene_collection = scene.collection
+    for obj in scene.objects:
         # Get the collections that the object is in (excluding the scene collection)
         collections = [col for col in obj.users_collection if col != scene_collection]
 
@@ -26,124 +32,58 @@ def hide_render_others(name):
         else:
             collection.hide_render = False
 
-def set_current_camera_as_render(name):
+def set_current_camera_as_render(name, scene):
+
     collection = bpy.data.collections[name]
 
     for obj in collection.objects:
         if camera_object_name in obj.name:
-            bpy.context.scene.camera = obj
+            scene.camera = obj
             break
-
-# unused
-# def save_file():
-#     # Define the command to run
-#     blend_file = bpy.data.filepath  # Get the current blend file
-
-#     if blend_file:
-#         # Save the current .blend file
-#         bpy.ops.wm.save_mainfile()
-#     else:
-#         # Save the current file under a new name
-#         bpy.ops.wm.save_as_mainfile(filepath="/tmp/blender")
-
-# unused
-# def render_command(name):
-#     global output_filepath
-#     output_path = output_filepath + "/" + name + "/" + name + "_"
-    
-#     blend_file = bpy.data.filepath
-    
-#     file_format = "PNG"
-#     render_command = [
-#         bpy.app.binary_path,   # Path to Blender executable
-#         "-b", blend_file,      # Background mode and input file
-#         "-o", output_path,     # Output path
-#         "-F", file_format,     # File format
-#         "-x", "1",             # Use file extension
-#         "-a"                   # Render animation
-#     ]
-    
-#     return render_command
-
-
-    # TODO, try to close the render window someday        
-    # bpy.app.timers.register(shut_window, first_interval=2)
-
-def shut_window():
-    # Function to find and "close" the render window
-    
-    # Get the current screen
-    screen = bpy.context.screen
-
-    # Loop through each area in the screen
-    # for area in screen.areas:
-    #     # Check if the area is an image editor and is showing a render result
-    #     if area.type == 'IMAGE_EDITOR' and area.spaces.active.mode == 'VIEW':
-    #         # Override the context to close the area
-    #         override = bpy.context.copy()
-    #         override['area'] = area
-    #         bpy.ops.screen.area_close(override)
-    #         break  # Exit after closing the first found render editor
-  
-    # Iterate over all windows
-    for window in bpy.context.window_manager.windows:
-        # Iterate over all screen areas in the window
-        for area in window.screen.areas:
-            # Check if the area type is 'IMAGE_EDITOR'
-            if area.type == 'IMAGE_EDITOR':
-                # Access the area spaces
-                # for space in area.spaces:
-                #     # Check if the space is set to show the render result
-                #     if space.type == 'IMAGE_EDITOR' and space.image and space.image.type == 'RENDER_RESULT':
-                #         # Change area type to 'INFO' or any other area type to "close" the render window
-                area.type = "VIEW_3D"
-                        
-                return
-        
-    return        
+     
 
 def enable_render_button(scene, ren):
     scene.spin_settings.enable_render = True
     bpy.app.handlers.render_complete.remove(enable_render_button)
 
-def render(scene, rend):
-    global output_filepath
-    global output_queue
+# def render(idx, scene, rend):
+#     global output_filepath
+#     global output_queue
     
-    print(output_queue)
+#     print(output_queue)
     
-    scene.spin_settings.current_rendered_collection = output_queue[0]
+#     scene.spin_settings.current_rendered_collection = output_queue[0]
     
-    # shut_window()
-    # bpy.ops.render.view_cancel('INVOKE_DEFAULT')
+#     if len(output_queue) == 1:
+#         if render in bpy.app.handlers.render_complete:
+#             # TODO, FIX THIS< IT SHOULD REMOVE NOT POP< WE DONT KNOW WHAT IS IN THE QUEUE
+#             bpy.app.handlers.render_complete.pop(0)
+#         bpy.app.handlers.render_complete.append(enable_render_button)
+    
+#     output_path = output_filepath + "/" + output_queue[0] + "/" + output_queue[0] + "_"
+
+    
+#     scene.render.image_settings.file_format = 'PNG'  # Output file format
+#     scene.render.filepath = output_path
+    
+#     window = bpy.context.window_manager.windows[idx]
+#     screen = window.screen
+    
+#     views_3d = [a for a in screen.areas if a.type == 'VIEW_3D']
             
-    hide_render_others(output_queue[0])
-    set_current_camera_as_render(output_queue[0])
     
-    if len(output_queue) == 1:
-        if render in bpy.app.handlers.render_complete:
-            bpy.app.handlers.render_complete.remove(render)
-        bpy.app.handlers.render_complete.append(enable_render_button)
-    
-    output_path = output_filepath + "/" + output_queue[0] + "/" + output_queue[0] + "_"
+#     with bpy.context.temp_override(window=window , area=views_3d[0], screen=screen, scene=scene):
+#         print(bpy.context.window)
+        
+#         hide_render_others(output_queue[0], scene)
+#         set_current_camera_as_render(output_queue[0], scene)
 
-    
-    bpy.context.scene.render.image_settings.file_format = 'PNG'  # Output file format
-    bpy.context.scene.render.filepath = output_path
-    
-    # remove after render, order matters
-    output_queue.pop(0)
-    
-    # Perform the render
-    bpy.ops.render.render("INVOKE_DEFAULT", write_still=True, animation=True)
+#         # remove after render, order matters
+#         output_queue.pop(0)
 
-def update_render_stats(scene):
-    for window in bpy.context.window_manager.windows:
-        for area in window.screen.areas:
-            if area.type == 'VIEW_3D':  # Choose the appropriate area type
-                with bpy.context.temp_override(window=window,area=area):
-                    bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
-                return
+#         # Perform the render
+#         bpy.ops.render.render("INVOKE_DEFAULT", animation=True, scene=scene.name)
+
 
 class OBJECTE_OT_render(bpy.types.Operator):
     bl_idname = "object.render"
@@ -158,8 +98,38 @@ class OBJECTE_OT_render(bpy.types.Operator):
         output_queue = output_list.copy()
         
         # bpy.app.handlers.render_stats.append(update_render_stats)
-        bpy.app.handlers.render_complete.append(render)
         # bpy.context.scene.spin_settings.enable_render = False
-        render(context.scene, None)
+        
+        # idx = bpy.context.window_manager.windows[:].index(bpy.context.window)
+        
+        # bpy.app.handlers.render_complete.append(functools.partial(render, idx))
+        
+        # render(idx, context.scene, None)
+        
+        context.scene.use_nodes = True
+        
+        compositor_nodes = context.scene.node_tree.nodes
+        compositor_links = context.scene.node_tree.links
+                
+        compositor_nodes.clear()
+        compositor_links.clear()
+        
+        file_output_node = compositor_nodes.new(type='CompositorNodeOutputFile')
+        
+        index = 0
+        for name in output_list:
+            view_layer = context.scene.view_layers.new(name=name)
+            hide_render_others(name, context.scene)
+            set_current_camera_as_render(name, context.scene)
+            
+            render_layer = compositor_nodes.new(type="CompositorNodeRLayers")
+            render_layer.layer = view_layer.name
+
+            compositor_links.new(render_layer.outputs[0], file_output_node.inputs[index])
+            
+            file_output_node.file_slots.new("Image")
+            
+            index += 1 
+                    
             
         return {"FINISHED"}

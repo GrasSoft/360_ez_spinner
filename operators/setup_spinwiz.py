@@ -81,7 +81,7 @@ def create_copy_and_hide():
                 
     return new_collection
 
-def chagne_perspective():
+def change_perspective():
     bpy.context.scene.camera = get_current_camera()
     
     # Iterate through all areas in the current screen
@@ -113,7 +113,7 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         # use global settings
         use_settings_of_other(collection_name)
         
-        chagne_perspective()
+        change_perspective()
 
         return {"FINISHED"}
 

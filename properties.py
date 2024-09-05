@@ -1,5 +1,6 @@
 import bpy
-from .icon_setup.custom_icons import *
+
+from .blender_resources.media_setup.custom_media import *
 from .helper_functions import *
 from .naming_convetions import *
 from .helper_functions import *
@@ -53,6 +54,12 @@ def menu_items(self, context):
     return [
         ('motion_setup', "Motion Setup", "Here is a panel with all the options regarding the 360 movement", preview_collections["menu"]["motion_menu"].icon_id, 0),
         ('output_setup', "Output Setup", "Here is a panel with all the options regarding 360 output", preview_collections["menu"]["output_menu"].icon_id, 1),
+    ]
+    
+def lighting_type_items(self, context):
+    return [
+        ("HDR", "HDR Lighting", "Set up the lighting with an HDR image",preview_collections["thumbnail"]["hdr"].icon_id, 0),
+        ("GRADIENT", "Gradient Lighting", "Set up lighting with a gradient",preview_collections["thumbnail"]["gradient"].icon_id, 1),
     ]
 #____________________________ UPDATE FUNCTIONS
 
@@ -167,6 +174,25 @@ def update_lighting(self, context):
     else:
         reset_world()
 
+def update_lighting_type(self, context):
+    world = get_current_world()
+    
+    if world is None:
+        return
+    
+    links = world.node_tree.links
+    nodes = world.node_tree.nodes
+    
+    gradient_node = nodes["Mix"]
+    hdr_node = nodes["Environment Texture"]
+    
+    background = nodes["Background"]
+    
+    if self.lighting_type == "HDR":
+        links.new(hdr_node.outputs[0], background.inputs[0])
+    else:
+        links.new(gradient_node.outputs[0], background.inputs[0])
+
 #_________________________________ STAGE
 
 def update_stage(self, context):
@@ -219,7 +245,8 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         default= True,
         update= update_use_global_settings,
     )# type: ignore
-    
+     
+    # animation settings
     degrees: bpy.props.EnumProperty(
         name="Nr of degrees",
         description="Number of degrees between frames",
@@ -243,21 +270,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update=update_start_frame,
         default=default_start_frame,
     )# type: ignore
-
-    add_stage: bpy.props.BoolProperty(
-        name="Add Stage",
-        description="See stage menu",
-        update=update_stage,
-        default=default_has_stage,
-    )# type: ignore
-
-    add_lighting_setup: bpy.props.BoolProperty(
-        name="Add Lighting Setup",
-        description="See lighting setup",
-        update=update_lighting,
-        default=default_has_lighting_setup
-    ) # type: ignore
-
+    
     movement_type : bpy.props.EnumProperty(
         name= "Movement type",
         description= "Select wether the objects or the camera spins.",
@@ -281,6 +294,47 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         default=0
     ) # type: ignore
 
+    # lighting settings
+    add_lighting_setup: bpy.props.BoolProperty(
+        name="Add Lighting Setup",
+        description="See lighting setup",
+        update=update_lighting,
+        default=default_has_lighting_setup
+    ) # type: ignore
+    
+    lighting_type: bpy.props.EnumProperty(
+        name= "Lighting type",
+        description= "Chose the lighting type", 
+        default= 1,
+        items= lighting_type_items,
+        update=update_lighting_type,
+    ) # type: ignore
+    
+    lighting_hdr_rotation: bpy.props.FloatProperty(
+        name= "Rotation",
+        description = "Rotation of the HDRI",
+        default= default_hdr_rotation,
+    ) # type: ignore
+    
+    lighting_hdr_strength: bpy.props.FloatProperty(
+        name = "Strength",
+        description = "Change the strenght of the HDRI",
+        default= default_hdr_strength          
+    ) # type: ignore
+    
+    lighting_gradient_height: bpy.props.FloatProperty(
+        name = "Height",
+        description = "Height of the gradient",
+        default= default_gradient_height,
+    ) # type: ignore
+    
+    lighting_gradient_scale: bpy.props.FloatProperty(
+        name = "Scale",
+        description = "Scale of the gradient",
+        default= default_gradient_scale,
+    ) # type: ignore
+    
+    #camera settings
     camera_height: bpy.props.FloatProperty(
         name= "Camera Height",
         description= "Sets the height of the camera",
@@ -304,6 +358,14 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update=update_camera_focal_length
     )# type: ignore
 
+    # stage settings 
+    add_stage: bpy.props.BoolProperty(
+        name="Add Stage",
+        description="See stage menu",
+        update=update_stage,
+        default=default_has_stage,
+    )# type: ignore
+
     stage_height_offset: bpy.props.FloatProperty(
         name = "Stage Height Offset",
         description= "Sets the height of the stage",
@@ -319,11 +381,6 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         default = 2,
         update = update_stage_subdivision,
     )# type: ignore    
-
-
-
-
-
 
 
 
