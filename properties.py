@@ -192,7 +192,49 @@ def update_lighting_type(self, context):
         links.new(hdr_node.outputs[0], background.inputs[0])
     else:
         links.new(gradient_node.outputs[0], background.inputs[0])
+        
+def update_lighting_hdr_rotation(self, context):
+    world = get_current_world()
 
+    if world is None:
+        return
+    
+    nodes = world.node_tree.nodes
+    
+    nodes["Mapping"].inputs[2].default_value[2] = self.lighting_hdr_rotation
+    
+def update_lighting_hdr_strength(self, context):
+    world = get_current_world()
+
+    if world is None:
+        return
+    
+    nodes = world.node_tree.nodes
+    
+    nodes["Background"].inputs[1].default_value = self.lighting_hdr_strength
+    
+def update_lighting_gradient_height(self, context):
+    world = get_current_world()
+
+    if world is None:
+        return
+    
+    nodes = world.node_tree.nodes
+    
+    nodes["Gradient Height"].inputs[0].default_value = self.lighting_gradient_height
+
+def update_lighting_gradient_scale(self, context):
+    world = get_current_world()
+
+    if world is None:
+        return
+    
+    nodes = world.node_tree.nodes
+    
+    val = self.lighting_gradient_scale
+    nodes["Mapping.001"].inputs[3].default_value = Vector((val, val, val))
+    
+    
 #_________________________________ STAGE
 
 def update_stage(self, context):
@@ -314,24 +356,28 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         name= "Rotation",
         description = "Rotation of the HDRI",
         default= default_hdr_rotation,
+        update=update_lighting_hdr_rotation
     ) # type: ignore
     
     lighting_hdr_strength: bpy.props.FloatProperty(
         name = "Strength",
         description = "Change the strenght of the HDRI",
-        default= default_hdr_strength          
+        default= default_hdr_strength,
+        update=update_lighting_hdr_strength          
     ) # type: ignore
     
     lighting_gradient_height: bpy.props.FloatProperty(
         name = "Height",
         description = "Height of the gradient",
         default= default_gradient_height,
+        update=update_lighting_gradient_height
     ) # type: ignore
     
     lighting_gradient_scale: bpy.props.FloatProperty(
         name = "Scale",
         description = "Scale of the gradient",
         default= default_gradient_scale,
+        update=update_lighting_gradient_scale
     ) # type: ignore
     
     #camera settings
@@ -381,6 +427,14 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         default = 2,
         update = update_stage_subdivision,
     )# type: ignore    
+    
+    stage_material_color: bpy.props.FloatVectorProperty(
+        name = "Material Color",
+        description= "Choose the color of the material",
+        subtype= 'COLOR',
+        default=(1.0, 0.5, 0.0), 
+        
+    )# type: ignore
 
 
 
