@@ -246,14 +246,32 @@ def update_stage(self, context):
         reset_stage()
 
 def update_stage_height_offset(self, context):
+    stage = get_current_stage()
+    
     if self.add_stage:
-        modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
-        modifier["Socket_3"] = self.stage_height_offset             
+        modifier = bpy.data.objects[stage.name].modifiers.get("SpinWiz_StageCTRL")
+        modifier["Socket_3"] = self.stage_height_offset 
+        
+        bpy.data.objects[stage.name].data.update()               
 
 def update_stage_subdivision(self, context):
+    stage = get_current_stage()
+    
     if self.add_stage:
-        modifier = bpy.data.objects[stage_name].modifiers.get("SpinWiz_StageCTRL")
-        modifier["Socket_5"] = self.stage_subdivision 
+        modifier = bpy.data.objects[stage.name].modifiers.get("SpinWiz_StageCTRL")
+        modifier["Socket_5"] = self.stage_subdivision
+         
+        bpy.data.objects[stage.name].data.update() 
+              
+def update_stage_material(self, context):
+    if self.add_stage:
+        material = get_current_material()
+        node = material.node_tree.nodes["BackgroundShader"]
+        
+        node.inputs[1].default_value = (*self.stage_material_color, 1.0)
+        node.inputs[0].default_value = self.stage_material_roughness
+        node.inputs[2].default_value = self.stage_material_reflection_intensity
+        node.inputs[3].default_value = self.stage_material_contact_shadow
 
 #________________________________ CAMERA
 
@@ -432,8 +450,29 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         name = "Material Color",
         description= "Choose the color of the material",
         subtype= 'COLOR',
-        default=(1.0, 0.5, 0.0), 
-        
+        default=default_color,
+        update= update_stage_material 
+    )# type: ignore
+    
+    stage_material_roughness: bpy.props.FloatProperty(
+        name = "Material Roughness",
+        description= "Choose material roughness",
+        default= default_roughness,
+        update= update_stage_material
+    )# type: ignore
+    
+    stage_material_reflection_intensity: bpy.props.FloatProperty(
+        name= "Material Reflection Intensity",
+        description= "Choose material reflection intensity",
+        default= default_reflection_intensity,
+        update= update_stage_material,
+    )# type: ignore
+    
+    stage_material_contact_shadow: bpy.props.FloatProperty(
+        name= "Material Contact Shadow",
+        description= "Choose material contact shadow",
+        default= default_contact_shadow,
+        update= update_stage_material,
     )# type: ignore
 
 

@@ -36,6 +36,12 @@ def get_current_stage():
     
     return None
 
+def get_current_material():
+    stage = get_current_stage()
+    
+    if stage is not None:
+        return stage.modifiers["SpinWiz_StageCTRL"]["Socket_6"]
+
 def get_current_camera():
     collection = get_current_collection()
         
@@ -78,9 +84,7 @@ def get_suffix_difference(str1, str2):
 def get_current_action():
     collection = get_current_collection()
     
-    suffix = get_suffix_difference(collection.name, collection_name)
-    
-    name = action_name + suffix
+    name = collection["action"]
     
     return bpy.data.actions[name]    
 
@@ -380,10 +384,10 @@ def use_settings_of_other(collection_name):
     current_settings = getattr(bpy.context.scene, current_collection.name)
     
     # animation settings
+    current_settings.movement_type = prev_settings.movement_type
     current_settings.degrees = prev_settings.degrees
     current_settings.nr_frames = prev_settings.nr_frames
     current_settings.start_frame = prev_settings.start_frame
-    current_settings.movement_type = prev_settings.movement_type
     current_settings.interpolation_type = prev_settings.interpolation_type
     current_settings.length_type = prev_settings.length_type
     
@@ -405,18 +409,24 @@ def use_settings_of_other(collection_name):
     current_settings.stage_height_offset = prev_settings.stage_height_offset
     current_settings.stage_subdivision = prev_settings.stage_subdivision
     
+    # stage material
+    current_settings.stage_material_color = prev_settings.stage_material_color
+    current_settings.stage_material_roughness = prev_settings.stage_material_roughness
+    current_settings.stage_material_reflection_intensity = prev_settings.stage_material_reflection_intensity
+    current_settings.stage_material_contact_shadow = prev_settings.stage_material_contact_shadow
+    
     
 def reset_default_settings():
     current_collection = get_current_collection()
     current_settings = getattr(bpy.context.scene, current_collection.name)
     
     # animation settings
+    current_settings.movement_type = default_movement_type
     current_settings.degrees = default_degrees
     current_settings.nr_frames = default_length
     current_settings.start_frame = default_start_frame
     current_settings.interpolation_type = default_interpolation
     current_settings.length_type = default_length_type
-    current_settings.movement_type = default_movement_type
     
     #lighting settings
     current_settings.add_lighting_setup = default_has_lighting_setup
@@ -435,3 +445,9 @@ def reset_default_settings():
     current_settings.stage_height_offset = default_stage_height_offset
     current_settings.stage_subdivision = default_stage_subdivision   
 
+    # stage material
+    current_settings.stage_material_color = default_color
+    current_settings.stage_material_roughness = default_roughness
+    current_settings.stage_material_reflection_intensity = default_reflection_intensity
+    current_settings.stage_material_contact_shadow = default_contact_shadow
+    

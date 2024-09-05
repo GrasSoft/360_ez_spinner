@@ -15,6 +15,12 @@ default_has_stage = False
 default_stage_height_offset = 15
 default_stage_subdivision = 1
 
+# stage material
+default_color = [1.0, 1.0, 1.0]
+default_roughness = 0.2
+default_reflection_intensity = 0.6
+default_contact_shadow = 0.5
+
 # has lighting setup
 default_has_lighting_setup = False
 default_lighting_type = "GRADIENT"

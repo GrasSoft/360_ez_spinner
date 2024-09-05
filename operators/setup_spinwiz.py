@@ -9,8 +9,11 @@ from ..properties import update_movement_type, SpinWiz_collection_properties
 
 def create_action():
     # Create a new action
-    bpy.data.actions.new(name=action_name)
+    action = bpy.data.actions.new(name=action_name)
 
+    collection = get_current_collection()
+    collection["action"] = action.name
+    
     add_keyframes()
 
 def create_pivot(collection):
@@ -107,8 +110,6 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         setattr(bpy.types.Scene, get_current_collection().name, bpy.props.PointerProperty(type=SpinWiz_collection_properties))
 
         create_action()
-        
-        update_movement_type(self, context)
         
         # use global settings
         use_settings_of_other(collection_name)

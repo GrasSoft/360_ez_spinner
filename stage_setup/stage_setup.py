@@ -75,11 +75,8 @@ def panel_stage_setup(panel, layout):
         add_stage.separator()
         add_stage.label(text="Stage Material")
 
-        node = bpy.data.materials["SpinWiz_Stage_Mtl"].node_tree.nodes["BackgroundShader"]
+        add_stage.prop(spin_settings, "stage_material_color")
+        add_stage.prop(spin_settings, "stage_material_roughness", text="Roughness")
+        add_stage.prop(spin_settings, "stage_material_reflection_intensity", text="Reflection Intensity") 
+        add_stage.prop(spin_settings, "stage_material_contact_shadow", text="Contact Shadow")                           
 
-        add_stage.prop(node.inputs[1], "default_value")
-        add_stage.prop(node.inputs[0], "default_value", text="Roughness")
-        add_stage.prop(node.inputs[2], "default_value", text="Reflection Intensity") 
-        add_stage.prop(node.inputs[3], "default_value", text="Contact Shadow")                           
-
-        bpy.data.objects[stage_name].data.update()   
