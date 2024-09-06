@@ -383,6 +383,9 @@ def use_settings_of_other(collection_name):
     current_collection = get_current_collection()
     current_settings = getattr(bpy.context.scene, current_collection.name)
     
+    # collection name 
+    current_settings.collection_name = current_collection.name
+    
     # animation settings
     current_settings.movement_type = prev_settings.movement_type
     current_settings.degrees = prev_settings.degrees

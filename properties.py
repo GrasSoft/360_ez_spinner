@@ -11,8 +11,6 @@ from .stage_setup.stage_setup import *
 
 from .settings.settings_defaults import *
 
-from .operators.output import update_context
-
 #____________________________ FUNCTIONS RETURNING ITEMS
 
 def interpolation_items(self, context):
@@ -295,10 +293,38 @@ def update_camera_focal_length(self, context):
     if cam_obj is not None:
         cam_obj.data.lens = self.camera_focal_length
         
+
+def update_collection_name(self, context):
+    collection = get_current_collection()
+    
+    if self.collection_name == "":
+        self.collection_name = collection.name
+        return 
+   
+    collection_names = [collection.name for collection in bpy.data.collections]
+    if self.collection_name in collection_names:
+        return 
+    
+    context.scene.output_list.remove(collection.name)
+    context.scene.output_list.append(self.collection_name)
+
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
+    setattr(bpy.types.Scene, self.collection_name, spin_settings)
+    delattr(bpy.types.Scene, collection.name)
+    
+    collection.name = self.collection_name
+    
                    
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_collection_properties(bpy.types.PropertyGroup):
+    collection_name: bpy.props.StringProperty(
+        name = "Collection Name",
+        description = "Name of the collection",
+        default= collection_name,
+        update= update_collection_name
+    ) # type: ignore
+    
     use_global_settings: bpy.props.BoolProperty(
         name= "Use Global Settings",
         description= "Use the settings of the first collection created",
@@ -479,7 +505,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
 
 
 
-class SpinWiz_properties(bpy.types.PropertyGroup):
+class SpinWiz_properties(bpy.types.PropertyGroup):    
     menu_options: bpy.props.EnumProperty(
         name="Menu Options",
         items=menu_items,

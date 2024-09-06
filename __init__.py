@@ -192,12 +192,10 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
     def draw(self, context):
         scene = context.scene
         spin_settings = scene.spin_settings
-        
-        collection_settings = None
-        
+                
         current_selection = bpy.context.active_object
-        if collection_name in get_current_collection().name:
-            collection_settings = getattr(scene, get_current_collection().name)
+
+        collection_settings = getattr(scene, get_current_collection().name, None)
         
         layout = self.layout
         
@@ -215,15 +213,16 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
             else:
                 layout.separator()
 
-                # Motion and Output menu selectors 
-                # menu_items(self, layout)
-
                 row = layout.row()
-                row.prop(spin_settings, "menu_options", expand=True)
-
+                row.prop(spin_settings, "menu_options", expand=True)   
+                
                 match spin_settings.menu_options:
                     case 'motion_setup':
                         layout.separator()
+                
+                        box = layout.box()
+                        row = box.row()
+                        row.prop(collection_settings, "collection_name", text="")     
                         
                         box = layout.box()
                         box.prop(collection_settings, "use_global_settings", text="Use global settings, unchecking returns to defaults")
@@ -272,21 +271,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         # documentation button
         documentation(self, layout)   
 
-class OBJECT_OT_refresh(bpy.types.Operator):
-    bl_idname="object.refresh"
-    bl_description="refreshes the entire panel"
-    bl_label="Refresh"
-
-    def execute(self, context):
-        global current_pivot
-        
-        update_context()
-
-        current_pivot = get_current_pivot()
-
-        return {"FINISHED"}
-
-class_list = [SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path, OBJECT_OT_refresh]
+class_list = [SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
 
 def update_current_selection(scene):
     current_selection = bpy.context.view_layer.objects.active
@@ -301,9 +286,11 @@ def register():
     import_custom_icons()
     import_thumbnails()
 
-
     for cls in class_list:
         bpy.utils.register_class(cls)
+        
+        
+    bpy.types.Scene.output_list = []
 
     bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
     
