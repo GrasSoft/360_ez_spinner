@@ -136,6 +136,29 @@ def slow_bezier(self, context):
     end_frame.handle_right.y = radians(360)
 
 
+def fast_bezier(self, context):
+    action = get_current_action()
+    fcurve = action.fcurves.find("rotation_euler", index=2)
+    end_frame = fcurve.keyframe_points[1]
+
+    start_frame = fcurve.keyframe_points[0]
+    start_frame.handle_right_type = "ALIGNED"
+    start_frame.handle_right.x = self.start_frame
+    start_frame.handle_right.y = radians(-1)
+
+    start_frame.handle_left_type = "ALIGNED"
+    start_frame.handle_left.x = self.start_frame
+    start_frame.handle_left.y = radians(180)
+
+
+    end_frame.handle_left_type = "ALIGNED"
+    end_frame.handle_left.x = self.nr_frames + 1
+    end_frame.handle_left.y = radians(180)
+
+    end_frame.handle_right_type = "ALIGNED"
+    end_frame.handle_right.x = self.nr_frames + 1
+    end_frame.handle_right.y = radians(361)
+
 def update_interpolation(self, context):
     # update the keyframes to have the other interpolation
     remove_keyframes()
@@ -146,6 +169,7 @@ def update_interpolation(self, context):
             if item[4] == 1:
                 slow_bezier(self, context)
             elif item[4] == 2: 
+                fast_bezier(self, context)
                 return
             
 def update_use_global_settings(self, context):
