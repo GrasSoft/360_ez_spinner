@@ -16,8 +16,8 @@ from .settings.settings_defaults import *
 def interpolation_items(self, context):
     return  [
                 ('LINEAR', "", "The animation moves at constant speed", preview_collections["interpolation"]["linear"].icon_id, 0),
-                ('BEZIER', "", "The animation start and ends fast",preview_collections["interpolation"]["bezier_fast"].icon_id, 1),
-                ('BEZIER', "", "The animation start and ends slow",preview_collections["interpolation"]["bezier_slow"].icon_id, 2),               
+                ('BEZIER_SLOW', "", "The animation start and ends fast",preview_collections["interpolation"]["bezier_fast"].icon_id, 1),
+                ('BEZIER_FAST', "", "The animation start and ends slow",preview_collections["interpolation"]["bezier_slow"].icon_id, 2),               
         ]
 
 def length_items(self, context):
@@ -144,11 +144,11 @@ def fast_bezier(self, context):
     start_frame = fcurve.keyframe_points[0]
     start_frame.handle_right_type = "ALIGNED"
     start_frame.handle_right.x = self.start_frame
-    start_frame.handle_right.y = radians(-1)
+    start_frame.handle_right.y = radians(180)
 
     start_frame.handle_left_type = "ALIGNED"
     start_frame.handle_left.x = self.start_frame
-    start_frame.handle_left.y = radians(180)
+    start_frame.handle_left.y = radians(-1)
 
 
     end_frame.handle_left_type = "ALIGNED"
@@ -164,13 +164,15 @@ def update_interpolation(self, context):
     remove_keyframes()
     add_keyframes()
 
-    for item in interpolation_items(self, context):
-        if self.interpolation_type == item[0]:
-            if item[4] == 1:
-                slow_bezier(self, context)
-            elif item[4] == 2: 
-                fast_bezier(self, context)
-                return
+
+    if self.interpolation_type == "BEZIER_SLOW":
+        slow_bezier(self, context)
+        return
+    
+    if self.interpolation_type == "BEZIER_FAST":
+        print("hellp") 
+        fast_bezier(self, context)
+        return
             
 def update_use_global_settings(self, context):
     # get first collection, it will act as global

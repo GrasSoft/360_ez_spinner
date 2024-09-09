@@ -269,15 +269,20 @@ def add_keyframes():
     if fcurve is None:
         fcurve = action.fcurves.new(data_path="rotation_euler", index=2)
 
+    interpolation_type = "LINEAR"
+    if "BEZIER" in spin_settings.interpolation_type:
+        interpolation_type = "BEZIER"
+        
+
     # initial frame
     rotation_value = radians(0)
     keyframe_point = fcurve.keyframe_points.insert(offset, rotation_value)
-    keyframe_point.interpolation = spin_settings.interpolation_type
+    keyframe_point.interpolation = interpolation_type
 
     # end frame    
     rotation_value = radians(360)
     keyframe_point = fcurve.keyframe_points.insert(num_frames + offset + 1, rotation_value)
-    keyframe_point.interpolation = spin_settings.interpolation_type
+    keyframe_point.interpolation = interpolation_type
 
     # Set the scene's end frame
     bpy.context.scene.frame_start = offset
