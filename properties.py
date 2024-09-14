@@ -207,15 +207,16 @@ def update_lighting_type(self, context):
     links = world.node_tree.links
     nodes = world.node_tree.nodes
     
-    gradient_node = nodes["Mix"]
-    hdr_node = nodes["Environment Texture"]
+    gradient_node = nodes["Background"]
+    hdr_node = nodes["Background.001"]
     
-    background = nodes["Background"]
+    background = nodes["World Output"]
     
     if self.lighting_type == "HDR":
         links.new(hdr_node.outputs[0], background.inputs[0])
     else:
         links.new(gradient_node.outputs[0], background.inputs[0])
+        
         
 def update_lighting_hdr_rotation(self, context):
     world = get_current_world()
@@ -531,20 +532,33 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
 
 
 
-class SpinWiz_properties(bpy.types.PropertyGroup):    
+class SpinWiz_properties(bpy.types.PropertyGroup):   
+     
     menu_options: bpy.props.EnumProperty(
         name="Menu Options",
         items=menu_items,
         default=0
     )# type: ignore
-
+    
     enable_render: bpy.props.BoolProperty(
         name = "Enable Render",
         description = "Enable render button after the last render is done",
-        default= True,
+        default= False,
+    ) # type: ignore
+    
+    is_rendering: bpy.props.BoolProperty(
+        name = "Is rendering",
+        description= "This will be true when the add-on is rendering",
+        default=False,
     ) # type: ignore
     
     current_rendered_collection: bpy.props.StringProperty(
         name = "Collection Name",
         description = "Name of current collection being rendered",
+    ) # type: ignore
+
+    output_filepath: bpy.props.StringProperty(
+        name = "Output filepath",
+        description = "The filepath where the rendered images will be saved",
+        default= ""
     ) # type: ignore

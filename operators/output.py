@@ -13,8 +13,10 @@ def output_row(panel, layout, name):
 
     row = layout.row()    
     
-    col = row.column()
 
+    row.enabled = not spin_settings.is_rendering 
+    
+    col = row.column()
     if collection.name == name:
         if spin_settings.current_rendered_collection != name:
             op = col.operator("object.select", text=name, depress=True)
@@ -56,15 +58,21 @@ def panel_output_list(panel, layout):
         box = layout.box()
         split = box.split(factor=0.75)
         col = split.column()
-        col.label(text=output_filepath)
+        col.label(text=spin_settings.output_filepath)
 
+        
         col = split.column()
+        col.enabled = not spin_settings.is_rendering
         col.operator("wm.open_path", text="Output path")
 
         # begin render output
         layout.separator()
+        
+        if spin_settings.enable_render is False:
+            layout.label(text= "Please select a valid path!")
+        
         row = layout.row()
-        op = row.operator("object.render", text="Render output queue")
+        row.operator("object.render", text="Render output queue")
         row.enabled = spin_settings.enable_render
         
         
@@ -107,9 +115,10 @@ class OBJECT_OT_open_path(bpy.types.Operator):
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
     
     def execute(self, context):
-        global output_filepath
+        context.scene.spin_settings.output_filepath = self.filepath
 
-        output_filepath = self.filepath
+        if self.filepath is not None:
+            context.scene.spin_settings.enable_render = True
 
         return {'FINISHED'}
     
@@ -129,17 +138,24 @@ class OBJECT_OT_select(bpy.types.Operator):
         collection = bpy.data.collections[self.name]
         
         pivot = None
+        camera = None
         
         for obj in collection.objects:
             if pivot_object_name in obj.name:
                 pivot = obj
                 break
         
+        for obj in collection.objects:
+            if camera_object_name in obj.name:
+                camera = obj
+                break
+        
         # make the pivot as the selected object
         if pivot is not None:
             make_obj_active(pivot)
             
-       
+        if camera is not None:
+            context.scene.camera = camera
         
         return {"FINISHED"}            
 

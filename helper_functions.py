@@ -202,6 +202,61 @@ def make_obj_active(obj):
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
+    
+def update_current_selection(scene):
+    current_selection = bpy.context.view_layer.objects.active
+    
+    if is_selection_setup(current_selection):
+        hide_anything_but(current_selection.users_collection[0])
+        
+        camera = get_current_camera()
+        scene.camera = camera
+        
+def is_selection_valid():
+    # Iterate through the selected objects
+    correct_selection = True
+    
+    if is_selection_setup(bpy.context.active_object):
+        return True
+    
+    if len(bpy.context.view_layer.objects.selected) == 0:
+        return False
+    
+    for obj in bpy.context.view_layer.objects.selected:
+        if not (obj.type == 'MESH') : # and not collection_name in [col.name for col in obj.users_collection]:
+            # update the current context such that the UI reflects the selection
+
+            correct_selection = False
+    return correct_selection
+
+
+def is_selection_setup(current_selection):
+    if current_selection is not None:
+        current_obj = current_selection
+        
+        # Traverse up the hierarchy until an object without a parent is found
+        while current_obj.parent is not None:
+            current_obj = current_obj.parent
+        
+        for name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name, stage_name]:
+            if name in current_obj.name:
+                return True
+        
+    return False
+
+def is_camera(current_selection):
+    return current_selection.type == "CAMERA" or cam_pivot_object_name in current_selection.name
+
+def is_pivot(current_selection):
+    parent = current_selection
+    while parent.parent is not None:
+        parent = parent.parent
+        
+    return parent.type == "EMPTY" and pivot_object_name in parent.name
+
+def is_stage(current_selection):
+    return stage_name in current_selection.name
+        
 
 def setup_spincamera():  
     # camera that will rotate around the object
