@@ -22,8 +22,8 @@ def interpolation_items(self, context):
 
 def length_items(self, context):
     return [
-            ('Keyframes', "", "",'WORLD_DATA', 0),
-            ('Degrees', "", "",'WORLD_DATA', 1),
+            ('Keyframes', "By nr keyframes", "Set the number of keyframes of the animation",preview_collections["keyframes"]["nr_keyframes"].icon_id, 0),
+            ('Degrees', "By degrees", "Set the number of keyframes by degrees",preview_collections["keyframes"]["degrees"].icon_id, 1),
         ]
 
 def degrees_items(self, context):

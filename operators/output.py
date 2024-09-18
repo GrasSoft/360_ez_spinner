@@ -1,6 +1,7 @@
 import bpy
 
 from ..helper_functions import *
+from ..blender_resources.media_setup.custom_media import *
 
 
 #____________________________ PANEL FUNCTIONS
@@ -13,20 +14,14 @@ def output_row(panel, layout, name):
 
     row = layout.row()    
     
-
     row.enabled = not spin_settings.is_rendering 
     
     col = row.column()
-    if collection.name == name:
-        if spin_settings.current_rendered_collection != name:
-            op = col.operator("object.select", text=name, depress=True)
-        else:
-            op = col.operator("object.select", text=name, depress=True, icon=get_render_progress_icon())
+    
+    if spin_settings.is_rendering:
+        op = col.operator("object.select", depress= (collection.name == name), text=name, icon_value=get_render_progress_icon(name, collection.name))
     else:
-        if spin_settings.current_rendered_collection != name:
-            op = col.operator("object.select", text=name)
-        else:
-            op = col.operator("object.select", text=name, icon=get_render_progress_icon())
+        op = col.operator("object.select", depress= (collection.name == name), text=name)
 
     op.name = name
     
@@ -68,7 +63,7 @@ def panel_output_list(panel, layout):
         # begin render output
         layout.separator()
         
-        if spin_settings.enable_render is False:
+        if spin_settings.enable_render is False and spin_settings.is_rendering is False:
             layout.label(text= "Please select a valid path!")
         
         row = layout.row()
@@ -78,7 +73,14 @@ def panel_output_list(panel, layout):
         
 #_____________________________ HELPER FUNCTIONS
 
-def get_render_progress_icon():
+def get_render_progress_icon(name, current_name):
+    output_list = bpy.context.scene.output_list
+    if output_list.index(name) < output_list.index(current_name) :
+        return preview_collections["progress"]["prog_100"].icon_id
+
+    if name != current_name:
+        return preview_collections["progress"]["prog_0"].icon_id
+ 
     scene = bpy.context.scene
     
     # Get the start, end, and current frames
@@ -92,16 +94,18 @@ def get_render_progress_icon():
     # Determine the progress range based on the current frame
     if current_frame < start_frame + 0.25 * total_frames:
         # Less than a quarter of the way
-        return "OUTLINER_OB_CAMERA"
+        return preview_collections["progress"]["prog_0"].icon_id
     elif current_frame < start_frame + 0.5 * total_frames:
         # Between a quarter and half of the way
-        return "RENDER_ANIMATION"
+        return  preview_collections["progress"]["prog_25"].icon_id
     elif current_frame < start_frame + 0.75 * total_frames:
         # Between half and three-quarters of the way
-        return "MODIFIER"
+        return  preview_collections["progress"]["prog_50"].icon_id
+    elif current_frame < start_frame + (1 * total_frames) - 4:
+        # Between three-quarters and end of the way
+        return  preview_collections["progress"]["prog_75"].icon_id
     else:
-        # Between three-quarters and the end
-        return "FILE_TICK"
+        return preview_collections["progress"]["prog_100"].icon_id
 
 
 

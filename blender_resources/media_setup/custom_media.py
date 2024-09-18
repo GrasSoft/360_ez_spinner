@@ -50,11 +50,35 @@ def menu_icons():
 
     preview_collections["menu"] = previews
 
+def keyframe_icons():
+    previews = bpy.utils.previews.new()
+    global icons_path
+    global preview_collections
+
+    previews.load("degrees", os.path.join(icons_path, "By angle.png"), "IMAGE")
+    previews.load("nr_keyframes", os.path.join(icons_path, "By Number of Keyframes.png"), "IMAGE")
+
+    preview_collections["keyframes"] = previews
+
+def progress_icons():
+    previews = bpy.utils.previews.new()
+    global icons_path
+    global preview_collections
+
+    previews.load("prog_0", os.path.join(icons_path, "prog_0.png"), "IMAGE")
+    previews.load("prog_25", os.path.join(icons_path, "prog_25.png"), "IMAGE")
+    previews.load("prog_50", os.path.join(icons_path, "prog_50.png"), "IMAGE")
+    previews.load("prog_75", os.path.join(icons_path, "prog_75.png"), "IMAGE")
+    previews.load("prog_100", os.path.join(icons_path, "prog_100.png"), "IMAGE")
+
+    preview_collections["progress"] = previews
 
 def import_custom_icons():
     global icons_path
     icons_path = os.path.join(os.path.dirname(__file__), "icons")
-    
+
+    keyframe_icons()
+    progress_icons()    
     logo_icon()
     interpolation_icons()
     menu_icons()

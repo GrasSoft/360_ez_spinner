@@ -77,6 +77,7 @@ def select_length_type(panel, layout):
     options = layout
 
     row = options.row(align=True)
+    row.scale_x = 1.6 
     row.label(text="Length")
     row.prop(spin_settings, "length_type", expand=True, icon_only=True)
 

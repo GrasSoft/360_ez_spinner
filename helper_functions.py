@@ -232,7 +232,7 @@ def is_selection_valid():
         return False
     
     for obj in bpy.context.view_layer.objects.selected:
-        if not (obj.type == 'MESH') : # and not collection_name in [col.name for col in obj.users_collection]:
+        if not (obj.type == 'MESH' or obj.type == "CURVE") : # and not collection_name in [col.name for col in obj.users_collection]:
             # update the current context such that the UI reflects the selection
 
             correct_selection = False
