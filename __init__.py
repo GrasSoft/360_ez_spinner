@@ -118,6 +118,9 @@ def panel_camera_options(panel, layout):
     col.prop(spin_settings, "camera_focal_length", text="Focal Length")
     col = row.column()
     col.prop(spin_settings, "camera_distance", text="Distance")
+    
+    row = options.row()
+    row.prop(spin_settings, "camera_tracking_height_offset", text="Height of lookat point")
 
 def no_selection_warning(panel, layout):
     row = layout.row(align=True)

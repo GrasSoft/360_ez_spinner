@@ -341,7 +341,11 @@ def update_collection_name(self, context):
     
     collection.name = self.collection_name
     
-                   
+def update_lookat_pivot(self, context):
+    lookat_pivot = get_current_lookat_pivot()
+    
+    lookat_pivot.location.z = self.camera_tracking_height_offset 
+            
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_collection_properties(bpy.types.PropertyGroup):
@@ -460,6 +464,13 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update = update_camera_height, 
     )# type: ignore
 
+    camera_tracking_height_offset: bpy.props.FloatProperty(
+        name= "Camera tracking height offset",
+        description= "Set the offset height of where the camera is looking",
+        default= 0,
+        update=update_lookat_pivot
+    )# type: ignore
+    
     camera_distance: bpy.props.FloatProperty(
         name= "Camera Distance",
         description= "Sets the distance from the camera to the object",

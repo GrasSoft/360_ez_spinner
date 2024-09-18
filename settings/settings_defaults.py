@@ -32,3 +32,4 @@ default_gradient_scale = 5
 # camera defaults
 default_camera_height = 0
 default_camera_focal_length = 50
+default_camera_lookat_offset = 0

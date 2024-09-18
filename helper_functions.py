@@ -10,6 +10,15 @@ from .settings.settings_defaults import *
 #__________________________________________ CONTEXT FUNCTIONS
 # functions that help setup and update the correct objects and properties
 
+def get_current_lookat_pivot():
+    collection = get_current_collection()
+    
+    for obj in collection.objects:
+        if pivot_track_name in obj.name:
+            return obj
+        
+    return None
+
 # this function gets the current collection based on the selected object
 def get_current_world():
     collection = get_current_collection()
@@ -238,7 +247,7 @@ def is_selection_setup(current_selection):
         while current_obj.parent is not None:
             current_obj = current_obj.parent
         
-        for name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name, stage_name]:
+        for name in [cam_pivot_object_name, pivot_object_name, camera_object_name, curve_object_name, stage_name, pivot_track_name]:
             if name in current_obj.name:
                 return True
         
@@ -282,7 +291,7 @@ def setup_spincamera():
     # set the pivot point as the parent so that the rotation is the same
     camera.parent = pivot
 
-    set_camera_track(pivot)
+    set_camera_track()
 
     make_obj_active(get_current_pivot())
 
@@ -305,7 +314,7 @@ def setup_spinobject():
     if camera.location.x < pivot.location.x + radius: 
         camera.location = pivot.location + Vector((radius, 0, 0)) 
 
-    set_camera_track(pivot)
+    set_camera_track()
 
     make_obj_active(pivot)
 
@@ -353,7 +362,9 @@ def remove_keyframes():
         fcurve.keyframe_points.clear()
 
 
-def set_camera_track(target):
+def set_camera_track():
+    target = get_current_lookat_pivot()
+    
     camera_object = get_current_camera()
     # Add a 'Track To' constraint to the camera
     track_to = camera_object.constraints.new(type='TRACK_TO')
@@ -466,6 +477,7 @@ def use_settings_of_other(collection_name):
     current_settings.camera_height = prev_settings.camera_height
     current_settings.camera_focal_length = prev_settings.camera_focal_length
     current_settings.camera_distance = get_current_camera().location.x
+    current_settings.camera_tracking_height_offset = prev_settings.camera_tracking_height_offset 
     
     # stage settings
     current_settings.add_stage = prev_settings.add_stage

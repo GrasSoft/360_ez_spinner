@@ -16,12 +16,12 @@ def create_action():
     
     add_keyframes()
 
-def create_pivot(collection):
+def create_pivot(collection, name):
     # Create an empty object
     bpy.ops.object.empty_add(location=(0, 0, 0))  # You can adjust the location as needed
     empty_obj = bpy.context.object
 
-    empty_obj.name = pivot_object_name
+    empty_obj.name = name
 
     for col in empty_obj.users_collection:
         col.objects.unlink(empty_obj)  
@@ -74,7 +74,10 @@ def create_copy_and_hide():
     selected_objects = bpy.context.selected_objects
     selected_objects = [obj for obj in selected_objects if obj.parent is None]
 
-    pivot = create_pivot(new_collection)
+    pivot = create_pivot(new_collection, pivot_object_name)
+    
+    # the pivot we look at is different than the pivot that holds the objects
+    look_at_pivot = create_pivot(new_collection, pivot_track_name)
 
     for original_obj in selected_objects: 
         # Create a new object by copying the original
