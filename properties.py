@@ -573,3 +573,8 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         description = "The filepath where the rendered images will be saved",
         default= ""
     ) # type: ignore
+    
+    show_update_window: bpy.props.BoolProperty(
+        name = "Show update settings",
+        default= False
+    ) # type: ignore

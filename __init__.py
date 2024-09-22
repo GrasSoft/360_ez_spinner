@@ -29,6 +29,10 @@ from .operators.output import *
 
 from .operators.render import *
 
+from . import addon_updater_ops
+
+
+
 bl_info = {
     "name" : "360_spinner",
     "author" : "Cristian Cutitei",
@@ -151,6 +155,10 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         self.layout.label(text="", icon_value=preview_collections["logo"]["logo"].icon_id)
     
     def draw(self, context):
+        
+        # check for update in background
+        addon_updater_ops.check_for_update_background()
+        
         scene = context.scene
         spin_settings = scene.spin_settings
                 
@@ -234,17 +242,78 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
 
                         layout.separator()
                         
-                
-
+        #automatic update function 
+        layout.separator()
+        
+        update_setup_box = layout.box()
+        update_setup_box.prop(spin_settings, "show_update_window")     
+        
+        if spin_settings.show_update_window:       
+            addon_updater_ops.update_settings_ui(self,context)
+        
+        addon_updater_ops.update_notice_box_ui(self, context)
+        
         # documentation button
         documentation(self, layout)   
 
-class_list = [SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
 
+
+class UpdatePreferences(bpy.types.AddonPreferences):
+	"""Demo bare-bones preferences"""
+	bl_idname = __package__
+
+	# Addon updater preferences.
+
+	auto_check_update: bpy.props.BoolProperty(
+		name="Auto-check for Update",
+		description="If enabled, auto-check for updates using an interval",
+		default=True
+    ) # type: ignore
+
+	updater_interval_months: bpy.props.IntProperty(
+		name='Months',
+		description="Number of months between checking for updates",
+		default=0,
+		min=0
+    ) # type: ignore
+
+
+	updater_interval_days: bpy.props.IntProperty(
+		name='Days',
+		description="Number of days between checking for updates",
+		default=1,
+		min=0,
+		max=31
+    ) # type: ignore
+
+
+	updater_interval_hours: bpy.props.IntProperty(
+		name='Hours',
+		description="Number of hours between checking for updates",
+		default=0,
+		min=0,
+		max=23
+    ) # type: ignore
+
+
+	updater_interval_minutes: bpy.props.IntProperty(
+		name='Minutes',
+		description="Number of minutes between checking for updates",
+		default=0,
+		min=0,
+		max=59
+    ) # type: ignore
+
+
+	
+
+class_list = [UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
 
         
 
 def register():
+    addon_updater_ops.register(bl_info)
+    
     import_custom_icons()
     import_thumbnails()
 
