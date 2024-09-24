@@ -16,17 +16,27 @@ def output_row(panel, layout, name):
     
     row.enabled = not spin_settings.is_rendering 
     
-    col = row.column()
+    up_down = row.row(align=True)
+    up = up_down.column()
+    up.enabled = (scene.output_list.index(name) > 0)
+    op = up.operator("object.up_down", depress= (collection.name == name), icon= "TRIA_UP", text="")
+    op.name = name
+    op.up_down = True
     
+    down = up_down.column()
+    down.enabled = (scene.output_list.index(name) < len(scene.output_list) - 1)
+    op = down.operator("object.up_down", depress= (collection.name == name), icon = "TRIA_DOWN", text="")
+    op.name = name
+    op.up_down = False
+    
+    col = row.column()
     if spin_settings.is_rendering:
         op = col.operator("object.select", depress= (collection.name == name), text=name, icon_value=get_render_progress_icon(name, collection.name))
     else:
         op = col.operator("object.select", depress= (collection.name == name), text=name)
 
-    op.name = name
-    
     col = row.column()
-    op = row.operator("object.remove_output", text="", icon="TRASH")
+    op = row.operator("object.remove_output", text="", icon="TRASH", depress= (collection.name == name))
     op.name = name
     
 def panel_operator_add_to_output(panel, layout):
@@ -110,6 +120,34 @@ def get_render_progress_icon(name, current_name):
 
 
 #_____________________________ CLASSES
+
+class OBJECT_OT_up_down(bpy.types.Operator):
+    bl_idname = "object.up_down"
+    bl_label = "Move the output"
+    bl_description = "Move the output up and down the queue"
+    
+    name: bpy.props.StringProperty()
+    up_down : bpy.props.BoolProperty()
+    
+    def execute(self, context):
+        output_list = bpy.data.scenes[0].output_list
+        
+        # Find the index of the string
+        index = output_list.index(self.name)
+            
+        
+        if self.up_down:
+            # If it's not the first element, swap it with the previous element
+            if index > 0:
+                # Swap the element with the one on its left
+                output_list[index], output_list[index - 1] = output_list[index - 1], output_list[index]
+        else:
+            # If it's not the last element, swap it with the previous element
+            if index < len(output_list):
+                # Swap the element with the one on its left
+                output_list[index], output_list[index + 1] = output_list[index + 1], output_list[index]
+        
+        return {'FINISHED'}
 
 class OBJECT_OT_open_path(bpy.types.Operator):
     bl_idname = "wm.open_path"

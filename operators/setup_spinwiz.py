@@ -107,6 +107,8 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     bl_description = "This operator creates the setup for Spin Wiz"
 
     def execute(self, context):
+        context.scene.spin_settings.menu_options = "motion_setup"
+        
         collection = create_copy_and_hide()
         
         # order matters

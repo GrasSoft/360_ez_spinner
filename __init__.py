@@ -307,7 +307,7 @@ class UpdatePreferences(bpy.types.AddonPreferences):
 
 	
 
-class_list = [UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
+class_list = [UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_up_down, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
 
         
 
