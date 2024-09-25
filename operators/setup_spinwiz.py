@@ -69,6 +69,10 @@ def create_copy_and_hide():
     # Create a new collection for the copied objects
     new_collection = bpy.data.collections.new(collection_name)
     bpy.context.scene.collection.children.link(new_collection)
+    
+    # add collection to collection list
+    bpy.context.scene.collections_list.append(new_collection.name)
+
 
     # Get selected objects without parents
     selected_objects = bpy.context.selected_objects
@@ -107,6 +111,7 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     bl_description = "This operator creates the setup for Spin Wiz"
 
     def execute(self, context):
+        
         context.scene.spin_settings.menu_options = "motion_setup"
         
         collection = create_copy_and_hide()

@@ -208,7 +208,6 @@ def create_cam_pivot():
     return empty_obj
 
 def make_obj_active(obj):
-    bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     
@@ -220,6 +219,8 @@ def update_current_selection(scene):
         
         camera = get_current_camera()
         scene.camera = camera
+        
+        scene.spin_settings.dropdown_collections = current_selection.users_collection[0].name
         
 def is_selection_valid():
     # Iterate through the selected objects

@@ -34,6 +34,7 @@ def output_row(panel, layout, name):
         op = col.operator("object.select", depress= (collection.name == name), text=name, icon_value=get_render_progress_icon(name, collection.name))
     else:
         op = col.operator("object.select", depress= (collection.name == name), text=name)
+    op.name = name
 
     col = row.column()
     op = row.operator("object.remove_output", text="", icon="TRASH", depress= (collection.name == name))
@@ -180,25 +181,16 @@ class OBJECT_OT_select(bpy.types.Operator):
         collection = bpy.data.collections[self.name]
         
         pivot = None
-        camera = None
         
         for obj in collection.objects:
             if pivot_object_name in obj.name:
                 pivot = obj
                 break
         
-        for obj in collection.objects:
-            if camera_object_name in obj.name:
-                camera = obj
-                break
-        
         # make the pivot as the selected object
         if pivot is not None:
             make_obj_active(pivot)
             
-        if camera is not None:
-            context.scene.camera = camera
-        
         return {"FINISHED"}            
 
 class OBJECT_OT_output(bpy.types.Operator):

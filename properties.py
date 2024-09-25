@@ -59,7 +59,31 @@ def lighting_type_items(self, context):
         ("HDR", "HDR Lighting", "Set up the lighting with an HDR image",preview_collections["thumbnail"]["hdr"].icon_id, 0),
         ("GRADIENT", "Gradient Lighting", "Set up lighting with a gradient",preview_collections["thumbnail"]["gradient"].icon_id, 1),
     ]
+    
+def dynamic_dropdown_items(self, context):
+    items = context.scene.collections_list
+    
+    dropdown_items = []
+    
+    for item in items:
+        dropdown_items.append((item, item, ""))
+        
+    return dropdown_items
 #____________________________ UPDATE FUNCTIONS
+
+def update_current_collection(self, context):
+    collection = bpy.data.collections[self.dropdown_collections]
+    
+    pivot = None
+    
+    for obj in collection.objects:
+        if pivot_object_name in obj.name:
+            pivot = obj
+            break
+    
+    # make the pivot as the selected object
+    if pivot is not None and pivot not in context.selected_objects:
+        make_obj_active(pivot)
 
 def update_movement_type(self, context):
     scene = context.scene
@@ -332,8 +356,15 @@ def update_collection_name(self, context):
     if self.collection_name in collection_names:
         return 
     
-    context.scene.output_list.remove(collection.name)
-    context.scene.output_list.append(self.collection_name)
+    output_list = context.scene.output_list
+    for i in range(len(output_list)):
+        if output_list[i] == collection.name:
+            output_list[i] = self.collection_name
+
+    collections_list = context.scene.collections_list
+    for i in range(len(collections_list)):
+        if collections_list[i] == collection.name:
+            collections_list[i] = self.collection_name
 
     spin_settings = getattr(bpy.context.scene, get_current_collection().name)
     setattr(bpy.types.Scene, self.collection_name, spin_settings)
@@ -574,7 +605,10 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         default= ""
     ) # type: ignore
     
-    show_update_window: bpy.props.BoolProperty(
-        name = "Show update settings",
-        default= False
+    dropdown_collections: bpy.props.EnumProperty(
+        name = "Dropdown Collection",
+        description = "Dropdown to select the collection you want to work on",
+        items = dynamic_dropdown_items,
+        update= update_current_collection
     ) # type: ignore
+  

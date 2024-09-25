@@ -35,7 +35,7 @@ from . import addon_updater_ops
 
 bl_info = {
     "name" : "360_spinner",
-    "author" : "Cristian Cutitei",
+    "author" : "VizPrime",
     "description" : "",
     "blender" : (4, 1, 0),
     "version" : (0, 0, 1),
@@ -117,6 +117,8 @@ def panel_camera_options(panel, layout):
     options.label(text="Current: " + get_current_camera().name)
     
     options.prop(spin_settings, "camera_height", text="Camera Height")
+    
+    options.prop(spin_settings, "camera_tracking_height_offset", text="Lookat point height")
 
     row = options.row()
     col = row.column()
@@ -124,8 +126,7 @@ def panel_camera_options(panel, layout):
     col = row.column()
     col.prop(spin_settings, "camera_distance", text="Distance")
     
-    row = options.row()
-    row.prop(spin_settings, "camera_tracking_height_offset", text="Height of lookat point")
+    
 
 def no_selection_warning(panel, layout):
     row = layout.row(align=True)
@@ -193,7 +194,11 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                             layout.label(text= "To cancel, close the render window")
                         else:
                             layout.separator()
-                    
+
+                            layout.label(text="Select another collection")
+                            layout.prop(spin_settings, "dropdown_collections", text="")    
+                                
+                            layout.label(text="Change the current collection name")
                             box = layout.box()
                             row = box.row()
                             row.prop(collection_settings, "collection_name", text="")     
@@ -241,16 +246,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                         panel_output_list(self, layout)
 
                         layout.separator()
-                        
-        #automatic update function 
-        layout.separator()
-        
-        update_setup_box = layout.box()
-        update_setup_box.prop(spin_settings, "show_update_window")     
-        
-        if spin_settings.show_update_window:       
-            addon_updater_ops.update_settings_ui(self,context)
-        
+                                
         addon_updater_ops.update_notice_box_ui(self, context)
         
         # documentation button
@@ -259,53 +255,56 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
 
 
 class UpdatePreferences(bpy.types.AddonPreferences):
-	"""Demo bare-bones preferences"""
-	bl_idname = __package__
+    """Demo bare-bones preferences"""
+    bl_idname = __package__
 
-	# Addon updater preferences.
+    # Addon updater preferences.
+    auto_check_update: bpy.props.BoolProperty(
+        name="Auto-check for Update",
+        description="If enabled, auto-check for updates using an interval",
+        default=True
+    )  # type: ignore
 
-	auto_check_update: bpy.props.BoolProperty(
-		name="Auto-check for Update",
-		description="If enabled, auto-check for updates using an interval",
-		default=True
-    ) # type: ignore
+    updater_interval_months: bpy.props.IntProperty(
+        name='Months',
+        description="Number of months between checking for updates",
+        default=0,
+        min=0
+    )  # type: ignore
 
-	updater_interval_months: bpy.props.IntProperty(
-		name='Months',
-		description="Number of months between checking for updates",
-		default=0,
-		min=0
-    ) # type: ignore
+    updater_interval_days: bpy.props.IntProperty(
+        name='Days',
+        description="Number of days between checking for updates",
+        default=1,
+        min=0,
+        max=31
+    )  # type: ignore
+
+    updater_interval_hours: bpy.props.IntProperty(
+        name='Hours',
+        description="Number of hours between checking for updates",
+        default=0,
+        min=0,
+        max=23
+    )  # type: ignore
+
+    updater_interval_minutes: bpy.props.IntProperty(
+        name='Minutes',
+        description="Number of minutes between checking for updates",
+        default=0,
+        min=0,
+        max=59
+    )  # type: ignore
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="SpinWiz Update Settings")
+
+        # the update settings
+        addon_updater_ops.update_settings_ui(self, context)
+        
 
 
-	updater_interval_days: bpy.props.IntProperty(
-		name='Days',
-		description="Number of days between checking for updates",
-		default=1,
-		min=0,
-		max=31
-    ) # type: ignore
-
-
-	updater_interval_hours: bpy.props.IntProperty(
-		name='Hours',
-		description="Number of hours between checking for updates",
-		default=0,
-		min=0,
-		max=23
-    ) # type: ignore
-
-
-	updater_interval_minutes: bpy.props.IntProperty(
-		name='Minutes',
-		description="Number of minutes between checking for updates",
-		default=0,
-		min=0,
-		max=59
-    ) # type: ignore
-
-
-	
 
 class_list = [UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_up_down, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
 
@@ -323,6 +322,8 @@ def register():
         
     bpy.types.Scene.output_list = []
     
+    bpy.types.Scene.collections_list = []
+    
     bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
     
     bpy.app.handlers.depsgraph_update_post.append(update_current_selection)
@@ -336,8 +337,8 @@ def unregister():
     global preview_collections
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
+        
     preview_collections.clear()
     
-
 if __name__ == "__main__":
     register()
