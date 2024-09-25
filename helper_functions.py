@@ -7,6 +7,8 @@ from .naming_convetions import *
 
 from .settings.settings_defaults import *
 
+current_rename = None
+
 #__________________________________________ CONTEXT FUNCTIONS
 # functions that help setup and update the correct objects and properties
 
@@ -212,6 +214,9 @@ def make_obj_active(obj):
     bpy.context.view_layer.objects.active = obj
     
 def update_current_selection(scene):
+    global current_rename
+    current_rename = None
+    
     current_selection = bpy.context.view_layer.objects.active
     
     if is_selection_setup(current_selection):

@@ -71,6 +71,10 @@ def dynamic_dropdown_items(self, context):
     return dropdown_items
 #____________________________ UPDATE FUNCTIONS
 
+def update_menu_options(self, context):
+    global current_rename
+    current_rename = None
+
 def update_current_collection(self, context):
     collection = bpy.data.collections[self.dropdown_collections]
     
@@ -346,6 +350,9 @@ def update_camera_focal_length(self, context):
         
 
 def update_collection_name(self, context):
+    global current_rename
+    current_rename = None
+    
     collection = get_current_collection()
     
     if self.collection_name == "":
@@ -579,7 +586,8 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
     menu_options: bpy.props.EnumProperty(
         name="Menu Options",
         items=menu_items,
-        default=0
+        default=0,
+        update= update_menu_options, 
     )# type: ignore
     
     enable_render: bpy.props.BoolProperty(

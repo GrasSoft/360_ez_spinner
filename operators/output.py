@@ -11,6 +11,8 @@ def output_row(panel, layout, name):
     spin_settings = scene.spin_settings
 
     collection = get_current_collection()
+    collection_settings = getattr(bpy.context.scene, get_current_collection().name)
+                
 
     row = layout.row()    
     
@@ -33,7 +35,14 @@ def output_row(panel, layout, name):
     if spin_settings.is_rendering:
         op = col.operator("object.select", depress= (collection.name == name), text=name, icon_value=get_render_progress_icon(name, collection.name))
     else:
-        op = col.operator("object.select", depress= (collection.name == name), text=name)
+        global current_rename
+        if current_rename == name:
+            col.prop(collection_settings, "collection_name", text="")     
+        else:
+            if collection.name == name:
+                op = col.operator("object.rename", depress= (collection.name == name), text=name)
+            else:
+                op = col.operator("object.select", text=name)
     op.name = name
 
     col = row.column()
@@ -122,6 +131,7 @@ def get_render_progress_icon(name, current_name):
 
 #_____________________________ CLASSES
 
+
 class OBJECT_OT_up_down(bpy.types.Operator):
     bl_idname = "object.up_down"
     bl_label = "Move the output"
@@ -131,6 +141,7 @@ class OBJECT_OT_up_down(bpy.types.Operator):
     up_down : bpy.props.BoolProperty()
     
     def execute(self, context):
+        
         output_list = bpy.data.scenes[0].output_list
         
         # Find the index of the string
@@ -170,14 +181,32 @@ class OBJECT_OT_open_path(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
 
+
+class OBJECT_OT_rename(bpy.types.Operator):
+    bl_idname = "object.rename"
+    bl_label = "Rename Object"
+    bl_description = "Rename the current selected collection"
+    
+    name: bpy.props.StringProperty()
+    
+    def execute(self, context):
+        global current_rename
+        current_rename = self.name
+        
+        return {'FINISHED'}
+
+
 class OBJECT_OT_select(bpy.types.Operator):
     bl_idname = "object.select"
     bl_label = "Select Item"
     bl_description = "Select the item to be able to modify the settings again"
     
     name: bpy.props.StringProperty()
+    is_selected: bpy.props.BoolProperty()
     
     def execute(self, context):
+        global current_rename
+        current_rename = None
         collection = bpy.data.collections[self.name]
         
         pivot = None
