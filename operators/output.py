@@ -37,7 +37,7 @@ def output_row(panel, layout, name):
     else:
         global current_rename
         if current_rename == name:
-            col.prop(collection_settings, "collection_name", text="")     
+            col.prop(get_current_collection(), "name", text="")     
         else:
             if collection.name == name:
                 op = col.operator("object.rename", depress= (collection.name == name), text=name)

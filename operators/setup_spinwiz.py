@@ -16,9 +16,9 @@ def create_action():
     
     add_keyframes()
 
-def create_pivot(collection, name):
+def create_pivot(collection, name, location):
     # Create an empty object
-    bpy.ops.object.empty_add(location=(0, 0, 0))  # You can adjust the location as needed
+    bpy.ops.object.empty_add(location= location)  # You can adjust the location as needed
     empty_obj = bpy.context.object
 
     empty_obj.name = name
@@ -35,6 +35,7 @@ def create_pivot(collection, name):
 def duplicate_object_with_hierarchy(obj, parent=None, collection=None):
     # Duplicate the object
     duplicate_obj = obj.copy()
+    duplicate_obj.location = Vector()
     duplicate_obj.data = obj.data.copy() if obj.data else None
 
 
@@ -46,19 +47,18 @@ def duplicate_object_with_hierarchy(obj, parent=None, collection=None):
     collection.objects.link(duplicate_obj)
 
     # Preserve the transformation
-    duplicate_obj.location = obj.location
-    duplicate_obj.rotation_euler = obj.rotation_euler
-    duplicate_obj.scale = obj.scale
+    # duplicate_obj.location = obj.location
+    # duplicate_obj.rotation_euler = obj.rotation_euler
+    # duplicate_obj.scale = obj.scale
     
     # Set the parent for the duplicate object if provided
     if parent:
         duplicate_obj.parent = parent
         # Preserve the relative transformation to the parent
-        duplicate_obj.matrix_parent_inverse = obj.matrix_parent_inverse
+        # duplicate_obj.matrix_parent_inverse = obj.matrix_parent_inverse
     
     # Recursively duplicate children
     for child in obj.children:
-        print(child)
         duplicate_object_with_hierarchy(child, parent=duplicate_obj, collection=collection)
     
     return duplicate_obj    
@@ -78,14 +78,15 @@ def create_copy_and_hide():
     selected_objects = bpy.context.selected_objects
     selected_objects = [obj for obj in selected_objects if obj.parent is None]
 
-    pivot = create_pivot(new_collection, pivot_object_name)
+    pivot = create_pivot(new_collection, pivot_object_name, get_collection_origin(bpy.context.selected_objects))
     
     # the pivot we look at is different than the pivot that holds the objects
-    look_at_pivot = create_pivot(new_collection, pivot_track_name)
+    look_at_pivot = create_pivot(new_collection, pivot_track_name, get_collection_origin(bpy.context.selected_objects))
 
     for original_obj in selected_objects: 
         # Create a new object by copying the original
         duplicate_object_with_hierarchy(original_obj, parent=pivot, collection=new_collection) 
+             
                
     hide_anything_but(new_collection)
                 

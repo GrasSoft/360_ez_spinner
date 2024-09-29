@@ -35,6 +35,11 @@ def get_original_world():
         return bpy.data.worlds[collection["original_world"]]
 
 def get_current_collection():
+    active_collection = bpy.context.view_layer.active_layer_collection
+    
+    if active_collection is not None and not bpy.context.scene.collection:
+        return bpy.data.collections[active_collection.name]
+    
     if bpy.context.object is not None:
         return bpy.context.object.users_collection[0]
 
@@ -128,22 +133,22 @@ def hide_anything_but(new_collection):
             # Hide the object from the viewport using hide_set
             obj.hide_set(True)
  
-def get_collection_origin(pivot):
+def get_collection_origin(objects):
     x, y, z = 0,0,0
 
-    for obj in pivot.children:
+    for obj in objects:
         x += obj.location.x
         y += obj.location.y
         z += obj.location.z
-    l = len(pivot.children)
+    l = len(objects)
 
     return (x/l, y/l, z/l)
 
 # the min and max coordinates in any direction, return a tuple    
 def get_collection_bounding_box(pivot):
     # Initialize min and max values using the first corner
-    min_corner = list(pivot.location)
-    max_corner = list(pivot.location)
+    min_corner = [float('inf'), float('inf'), float('inf')]
+    max_corner = [-float('inf'), -float('inf'), -float('inf')]
 
     for obj in pivot.children:
         bounding_box = obj.bound_box
@@ -213,10 +218,51 @@ def make_obj_active(obj):
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     
+
+old_collection_names = []    
+   
+    
 def update_current_selection(scene):
     global current_rename
     current_rename = None
+   
+    current_collection_names = [col.name for col in scene.collection.children]
+    global old_collection_names
+   
+   
+    current = set(current_collection_names)
+    old = set(old_collection_names)
     
+    if old_collection_names is None:
+        old_collection_names = current_collection_names
+    
+    if current != old:
+        # Find unique elements
+        new_name = current - old
+        old_name = old     - current
+        
+        if len(old_name) > 0:
+            new_name = list(new_name)[0]
+            old_name = list(old_name)[0]
+    
+            
+            scene.collections_list.append(new_name)
+            scene.collections_list.remove(old_name)
+            
+            spin_settings = getattr(bpy.context.scene, old_name)
+            setattr(bpy.types.Scene, new_name, spin_settings)
+            delattr(bpy.types.Scene, old_name)
+            
+            if old_name in scene.output_list:
+                scene.output_list.append(new_name)
+                scene.output_list.remove(old_name)
+
+            
+            
+    old_collection_names = current_collection_names
+    
+    
+                 
     current_selection = bpy.context.view_layer.objects.active
     
     if is_selection_setup(current_selection):
@@ -407,7 +453,8 @@ def get_track_radius():
 
     (min_corner, max_corner) = get_collection_bounding_box(get_current_pivot())
 
-    dimensions = [max_corner[0] - min_corner[0], max_corner[1] - min_corner[1], max_corner[2] - min_corner[2]]
+    dimensions = [max_corner[0] - min_corner[0] , max_corner[1] - min_corner[1], max_corner[2] - min_corner[2]]
+    
     dimension = max(dimensions)/2
     # This only applies in the case wehre the aspect ratio of the camera makes it so the height is lower than the, width (TODO check different cases)
     # Increase the margins of the object by increasing the dimensions of the object with a certain amount
@@ -430,8 +477,9 @@ def create_camera():
     collection_name = collection.name
     
 
-    bpy.ops.object.camera_add()
+    bpy.ops.object.camera_add(location= get_collection_origin(get_current_collection().objects))
     camera_object = bpy.context.active_object
+    
 
     camera_object.name = camera_object_name
     camera_object.data.name = camera_object_name
@@ -439,7 +487,8 @@ def create_camera():
     # add properties
     
     camera_object.data.lens = camera_settings.camera_focal_length
-    camera_object.location = (camera_settings.camera_distance, 0, camera_settings.camera_height)
+    # camera_object.location += Vector((camera_settings.camera_distance, 0, camera_settings.camera_height))
+
 
     for col in camera_object.users_collection:
         col.objects.unlink(camera_object)   
@@ -460,9 +509,6 @@ def use_settings_of_other(collection_name):
     current_collection = get_current_collection()
     current_settings = getattr(bpy.context.scene, current_collection.name)
     
-    # collection name 
-    current_settings.collection_name = current_collection.name
-    
     # animation settings
     current_settings.movement_type = prev_settings.movement_type
     current_settings.degrees = prev_settings.degrees
@@ -480,11 +526,10 @@ def use_settings_of_other(collection_name):
     current_settings.lighting_gradient_scale = prev_settings.lighting_gradient_scale
     
     # camera settings
-    current_settings.camera_height = prev_settings.camera_height
+    current_settings.camera_height = get_current_camera().location.z
     current_settings.camera_focal_length = prev_settings.camera_focal_length
     current_settings.camera_distance = get_current_camera().location.x
-    current_settings.camera_tracking_height_offset = prev_settings.camera_tracking_height_offset 
-    
+    current_settings.camera_tracking_height_offset = get_current_camera().location.z
     # stage settings
     current_settings.add_stage = prev_settings.add_stage
     current_settings.stage_height_offset = prev_settings.stage_height_offset

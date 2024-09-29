@@ -201,7 +201,9 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                             layout.label(text="Change the current collection name")
                             box = layout.box()
                             row = box.row()
-                            row.prop(collection_settings, "collection_name", text="")     
+                            
+                            row.prop(get_current_collection(), "name", text="")
+                            # row.prop(collection_settings, "collection_name", text="")     
                             
                             box = layout.box()
                             box.prop(collection_settings, "use_global_settings", text="Use global settings, unchecking returns to defaults")
@@ -328,8 +330,7 @@ def register():
     bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
     
     bpy.app.handlers.depsgraph_update_post.append(update_current_selection)
-
-
+    
 def unregister():
     for cls in class_list:
         bpy.utils.unregister_class(cls)

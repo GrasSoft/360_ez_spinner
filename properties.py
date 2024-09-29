@@ -348,36 +348,6 @@ def update_camera_focal_length(self, context):
     if cam_obj is not None:
         cam_obj.data.lens = self.camera_focal_length
         
-
-def update_collection_name(self, context):
-    global current_rename
-    current_rename = None
-    
-    collection = get_current_collection()
-    
-    if self.collection_name == "":
-        self.collection_name = collection.name
-        return 
-   
-    collection_names = [collection.name for collection in bpy.data.collections]
-    if self.collection_name in collection_names:
-        return 
-    
-    output_list = context.scene.output_list
-    for i in range(len(output_list)):
-        if output_list[i] == collection.name:
-            output_list[i] = self.collection_name
-
-    collections_list = context.scene.collections_list
-    for i in range(len(collections_list)):
-        if collections_list[i] == collection.name:
-            collections_list[i] = self.collection_name
-
-    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
-    setattr(bpy.types.Scene, self.collection_name, spin_settings)
-    delattr(bpy.types.Scene, collection.name)
-    
-    collection.name = self.collection_name
     
 def update_lookat_pivot(self, context):
     lookat_pivot = get_current_lookat_pivot()
@@ -387,13 +357,6 @@ def update_lookat_pivot(self, context):
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_collection_properties(bpy.types.PropertyGroup):
-    collection_name: bpy.props.StringProperty(
-        name = "Collection Name",
-        description = "Name of the collection",
-        default= collection_name,
-        update= update_collection_name
-    ) # type: ignore
-    
     use_global_settings: bpy.props.BoolProperty(
         name= "Use Global Settings",
         description= "Use the settings of the first collection created",
