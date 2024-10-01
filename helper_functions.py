@@ -1,4 +1,7 @@
 import bpy
+
+from bpy.app.handlers import persistent
+
 from mathutils import Vector
 from math import pi, radians
 import math
@@ -221,7 +224,7 @@ def make_obj_active(obj):
 
 old_collection_names = []    
    
-    
+@persistent    
 def update_current_selection(scene):
     global current_rename
     current_rename = None
@@ -246,8 +249,13 @@ def update_current_selection(scene):
             old_name = list(old_name)[0]
     
             
-            scene.collections_list.append(new_name)
-            scene.collections_list.remove(old_name)
+            new_item = scene.collections_list.add()
+            new_item.name = new_name
+            
+            for index, item in enumerate(scene.collections_list):
+                if item.name == old_name:
+                    scene.collecitons_list.remove(index)
+                    break
             
             spin_settings = getattr(bpy.context.scene, old_name)
             setattr(bpy.types.Scene, new_name, spin_settings)

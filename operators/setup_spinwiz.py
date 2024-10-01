@@ -4,7 +4,7 @@ from ..naming_convetions import *
 
 from ..helper_functions import *
 
-from ..properties import update_movement_type, SpinWiz_collection_properties
+from ..properties import  SpinWiz_collection_properties, SpinWiz_properties
  
 
 def create_action():
@@ -71,8 +71,8 @@ def create_copy_and_hide():
     bpy.context.scene.collection.children.link(new_collection)
     
     # add collection to collection list
-    bpy.context.scene.collections_list.append(new_collection.name)
-
+    item = bpy.context.scene.collections_list.add()
+    item.name = new_collection.name
 
     # Get selected objects without parents
     selected_objects = bpy.context.selected_objects
@@ -112,6 +112,17 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     bl_description = "This operator creates the setup for Spin Wiz"
 
     def execute(self, context):
+        
+        if not hasattr(bpy.types.Scene, "rename"):
+            bpy.types.Scene.rename = None
+        
+        if not hasattr(bpy.types.Scene, "output_list"):
+            bpy.types.Scene.output_list = []
+    
+        if not hasattr(bpy.types.Scene, "output_filepath"):
+            bpy.types.Scene.output_filepath = ""
+            
+        
         
         context.scene.spin_settings.menu_options = "motion_setup"
         

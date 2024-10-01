@@ -12,6 +12,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import bpy
+
+from bpy.app.handlers import persistent
+
 from bpy.types import Context
 from mathutils import Vector
 from math import pi, radians
@@ -171,8 +174,9 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         
         layout.scale_y = 1.2
         
+        
         # check if there are any selected objects (TODO: check if the selected object is an actual object)
-        if not is_selection_valid():
+        if not is_selection_valid() and collection_settings is not None:
             no_selection_warning(self, layout)      
         else:
             if not is_selection_setup(current_selection):
@@ -306,13 +310,14 @@ class UpdatePreferences(bpy.types.AddonPreferences):
         addon_updater_ops.update_settings_ui(self, context)
         
 
+# Define a PropertyGroup for the list items
+class MyCollectionItem(bpy.types.PropertyGroup):
+    name: bpy.props.StringProperty(name="Item Name")
+
+class_list = [MyCollectionItem, UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_rename , OBJECT_OT_up_down, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]     
 
 
-class_list = [UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_rename , OBJECT_OT_up_down, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]
-
-        
-
-def register():
+def register():    
     addon_updater_ops.register(bl_info)
     
     import_custom_icons()
@@ -320,16 +325,55 @@ def register():
 
     for cls in class_list:
         bpy.utils.register_class(cls)
-        
-    bpy.types.Scene.rename = None
-        
-    bpy.types.Scene.output_list = []
-    
-    bpy.types.Scene.collections_list = []
     
     bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
     
+    bpy.types.Scene.collections_list = bpy.props.CollectionProperty(type=MyCollectionItem) 
+    
     bpy.app.handlers.depsgraph_update_post.append(update_current_selection)
+    
+    bpy.app.handlers.load_post.append(on_load_post_handler)
+    
+# Timer function to delay the registration of dynamic properties
+def delayed_property_registration():
+    # Ensure the attribute is present and populated with items before registering
+    scene = bpy.context.scene
+    if hasattr(scene, 'collections_list') and len(scene.collections_list) > 0:
+        print("nigger")
+        register_dynamic_properties()
+        return None  # Stop the timer once registration is complete
+    else:
+        # Print debugging info for clarity
+        print("collections_list is either missing or empty; retrying in 1 second...")
+        return 1.0  # Repeat after 1 second
+
+
+
+# Function to register dynamic properties based on the items in collections_list
+def register_dynamic_properties():
+    scene = bpy.context.scene
+    if not hasattr(scene, 'collections_list'):
+        print("collections_list not found in scene.")
+        return
+    
+    if not scene.collections_list:
+        print("collections_list is present but empty. No properties to register.")
+        return
+
+    # Iterate through the collections list and register dynamic properties
+    for item in scene.collections_list:
+        prop_name = item.name
+        try:
+            if not hasattr(bpy.types.Scene, prop_name):
+                setattr(bpy.types.Scene, prop_name, bpy.props.PointerProperty(type=SpinWiz_collection_properties))
+                print(f"Successfully registered dynamic property: {prop_name}")
+        except Exception as e:
+            print(f"Failed to register property {prop_name}: {e}")
+
+@persistent
+def on_load_post_handler(dummy):
+    print("A .blend file has been loaded. Starting delayed property registration...")
+    bpy.app.timers.register(delayed_property_registration)
     
 def unregister():
     for cls in class_list:

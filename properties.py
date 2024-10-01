@@ -66,7 +66,7 @@ def dynamic_dropdown_items(self, context):
     dropdown_items = []
     
     for item in items:
-        dropdown_items.append((item, item, ""))
+        dropdown_items.append((item.name, item.name, ""))
         
     return dropdown_items
 #____________________________ UPDATE FUNCTIONS
