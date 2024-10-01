@@ -190,7 +190,9 @@ class OBJECTE_OT_render(bpy.types.Operator):
         self.initial_active = bpy.context.view_layer.objects.active
         self.initial_selection = bpy.context.selected_objects
         
-        self.render_queue = context.scene.output_list.copy()
+        output_list = [item.name for item in context.scene.output_list]
+        
+        self.render_queue = output_list.copy()
         
         self.rendering = False
         

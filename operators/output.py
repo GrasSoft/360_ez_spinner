@@ -103,16 +103,16 @@ def panel_output_list(panel, layout):
 def get_render_progress_icon(name, current_name):
     output_list = bpy.context.scene.output_list
     
-    just_item = None
-    current_item = None
+    just_item = 0
+    current_item = 0
     
-    for item in output_list:
+    for index, item in enumerate(output_list):
         if item.name == name:
-            just_item = item
+            just_item = index
         if item.name == current_name:
-            current_item = item
+            current_item = index
     
-    if output_list.index(just_item) < output_list.index(current_item) :
+    if just_item < current_item :
         return preview_collections["progress"]["prog_100"].icon_id
 
     if name != current_name:

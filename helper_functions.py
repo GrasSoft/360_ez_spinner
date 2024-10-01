@@ -554,7 +554,7 @@ def use_settings_of_other(collection_name):
     current_settings.length_type = prev_settings.length_type
     
     # lighting settings
-    if prev_settings.add_ligting_setup:
+    if prev_settings.add_lighting_setup:
         current_settings.add_lighting_setup = prev_settings.add_lighting_setup
     current_settings.lighting_type = prev_settings.lighting_type
     current_settings.lighting_hdr_strength = prev_settings.lighting_hdr_strength
