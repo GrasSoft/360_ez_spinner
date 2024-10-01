@@ -137,6 +137,9 @@ def hide_anything_but(new_collection):
             obj.hide_set(True)
  
 def get_collection_origin(objects):
+    if len(objects) == 0:
+        return (0,0,0)
+    
     x, y, z = 0,0,0
 
     for obj in objects:
@@ -223,8 +226,19 @@ def make_obj_active(obj):
     
 
 old_collection_names = []    
+old_selection = None
+
+def move_item(collection, from_index, to_index):
+    if from_index < 0 or from_index >= len(collection) or to_index < 0 or to_index >= len(collection):
+        print(f"Invalid move from {from_index} to {to_index}. Index out of bounds.")
+        return
+    
+    # Create a temporary list of items to reorder
+    items = [item for item in collection]
+    
+    collection.move(from_index, to_index)
    
-@persistent    
+
 def update_current_selection(scene):
     global current_rename
     current_rename = None
@@ -233,49 +247,59 @@ def update_current_selection(scene):
     global old_collection_names
    
    
+    if old_collection_names is None:
+        old_collection_names = current_collection_names
+   
     current = set(current_collection_names)
     old = set(old_collection_names)
     
-    if old_collection_names is None:
-        old_collection_names = current_collection_names
-    
     if current != old:
+        print(current)
+        print(old)
+        
+        old_collection_names = current_collection_names
+        
         # Find unique elements
         new_name = current - old
         old_name = old     - current
         
-        if len(old_name) > 0:
+        if len(old_name) > 0 and len(new_name) > 0:
             new_name = list(new_name)[0]
             old_name = list(old_name)[0]
     
-            
-            new_item = scene.collections_list.add()
-            new_item.name = new_name
-            
-            for index, item in enumerate(scene.collections_list):
-                if item.name == old_name:
-                    scene.collecitons_list.remove(index)
-                    break
-            
-            spin_settings = getattr(bpy.context.scene, old_name)
-            setattr(bpy.types.Scene, new_name, spin_settings)
-            delattr(bpy.types.Scene, old_name)
-            
-            if old_name in scene.output_list:
-                scene.output_list.append(new_name)
-                scene.output_list.remove(old_name)
-
-            
-            
-    old_collection_names = current_collection_names
-    
-    
+            if hasattr(bpy.types.Scene, old_name):    
+                new_item = scene.collections_list.add()
+                new_item.name = new_name
+                
+                for index, item in enumerate(scene.collections_list):
+                    if item.name == old_name:
+                        move_item(scene.collections_list, len(scene.collections_list) - 1, index)
+                        scene.collections_list.remove(index + 1)
+                        break
+                
+                spin_settings = getattr(bpy.types.Scene, old_name)
+                setattr(bpy.types.Scene, new_name, spin_settings)
+                delattr(bpy.types.Scene, old_name)
+                
+                
+                new_item = scene.output_list.add()
+                new_item.name = new_name
+                
+                for index, item in enumerate(scene.output_list):
+                    if item.name == old_name:
+                        move_item(scene.output_list, len(scene.output_list) - 1, index)
+                        scene.output_list.remove(index + 1)
+                        break
+                
                  
     current_selection = bpy.context.view_layer.objects.active
     
-    if is_selection_setup(current_selection):
+    global old_selection
+    
+    if is_selection_setup(current_selection) and old_selection != current_selection:
         hide_anything_but(current_selection.users_collection[0])
-        
+    
+        old_selection = current_selection    
         camera = get_current_camera()
         scene.camera = camera
         
@@ -530,7 +554,8 @@ def use_settings_of_other(collection_name):
     current_settings.length_type = prev_settings.length_type
     
     # lighting settings
-    current_settings.add_lighting_setup = prev_settings.add_lighting_setup
+    if prev_settings.add_ligting_setup:
+        current_settings.add_lighting_setup = prev_settings.add_lighting_setup
     current_settings.lighting_type = prev_settings.lighting_type
     current_settings.lighting_hdr_strength = prev_settings.lighting_hdr_strength
     current_settings.lighting_hdr_rotation = prev_settings.lighting_hdr_rotation

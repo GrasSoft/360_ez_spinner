@@ -148,17 +148,6 @@ def get_render_progress_icon(name, current_name):
 
 #_____________________________ CLASSES
 
-def move_item(collection, from_index, to_index):
-    if from_index < 0 or from_index >= len(collection) or to_index < 0 or to_index >= len(collection):
-        print(f"Invalid move from {from_index} to {to_index}. Index out of bounds.")
-        return
-    
-    # Create a temporary list of items to reorder
-    items = [item for item in collection]
-    
-    collection.move(from_index, to_index)
-
-
 class OBJECT_OT_up_down(bpy.types.Operator):
     bl_idname = "object.up_down"
     bl_label = "Move the output"
