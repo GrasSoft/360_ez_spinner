@@ -115,15 +115,7 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         
         if not hasattr(bpy.types.Scene, "rename"):
             bpy.types.Scene.rename = None
-        
-        if not hasattr(bpy.types.Scene, "output_list"):
-            bpy.types.Scene.output_list = []
-    
-        if not hasattr(bpy.types.Scene, "output_filepath"):
-            bpy.types.Scene.output_filepath = ""
-            
-        
-        
+                
         context.scene.spin_settings.menu_options = "motion_setup"
         
         collection = create_copy_and_hide()

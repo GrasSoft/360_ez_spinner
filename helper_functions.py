@@ -403,8 +403,12 @@ def add_keyframes():
     keyframe_point = fcurve.keyframe_points.insert(offset, rotation_value)
     keyframe_point.interpolation = interpolation_type
 
-    # end frame    
-    rotation_value = radians(360)
+    # end frame   
+    if spin_settings.spin_direction == "right": 
+        rotation_value = radians(360)
+    else:
+        rotation_value = radians(-360)
+        
     keyframe_point = fcurve.keyframe_points.insert(num_frames + offset + 1, rotation_value)
     keyframe_point.interpolation = interpolation_type
 

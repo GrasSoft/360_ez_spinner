@@ -9,6 +9,16 @@ preview_collections = {}
 
 
 # Icons   
+def spin_direction_icons():
+    previews = bpy.utils.previews.new()
+    
+    global icons_path
+    global preview_collections
+    
+    previews.load("right", os.path.join(icons_path, "rotate-arrow-right.png"), "IMAGE")
+    previews.load("left", os.path.join(icons_path, "rotate-arrow_left.png"), "IMAGE")
+
+    preview_collections["spin_direction"] = previews    
 
 def interpolation_icons():
     previews = bpy.utils.previews.new()
@@ -26,7 +36,7 @@ def logo_icon():
     global icons_path
     global preview_collections
 
-    previews.load("logo", os.path.join(icons_path, "EZ Spin Icon.png"), "IMAGE")
+    previews.load("logo", os.path.join(icons_path, "SpinWiz_Icon.png"), "IMAGE")
 
     preview_collections["logo"] = previews
 
@@ -78,7 +88,8 @@ def import_custom_icons():
     icons_path = os.path.join(os.path.dirname(__file__), "icons")
 
     keyframe_icons()
-    progress_icons()    
+    progress_icons()   
+    spin_direction_icons() 
     logo_icon()
     interpolation_icons()
     menu_icons()

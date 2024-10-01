@@ -58,6 +58,18 @@ def menu_items(panel, layout):
     column = row.column()
     column.operator("object.documentation", text="Output", icon_value=preview_menu["output_menu"].icon_id)
 
+def select_spin_direction(panel, layout):
+    current_collection = get_current_collection()
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
+    
+    row = layout.row(align=True)
+    row.scale_x = 1.6
+    row.label(text="Spin Direction")
+    row.prop(spin_settings, "spin_direction", expand=True, icon_only=True)
+
+    
+    
+
 def select_movement_type(panel, layout):
     current_collection = get_current_collection()
     spin_settings = getattr(bpy.context.scene, get_current_collection().name)
@@ -224,6 +236,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                                 options = layout.box()
                                 
                                 select_movement_type(self, options)
+                                select_spin_direction(self, options)
                                 select_interpolation_type(self, options)
                                 select_length_type(self, options)
                                 
@@ -325,21 +338,27 @@ def register():
 
     for cls in class_list:
         bpy.utils.register_class(cls)
+        
     
     bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
     
-    bpy.types.Scene.collections_list = bpy.props.CollectionProperty(type=MyCollectionItem) 
+    bpy.types.Scene.collections_list = bpy.props.CollectionProperty(type=MyCollectionItem)
+     
+    bpy.types.Scene.output_list = bpy.props.CollectionProperty(type=MyCollectionItem)
+     
+    bpy.types.Scene.output_filepath = bpy.props.StringProperty()
     
     bpy.app.handlers.depsgraph_update_post.append(update_current_selection)
     
     bpy.app.handlers.load_post.append(on_load_post_handler)
+    
+    
     
 # Timer function to delay the registration of dynamic properties
 def delayed_property_registration():
     # Ensure the attribute is present and populated with items before registering
     scene = bpy.context.scene
     if hasattr(scene, 'collections_list') and len(scene.collections_list) > 0:
-        print("nigger")
         register_dynamic_properties()
         return None  # Stop the timer once registration is complete
     else:

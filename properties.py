@@ -13,6 +13,12 @@ from .settings.settings_defaults import *
 
 #____________________________ FUNCTIONS RETURNING ITEMS
 
+def spin_direction_items(self, context):
+    return [
+        ('right', "", "The object/s turn to the right", preview_collections["spin_direction"]["right"].icon_id, 0),
+        ('left', "", "The object/s turn to the left", preview_collections["spin_direction"]["left"].icon_id, 1),
+    ]
+
 def interpolation_items(self, context):
     return  [
                 ('LINEAR', "", "The animation moves at constant speed", preview_collections["interpolation"]["linear"].icon_id, 0),
@@ -70,6 +76,9 @@ def dynamic_dropdown_items(self, context):
         
     return dropdown_items
 #____________________________ UPDATE FUNCTIONS
+
+def update_spin_direction(self, context):
+    update_interpolation(self, context)
 
 def update_menu_options(self, context):
     global current_rename
@@ -157,11 +166,16 @@ def slow_bezier(self, context):
 
     end_frame.handle_left_type = "ALIGNED"
     end_frame.handle_left.x = int(self.nr_frames / 2)
-    end_frame.handle_left.y = radians(360)
-
+    if self.spin_direction == "right":
+        end_frame.handle_left.y = radians(360)
+    else:
+        end_frame.handle_left.y = radians(-360)
     end_frame.handle_right_type = "ALIGNED"
     end_frame.handle_right.x = self.nr_frames + 2
-    end_frame.handle_right.y = radians(360)
+    if self.spin_direction == "right":
+        end_frame.handle_right.y = radians(360)
+    else:
+        end_frame.handle_right.y = radians(-360)
 
 
 def fast_bezier(self, context):
@@ -172,20 +186,31 @@ def fast_bezier(self, context):
     start_frame = fcurve.keyframe_points[0]
     start_frame.handle_right_type = "ALIGNED"
     start_frame.handle_right.x = self.start_frame
-    start_frame.handle_right.y = radians(180)
+    if self.spin_direction == "right":
+        start_frame.handle_right.y = radians(180)
+    else:
+        start_frame.handle_right.y = radians(-180)
 
     start_frame.handle_left_type = "ALIGNED"
     start_frame.handle_left.x = self.start_frame
-    start_frame.handle_left.y = radians(-1)
-
+    if self.spin_direction == "right":
+        start_frame.handle_left.y = radians(-1)
+    else:
+        start_frame.handle_left.y = radians(1)
 
     end_frame.handle_left_type = "ALIGNED"
     end_frame.handle_left.x = self.nr_frames + 1
-    end_frame.handle_left.y = radians(180)
+    if self.spin_direction == "right":
+        end_frame.handle_left.y = radians(180)
+    else:
+        end_frame.handle_left.y = radians(-180)
 
     end_frame.handle_right_type = "ALIGNED"
     end_frame.handle_right.x = self.nr_frames + 1
-    end_frame.handle_right.y = radians(361)
+    if self.spin_direction == "right":
+        end_frame.handle_right.y = radians(361)
+    else:
+        end_frame.handle_right.y = radians(-361)
 
 def update_interpolation(self, context):
     # update the keyframes to have the other interpolation
@@ -198,7 +223,6 @@ def update_interpolation(self, context):
         return
     
     if self.interpolation_type == "BEZIER_FAST":
-        print("hellp") 
         fast_bezier(self, context)
         return
             
@@ -365,6 +389,14 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
     )# type: ignore
      
     # animation settings
+    spin_direction: bpy.props.EnumProperty(
+        name = "Spin Direction",
+        description = "Change the direciton of the spin",
+        items=spin_direction_items,
+        default=0,
+        update = update_spin_direction,
+    ) #type: ignore
+    
     degrees: bpy.props.EnumProperty(
         name="Nr of degrees",
         description="Number of degrees between frames",

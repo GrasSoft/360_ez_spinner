@@ -20,13 +20,20 @@ def output_row(panel, layout, name):
     
     up_down = row.row(align=True)
     up = up_down.column()
-    up.enabled = (scene.output_list.index(name) > 0)
+    
+    index = 0
+    for i, item in enumerate(scene.output_list):
+        if item.name == name:
+            index = i
+            break
+    
+    up.enabled = (index > 0)
     op = up.operator("object.up_down", depress= (collection.name == name), icon= "TRIA_UP", text="")
     op.name = name
     op.up_down = True
     
     down = up_down.column()
-    down.enabled = (scene.output_list.index(name) < len(scene.output_list) - 1)
+    down.enabled = (index < len(scene.output_list) - 1)
     op = down.operator("object.up_down", depress= (collection.name == name), icon = "TRIA_DOWN", text="")
     op.name = name
     op.up_down = False
@@ -64,8 +71,8 @@ def panel_output_list(panel, layout):
         layout.label(text="There are not items in the queue")
     else:
         box = layout.box()
-        for name in output_list:
-            output_row(panel, box, name)
+        for item in output_list:
+            output_row(panel, box, item.name)
 
         # output path selection            
         layout.separator()
@@ -95,7 +102,17 @@ def panel_output_list(panel, layout):
 
 def get_render_progress_icon(name, current_name):
     output_list = bpy.context.scene.output_list
-    if output_list.index(name) < output_list.index(current_name) :
+    
+    just_item = None
+    current_item = None
+    
+    for item in output_list:
+        if item.name == name:
+            just_item = item
+        if item.name == current_name:
+            current_item = item
+    
+    if output_list.index(just_item) < output_list.index(current_item) :
         return preview_collections["progress"]["prog_100"].icon_id
 
     if name != current_name:
@@ -131,6 +148,16 @@ def get_render_progress_icon(name, current_name):
 
 #_____________________________ CLASSES
 
+def move_item(collection, from_index, to_index):
+    if from_index < 0 or from_index >= len(collection) or to_index < 0 or to_index >= len(collection):
+        print(f"Invalid move from {from_index} to {to_index}. Index out of bounds.")
+        return
+    
+    # Create a temporary list of items to reorder
+    items = [item for item in collection]
+    
+    collection.move(from_index, to_index)
+
 
 class OBJECT_OT_up_down(bpy.types.Operator):
     bl_idname = "object.up_down"
@@ -145,20 +172,21 @@ class OBJECT_OT_up_down(bpy.types.Operator):
         output_list = bpy.data.scenes[0].output_list
         
         # Find the index of the string
-        index = output_list.index(self.name)
+        index = 0
+        for i, item in enumerate(output_list):
+            if item.name == self.name:
+                index = i
+                break
             
-        
         if self.up_down:
             # If it's not the first element, swap it with the previous element
-            if index > 0:
-                # Swap the element with the one on its left
-                output_list[index], output_list[index - 1] = output_list[index - 1], output_list[index]
+            move_item(output_list, index, index-1)
+    
         else:
             # If it's not the last element, swap it with the previous element
-            if index < len(output_list):
-                # Swap the element with the one on its left
-                output_list[index], output_list[index + 1] = output_list[index + 1], output_list[index]
-        
+            move_item(output_list, index, index+1)
+       
+            
         return {'FINISHED'}
 
 class OBJECT_OT_open_path(bpy.types.Operator):
@@ -231,8 +259,15 @@ class OBJECT_OT_output(bpy.types.Operator):
         output_list = bpy.data.scenes[0].output_list
 
         collection_name = get_current_collection().name
-        if collection_name not in output_list:
-            output_list.append(collection_name)        
+        
+        ok = True
+        for item in output_list:
+            if item.name == collection_name:
+                ok = False
+        
+        if ok:
+            item = output_list.add()
+            item.name = collection_name        
         
         return {"FINISHED"}
     
@@ -248,6 +283,10 @@ class OBJECT_OT_delete_output(bpy.types.Operator):
         
         output_list = bpy.data.scenes[0].output_list
         
-        output_list.remove(self.name)
+        for i, item in enumerate(output_list):
+            if item.name == self.name:
+                output_list.remove(i)
+                break
+        
         
         return {"FINISHED"}
