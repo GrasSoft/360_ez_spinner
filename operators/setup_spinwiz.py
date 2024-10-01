@@ -112,9 +112,6 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     bl_description = "This operator creates the setup for Spin Wiz"
 
     def execute(self, context):
-        
-        if not hasattr(bpy.types.Scene, "rename"):
-            bpy.types.Scene.rename = None
                 
         context.scene.spin_settings.menu_options = "motion_setup"
         
