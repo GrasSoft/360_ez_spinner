@@ -254,9 +254,6 @@ def update_current_selection(scene):
     old = set(old_collection_names)
     
     if current != old:
-        print(current)
-        print(old)
-        
         old_collection_names = current_collection_names
         
         # Find unique elements
@@ -296,15 +293,19 @@ def update_current_selection(scene):
     
     global old_selection
     
-    if is_selection_setup(current_selection) and old_selection != current_selection:
-        hide_anything_but(current_selection.users_collection[0])
-    
-        old_selection = current_selection    
-        camera = get_current_camera()
-        scene.camera = camera
-        
-        scene.spin_settings.dropdown_collections = current_selection.users_collection[0].name
-        
+    print(scene.is_setting_up)
+    if old_selection != current_selection and not scene.is_setting_up:
+        if is_selection_setup(current_selection):
+            hide_anything_but(current_selection.users_collection[0])
+
+            old_selection = current_selection    
+            camera = get_current_camera()
+            scene.camera = camera
+            
+            scene.spin_settings.dropdown_collections = current_selection.users_collection[0].name
+        else:
+            hide_anything_but(current_selection.users_collection[0])
+            
 def is_selection_valid():
     # Iterate through the selected objects
     correct_selection = True

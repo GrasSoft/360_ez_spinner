@@ -112,6 +112,8 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
     bl_description = "This operator creates the setup for Spin Wiz"
 
     def execute(self, context):
+          
+        context.scene.is_setting_up = True 
                 
         context.scene.spin_settings.menu_options = "motion_setup"
         
@@ -126,6 +128,8 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         use_settings_of_other(collection_name)
         
         change_perspective()
+        
+        context.scene.is_setting_up = False
 
         return {"FINISHED"}
 

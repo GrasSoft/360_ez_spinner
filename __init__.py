@@ -338,7 +338,9 @@ def register():
 
     for cls in class_list:
         bpy.utils.register_class(cls)
-            
+        
+    bpy.types.Scene.is_setting_up = bpy.props.BoolProperty()
+                
     bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
     
     bpy.types.Scene.collections_list = bpy.props.CollectionProperty(type=MyCollectionItem)
