@@ -225,22 +225,6 @@ def update_interpolation(self, context):
     if self.interpolation_type == "BEZIER_FAST":
         fast_bezier(self, context)
         return
-            
-def update_use_global_settings(self, context):
-    # get first collection, it will act as global
-    global_collection = None
-    
-    for collection in bpy.data.collections:
-        if collection_name in collection.name:
-            global_collection = collection
-            break
-            
-    
-    if self.use_global_settings:
-        if global_collection is not None:
-            use_settings_of_other(global_collection.name)
-    else:
-        reset_default_settings()
 
 #_________________________________ LIGHTING            
 
@@ -381,13 +365,7 @@ def update_lookat_pivot(self, context):
 #____________________________ PROPERTY CLASSES
 
 class SpinWiz_collection_properties(bpy.types.PropertyGroup):
-    use_global_settings: bpy.props.BoolProperty(
-        name= "Use Global Settings",
-        description= "Use the settings of the first collection created",
-        default= True,
-        update= update_use_global_settings,
-    )# type: ignore
-     
+         
     # animation settings
     spin_direction: bpy.props.EnumProperty(
         name = "Spin Direction",

@@ -92,18 +92,6 @@ def create_copy_and_hide():
                 
     return new_collection
 
-def change_perspective():
-    bpy.context.scene.camera = get_current_camera()
-    
-    # Iterate through all areas in the current screen
-    for area in bpy.context.screen.areas:
-        # Check if the area is a 3D view
-        if area.type == 'VIEW_3D':
-            for space in area.spaces:
-                if space.type == 'VIEW_3D':
-                    # Change the view to camera perspective
-                    space.region_3d.view_perspective = 'CAMERA'
-                    break
 
 
 class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
@@ -125,7 +113,8 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         create_action()
         
         # use global settings
-        use_settings_of_other(collection_name)
+        # use_settings_of_other(collection_name)
+        reset_default_settings()
         
         change_perspective()
         

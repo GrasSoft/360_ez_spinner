@@ -17,8 +17,6 @@ from bpy.app.handlers import persistent
 
 from bpy.types import Context
 from mathutils import Vector
-from math import pi, radians
-import math
 
 from .helper_functions import *
 
@@ -27,6 +25,8 @@ from .blender_resources.media_setup.custom_media import *
 from .properties import *
 
 from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup 
+
+from .operators.copy_paste import OBJECT_OT_copy, OBJECT_OT_paste
 
 from .operators.output import *
 
@@ -188,7 +188,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         
         
         # check if there are any selected objects (TODO: check if the selected object is an actual object)
-        if not is_selection_valid() and collection_settings is not None:
+        if not is_selection_valid():
             no_selection_warning(self, layout)      
         else:
             if not is_selection_setup(current_selection):
@@ -212,17 +212,23 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                             layout.separator()
 
                             layout.label(text="Select another collection")
-                            layout.prop(spin_settings, "dropdown_collections", text="")    
+                            
+                            if scene.copy_collection_name != "":
+                                layout.label(text="The current coppied collection is: " + scene.copy_collection_name)
+                            
+                            row = layout.row()
+                            row.prop(spin_settings, "dropdown_collections", text="")
+                                
+                            copy_paste = row.row(align=True)
+                            copy_paste.scale_x = 1.4
+                            copy_paste.operator("object.copy", text="", icon = "COPYDOWN", depress= scene.copy_collection_name == get_current_collection().name)
+                            copy_paste.operator("object.paste", text="", icon = "PASTEDOWN")
                                 
                             layout.label(text="Change the current collection name")
                             box = layout.box()
                             row = box.row()
                             
                             row.prop(get_current_collection(), "name", text="")
-                            # row.prop(collection_settings, "collection_name", text="")     
-                            
-                            box = layout.box()
-                            box.prop(collection_settings, "use_global_settings", text="Use global settings, unchecking returns to defaults")
                             
                             if is_pivot(current_selection) or is_camera(current_selection):
                                 
@@ -327,7 +333,7 @@ class UpdatePreferences(bpy.types.AddonPreferences):
 class MyCollectionItem(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Item Name")
 
-class_list = [MyCollectionItem, UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_rename , OBJECT_OT_up_down, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]     
+class_list = [MyCollectionItem, UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_paste, OBJECT_OT_copy, OBJECT_OT_rename , OBJECT_OT_up_down, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]     
 
 
 def register():    
@@ -338,6 +344,8 @@ def register():
 
     for cls in class_list:
         bpy.utils.register_class(cls)
+        
+    bpy.types.Scene.copy_collection_name = bpy.props.StringProperty()
         
     bpy.types.Scene.is_setting_up = bpy.props.BoolProperty()
                 

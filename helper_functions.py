@@ -109,7 +109,7 @@ def get_current_action():
 
 #__________________________________________ HELPER FUNCTIONS
 
-def hide_anything_but(new_collection):
+def hide_anything_but(new_collection, only_collections = False):
     
     # Hide all collections except the new one
     for collection in bpy.context.scene.collection.children:
@@ -124,17 +124,17 @@ def hide_anything_but(new_collection):
                     layer_collection.hide_viewport = False
             
             
-       
-       
-    # Get the default "Scene Collection"
-    scene_collection = bpy.context.scene.collection
-   
-    # Iterate through all objects in the scene
-    for obj in bpy.context.scene.objects:
-        # Check if the object is only in the "Scene Collection" and not in any other collections
-        if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
-            # Hide the object from the viewport using hide_set
-            obj.hide_set(True)
+    if not only_collections:   
+        
+        # Get the default "Scene Collection"
+        scene_collection = bpy.context.scene.collection
+    
+        # Iterate through all objects in the scene
+        for obj in bpy.context.scene.objects:
+            # Check if the object is only in the "Scene Collection" and not in any other collections
+            if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
+                # Hide the object from the viewport using hide_set
+                obj.hide_set(True)
  
 def get_collection_origin(objects):
     if len(objects) == 0:
@@ -237,7 +237,35 @@ def move_item(collection, from_index, to_index):
     items = [item for item in collection]
     
     collection.move(from_index, to_index)
-   
+                    
+
+def change_perspective(perspective = 'CAMERA'):
+    bpy.context.scene.camera = get_current_camera()
+    
+    # Iterate through all areas in the current screen
+    for area in bpy.context.screen.areas:
+        # Check if the area is a 3D view
+        if area.type == 'VIEW_3D':
+            for space in area.spaces:
+                if space.type == 'VIEW_3D':
+                    # Change the view to camera perspective
+                    space.region_3d.view_perspective = perspective
+                    break
+
+def update_scene_frame(collection_name = None, scene = None):
+    
+    if collection_name is None:
+        collection_name = get_current_collection().name
+    
+    if scene is None:
+        scene = bpy.context.scene
+    
+    spin_settings = getattr(scene, collection_name)
+
+    scene.frame_current = spin_settings.start_frame
+    scene.frame_start = spin_settings.start_frame
+    scene.frame_end = spin_settings.start_frame + spin_settings.nr_frames    
+    
 
 def update_current_selection(scene):
     global current_rename
@@ -293,20 +321,28 @@ def update_current_selection(scene):
     
     global old_selection
     
-    print(scene.is_setting_up)
     if old_selection != current_selection and not scene.is_setting_up:
         if is_selection_setup(current_selection):
             hide_anything_but(current_selection.users_collection[0])
 
             old_selection = current_selection    
-            camera = get_current_camera()
-            scene.camera = camera
+          
+            change_perspective()
+            
+            update_scene_frame()
             
             scene.spin_settings.dropdown_collections = current_selection.users_collection[0].name
         else:
-            hide_anything_but(current_selection.users_collection[0])
+            hide_anything_but(current_selection.users_collection[0], True)
+            
+            change_perspective()
+            
+            current_selection.hide_set(False)
+            
+            old_selection = current_selection
             
 def is_selection_valid():
+    
     # Iterate through the selected objects
     correct_selection = True
     
@@ -325,6 +361,7 @@ def is_selection_valid():
 
 
 def is_selection_setup(current_selection):
+    
     if current_selection is not None:
         current_obj = current_selection
         
@@ -564,10 +601,10 @@ def use_settings_of_other(collection_name):
     current_settings.lighting_gradient_scale = prev_settings.lighting_gradient_scale
     
     # camera settings
-    current_settings.camera_height = get_current_camera().location.z
+    current_settings.camera_height = prev_settings.camera_height # get_current_camera().location.z
     current_settings.camera_focal_length = prev_settings.camera_focal_length
-    current_settings.camera_distance = get_current_camera().location.x
-    current_settings.camera_tracking_height_offset = get_current_camera().location.z
+    current_settings.camera_distance = prev_settings.camera_distance # get_current_camera().location.x
+    current_settings.camera_tracking_height_offset = prev_settings.camera_tracking_height_offset # get_current_camera().location.z
     # stage settings
     current_settings.add_stage = prev_settings.add_stage
     current_settings.stage_height_offset = prev_settings.stage_height_offset
