@@ -275,13 +275,10 @@ def update_current_world(collection_name = None, scene = None):
         scene = bpy.context.scene
         
     spin_settings = getattr(scene, collection_name)
+    
+    spin_settings.add_lighting_setup = spin_settings.add_lighting_setup
 
-    spin_settings.stage_height_offset = spin_settings.stage_height_offset
-    spin_settings.stage_subdivision = spin_settings.stage_subdivision
-    spin_settings.stage_material_color = spin_settings.stage_material_color
-    spin_settings.stage_material_roughness = spin_settings.stage_material_roughness
-    spin_settings.stage_material_reflection_intensity = spin_settings.stage_material_reflection_intensity
-    spin_settings.stage_material_contact_shadow = spin_settings.stage_material_contact_shadow
+  
     
 def update_current_stage(collection_name = None, scene = None):
            
@@ -293,7 +290,13 @@ def update_current_stage(collection_name = None, scene = None):
         
     spin_settings = getattr(scene, collection_name)
 
-    spin_settings.add_stage = spin_settings.add_stage
+    if spin_settings.add_stage:
+        spin_settings.stage_height_offset = spin_settings.stage_height_offset
+        spin_settings.stage_subdivision = spin_settings.stage_subdivision
+        spin_settings.stage_material_color = spin_settings.stage_material_color
+        spin_settings.stage_material_roughness = spin_settings.stage_material_roughness
+        spin_settings.stage_material_reflection_intensity = spin_settings.stage_material_reflection_intensity
+        spin_settings.stage_material_contact_shadow = spin_settings.stage_material_contact_shadow
 
 def update_current_selection(scene):
     global current_rename

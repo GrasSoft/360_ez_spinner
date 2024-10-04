@@ -5,8 +5,6 @@ from ..naming_convetions import *
 from ..helper_functions import *
 
 
-
-
 #_____________________________________________________ HELPER FUNCTIONS
 
 def import_stage():
@@ -27,6 +25,7 @@ def import_stage():
     set_origin()
 
     add_camera()
+
      
 
 def link_stage_to_collection():
