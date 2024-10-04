@@ -277,54 +277,6 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
 
 
 
-class UpdatePreferences(bpy.types.AddonPreferences):
-    """Demo bare-bones preferences"""
-    bl_idname = __package__
-
-    # Addon updater preferences.
-    auto_check_update: bpy.props.BoolProperty(
-        name="Auto-check for Update",
-        description="If enabled, auto-check for updates using an interval",
-        default=True
-    )  # type: ignore
-
-    updater_interval_months: bpy.props.IntProperty(
-        name='Months',
-        description="Number of months between checking for updates",
-        default=0,
-        min=0
-    )  # type: ignore
-
-    updater_interval_days: bpy.props.IntProperty(
-        name='Days',
-        description="Number of days between checking for updates",
-        default=1,
-        min=0,
-        max=31
-    )  # type: ignore
-
-    updater_interval_hours: bpy.props.IntProperty(
-        name='Hours',
-        description="Number of hours between checking for updates",
-        default=0,
-        min=0,
-        max=23
-    )  # type: ignore
-
-    updater_interval_minutes: bpy.props.IntProperty(
-        name='Minutes',
-        description="Number of minutes between checking for updates",
-        default=0,
-        min=0,
-        max=59
-    )  # type: ignore
-
-    def draw(self, context):
-        layout = self.layout
-        layout.label(text="SpinWiz Update Settings")
-
-        # the update settings
-        addon_updater_ops.update_settings_ui(self, context)
         
 
 # Define a PropertyGroup for the list items
@@ -348,6 +300,8 @@ def register():
     bpy.types.Scene.is_setting_up = bpy.props.BoolProperty()
                 
     bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
+    
+    bpy.types.Scene.old_collections = bpy.props.CollectionProperty(type= MyCollectionItem)
     
     bpy.types.Scene.collections_list = bpy.props.CollectionProperty(type=MyCollectionItem)
      
@@ -411,6 +365,37 @@ def unregister():
         bpy.utils.previews.remove(pcoll)
         
     preview_collections.clear()
+    
+    if hasattr(bpy.types.Scene, "copy_collection_name"):
+        del bpy.types.Scene.copy_collection_name
+    
+    if hasattr(bpy.types.Scene, "is_setting_up"):
+        del bpy.types.Scene.is_setting_up
+    
+    if hasattr(bpy.types.Scene, "spin_settings"):
+        del bpy.types.Scene.spin_settings
+    
+    if hasattr(bpy.types.Scene, "collections_list"):
+        # delete every item in collections list first
+        
+        for item in bpy.context.scene.collections_list:
+            delattr(bpy.types.Scene, item.name)
+        
+        del bpy.types.Scene.collections_list
+    
+    if hasattr(bpy.types.Scene, "output_list"):
+        del bpy.types.Scene.output_list
+        
+    if hasattr(bpy.types.Scene, "output_filepath"):
+        del bpy.types.Scene.output_filepath
+    
+    if update_current_selection in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(update_current_selection)
+        
+    if on_load_post_handler in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.load_post.remove(on_load_post_handler)    
+    
+    
     
 if __name__ == "__main__":
     register()

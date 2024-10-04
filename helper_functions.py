@@ -298,22 +298,25 @@ def update_current_stage(collection_name = None, scene = None):
         spin_settings.stage_material_reflection_intensity = spin_settings.stage_material_reflection_intensity
         spin_settings.stage_material_contact_shadow = spin_settings.stage_material_contact_shadow
 
+@persistent
 def update_current_selection(scene):
+    
     global current_rename
     current_rename = None
    
     current_collection_names = [col.name for col in scene.collection.children]
-    global old_collection_names
-   
-   
-    if old_collection_names is None:
-        old_collection_names = current_collection_names
-   
+      
+    if len(scene.old_collections) == 0:
+        for name in current_collection_names:
+           item = scene.old_collections.add()
+           item.name = name
+           
+    old_collection_names = [item.name for item in scene.old_collections]       
+           
     current = set(current_collection_names)
     old = set(old_collection_names)
     
     if current != old:
-        old_collection_names = current_collection_names
         
         # Find unique elements
         new_name = current - old
@@ -322,7 +325,17 @@ def update_current_selection(scene):
         if len(old_name) > 0 and len(new_name) > 0:
             new_name = list(new_name)[0]
             old_name = list(old_name)[0]
-    
+
+            nig = scene.old_collections.add()
+            nig.name = new_name
+            
+            for index, item in enumerate(scene.old_collections):
+                if item.name == old_name:
+                    move_item(scene.old_collections, len(scene.old_collections) - 1, index)
+                    scene.old_collections.remove(index + 1)
+                    break
+                
+                
             if hasattr(bpy.types.Scene, old_name):    
                 new_item = scene.collections_list.add()
                 new_item.name = new_name
@@ -353,6 +366,7 @@ def update_current_selection(scene):
     global old_selection
     
     if old_selection != current_selection and not scene.is_setting_up:
+        
         if is_selection_setup(current_selection):
             hide_anything_but(current_selection.users_collection[0])
 

@@ -11,6 +11,9 @@ from .stage_setup.stage_setup import *
 
 from .settings.settings_defaults import *
 
+from . import addon_updater_ops
+
+
 #____________________________ FUNCTIONS RETURNING ITEMS
 
 def spin_direction_items(self, context):
@@ -100,6 +103,9 @@ def update_current_collection(self, context):
 
 def update_movement_type(self, context):
     scene = context.scene
+    
+    scene.is_setting_up = True
+    
     current_collection = get_current_collection()
     spin_settings = getattr(scene, get_current_collection().name)
     
@@ -120,6 +126,10 @@ def update_movement_type(self, context):
         pivot = get_current_pivot()
         if pivot is not None:
             pivot.animation_data.action = None
+            
+    change_perspective()
+            
+    scene.is_setting_up = False
             
 
 def update_adjust_keyframes(self, context):
@@ -334,7 +344,7 @@ def update_stage_material(self, context):
         node.inputs[1].default_value = (*self.stage_material_color, 1.0)
         node.inputs[0].default_value = self.stage_material_roughness
         node.inputs[2].default_value = self.stage_material_reflection_intensity
-        node.inputs[3].default_value = self.stage_material_contact_shadow
+        node.inputs[4].default_value = self.stage_material_contact_shadow
 
 #________________________________ CAMERA
 
@@ -535,7 +545,9 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         name = "Material Roughness",
         description= "Choose material roughness",
         default= default_roughness,
-        update= update_stage_material
+        update= update_stage_material,
+        min= 0,
+        max= 1,
     )# type: ignore
     
     stage_material_reflection_intensity: bpy.props.FloatProperty(
@@ -543,6 +555,8 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description= "Choose material reflection intensity",
         default= default_reflection_intensity,
         update= update_stage_material,
+        min= 0,
+        max= 1,
     )# type: ignore
     
     stage_material_contact_shadow: bpy.props.FloatProperty(
@@ -550,6 +564,8 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description= "Choose material contact shadow",
         default= default_contact_shadow,
         update= update_stage_material,
+        min= 0,
+        max= 1,
     )# type: ignore
 
 
@@ -594,4 +610,54 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         items = dynamic_dropdown_items,
         update= update_current_collection
     ) # type: ignore
-  
+ 
+ 
+ 
+class UpdatePreferences(bpy.types.AddonPreferences):
+    """Demo bare-bones preferences"""
+    bl_idname = __package__
+
+    # Addon updater preferences.
+    auto_check_update: bpy.props.BoolProperty(
+        name="Auto-check for Update",
+        description="If enabled, auto-check for updates using an interval",
+        default=True
+    )  # type: ignore
+
+    updater_interval_months: bpy.props.IntProperty(
+        name='Months',
+        description="Number of months between checking for updates",
+        default=0,
+        min=0
+    )  # type: ignore
+
+    updater_interval_days: bpy.props.IntProperty(
+        name='Days',
+        description="Number of days between checking for updates",
+        default=1,
+        min=0,
+        max=31
+    )  # type: ignore
+
+    updater_interval_hours: bpy.props.IntProperty(
+        name='Hours',
+        description="Number of hours between checking for updates",
+        default=0,
+        min=0,
+        max=23
+    )  # type: ignore
+
+    updater_interval_minutes: bpy.props.IntProperty(
+        name='Minutes',
+        description="Number of minutes between checking for updates",
+        default=0,
+        min=0,
+        max=59
+    )  # type: ignore
+
+    def draw(self, context):
+        layout = self.layout
+        layout.label(text="SpinWiz Update Settings")
+
+        # the update settings
+        addon_updater_ops.update_settings_ui(self, context) 

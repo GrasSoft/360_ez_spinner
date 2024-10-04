@@ -52,7 +52,6 @@ def reset_world():
 #___________________________ PANEL FUNCTIONS
 
 def panel_lighting_setup(panel, layout):
-    world = get_current_world()
 
     spin_settings = getattr(bpy.context.scene, get_current_collection().name)
      
@@ -60,6 +59,8 @@ def panel_lighting_setup(panel, layout):
     ligthing_setup_box.prop(spin_settings, "add_lighting_setup")           
     
     if spin_settings.add_lighting_setup:
+                
+        world = get_current_world()
 
         ligthing_setup_box.template_icon_view(spin_settings, "lighting_type", show_labels=True)
 
