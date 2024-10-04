@@ -136,19 +136,25 @@ def hide_anything_but(new_collection, only_collections = False):
                 # Hide the object from the viewport using hide_set
                 obj.hide_set(True)
  
+ 
 def get_collection_origin(objects):
     if len(objects) == 0:
         return (0,0,0)
     
-    x, y, z = 0,0,0
+    # Initialize variables to sum up vertex positions
+    total_vertices = 0
+    total_position = Vector((0.0, 0.0, 0.0))
 
     for obj in objects:
-        x += obj.location.x
-        y += obj.location.y
-        z += obj.location.z
-    l = len(objects)
+        if obj.type == 'MESH' and obj.data is not None and hasattr(obj.data, 'vertices'):
+            for vertex in obj.data.vertices:
+                total_position += obj.matrix_world @ vertex.co
+                total_vertices += 1
 
-    return (x/l, y/l, z/l)
+    if total_vertices == 0:
+        return (0, 0, 0)
+    
+    return total_position / total_vertices 
 
 # the min and max coordinates in any direction, return a tuple    
 def get_collection_bounding_box(pivot):
@@ -458,7 +464,7 @@ def setup_spincamera():
     radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
         camera.location = pivot.location + Vector((radius, 0, 0))
-
+        
     # set the pivot point as the parent so that the rotation is the same
     camera.parent = pivot
 
@@ -468,6 +474,7 @@ def setup_spincamera():
 
 
 def setup_spinobject():
+    
     create_camera()
 
     camera = get_current_camera()
@@ -483,7 +490,10 @@ def setup_spinobject():
     #radius = get_track_radius(obj)
     radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
+        print(pivot.location)
         camera.location = pivot.location + Vector((radius, 0, 0)) 
+        print(camera.location)
+
 
     set_camera_track()
 
@@ -520,7 +530,7 @@ def add_keyframes():
     else:
         rotation_value = radians(-360)
         
-    keyframe_point = fcurve.keyframe_points.insert(num_frames + offset + 1, rotation_value)
+    keyframe_point = fcurve.keyframe_points.insert(num_frames + offset , rotation_value)
     keyframe_point.interpolation = interpolation_type
 
     # Set the scene's end frame
@@ -687,7 +697,7 @@ def reset_default_settings():
     current_settings.lighting_gradient_scale = default_gradient_scale
     
     # camera settings
-    current_settings.camera_height = default_camera_height
+    current_settings.camera_height = get_current_camera().location.z
     current_settings.camera_focal_length = default_camera_focal_length
     current_settings.camera_distance = get_current_camera().location.x
     

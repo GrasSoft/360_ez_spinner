@@ -80,18 +80,19 @@ def create_copy_and_hide():
     selected_objects = bpy.context.selected_objects
     selected_objects = [obj for obj in selected_objects if obj.parent is None]
 
-    pivot = create_pivot(new_collection, pivot_object_name, get_collection_origin(bpy.context.selected_objects))
+    pivot = create_pivot(new_collection, pivot_object_name, get_collection_origin(selected_objects))
     pivot.empty_display_type = "ARROWS"
     
     # the pivot we look at is different than the pivot that holds the objects
-    look_at_pivot = create_pivot(new_collection, pivot_track_name, get_collection_origin(bpy.context.selected_objects))
+    look_at_pivot = create_pivot(new_collection, pivot_track_name, pivot.location)
 
     for original_obj in selected_objects: 
         # Create a new object by copying the original
-        duplicate_object_with_hierarchy(original_obj, parent=pivot, collection=new_collection) 
-             
+        duplicate_object_with_hierarchy(original_obj, parent=pivot, collection=new_collection)              
                
     hide_anything_but(new_collection)
+    
+    
                 
     return new_collection
 
