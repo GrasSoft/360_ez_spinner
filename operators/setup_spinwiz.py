@@ -4,7 +4,9 @@ from ..naming_convetions import *
 
 from ..helper_functions import *
 
-from ..properties import  SpinWiz_collection_properties, SpinWiz_properties
+from ..properties import  SpinWiz_collection_properties
+
+from ..lighting_setup.lighting_setup import import_world
  
 
 def create_action():
@@ -67,7 +69,7 @@ def duplicate_object_with_hierarchy(obj, parent=None, collection=None):
 def create_copy_and_hide():
 
     # Create a new collection for the copied objects
-    new_collection = bpy.data.collections.new(collection_name)
+    new_collection = bpy.data.collections.new(collection_name + bpy.context.selected_objects[0].name)
     bpy.context.scene.collection.children.link(new_collection)
     
     # add collection to collection list
@@ -79,6 +81,7 @@ def create_copy_and_hide():
     selected_objects = [obj for obj in selected_objects if obj.parent is None]
 
     pivot = create_pivot(new_collection, pivot_object_name, get_collection_origin(bpy.context.selected_objects))
+    pivot.empty_display_type = "ARROWS"
     
     # the pivot we look at is different than the pivot that holds the objects
     look_at_pivot = create_pivot(new_collection, pivot_track_name, get_collection_origin(bpy.context.selected_objects))
@@ -111,6 +114,8 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         setattr(bpy.types.Scene, get_current_collection().name, bpy.props.PointerProperty(type=SpinWiz_collection_properties))
 
         create_action()
+        
+        import_world()
         
         # use global settings
         # use_settings_of_other(collection_name)

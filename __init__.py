@@ -133,7 +133,7 @@ def panel_camera_options(panel, layout):
     
     options.prop(spin_settings, "camera_height", text="Camera Height")
     
-    options.prop(spin_settings, "camera_tracking_height_offset", text="Lookat point height")
+    options.prop(spin_settings, "camera_tracking_height_offset", text="Target Height")
 
     row = options.row()
     col = row.column()
@@ -154,10 +154,6 @@ def documentation(panel, layout):
     row.operator("wm.url_open",
                     text="Documentation",
                     icon_value=preview_collections["documentation"]["documentation"].icon_id).url = link_to_docs
-
-
-        
-    
 
 class VIEW3D_PT_main_panel(bpy.types.Panel):
     bl_label = "SpinWiz"
@@ -194,7 +190,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
             if not is_selection_setup(current_selection):
                 row = layout.row()
                 row.operator("object.spin_wiz_setup",
-                         text="Setup for Active Objects",
+                         text="Set up for Selected Object(s)",
                          icon_value=preview_collections["logo"]["logo"].icon_id)
             else:
                 layout.separator()
@@ -211,11 +207,12 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                         else:
                             layout.separator()
 
-                            layout.label(text="Select another collection")
-                            
                             if scene.copy_collection_name != "":
                                 layout.label(text="The current coppied collection is: " + scene.copy_collection_name)
                             
+
+                            layout.label(text="Select another collection")
+                                                        
                             row = layout.row()
                             row.prop(spin_settings, "dropdown_collections", text="")
                                 
@@ -223,12 +220,6 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                             copy_paste.scale_x = 1.4
                             copy_paste.operator("object.copy", text="", icon = "COPYDOWN", depress= scene.copy_collection_name == get_current_collection().name)
                             copy_paste.operator("object.paste", text="", icon = "PASTEDOWN")
-                                
-                            layout.label(text="Change the current collection name")
-                            box = layout.box()
-                            row = box.row()
-                            
-                            row.prop(get_current_collection(), "name", text="")
                             
                             if is_pivot(current_selection) or is_camera(current_selection):
                                 
@@ -259,8 +250,15 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                                 panel_lighting_setup(self, layout)
                                 
                             layout.separator()
+                            
+                            layout.label(text="Change the current collection name")
+                            box = layout.box()
+                            row = box.row()
+                            row.prop(get_current_collection(), "name", text="")
 
-                            panel_operator_add_to_output(self, layout)
+                            layout.separator()
+
+                            panel_operator_add_to_output(self, layout)                            
 
                             layout.separator()
 

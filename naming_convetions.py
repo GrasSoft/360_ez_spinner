@@ -4,7 +4,7 @@ curve_object_name = "SpinWiz_Cam_Track"
 pivot_object_name = "SpinWiz_Mvr"
 pivot_track_name = "SpinWiz_LookAt"
 cam_pivot_object_name = "SpinWiz_Mvr_Cam"
-collection_name = "SpinWiz_MasterC"
+collection_name = "SpinWiz_"
 action_name = "SpinWiz_Action"
 stage_name = "SpinWiz_Stage"
 

@@ -1,6 +1,6 @@
 # related to nr of frames
 default_length_type = "Keyframes"
-default_length = 5 # or 5 degrees
+default_length = 72 # or 5 degrees
 default_start_frame = 1
 default_degrees = "2"
 

@@ -35,9 +35,12 @@ def import_world():
 
     bpy.context.scene.world = current_world
     collection["current_world"] = current_world.name
+    
+def apply_world():
+    world = get_current_world()
+    bpy.context.scene.world = world
 
 def reset_world():
-    world = get_current_world()
     original_world = get_original_world()
     
     if original_world is None:

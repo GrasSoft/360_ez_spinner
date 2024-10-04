@@ -230,7 +230,7 @@ def update_interpolation(self, context):
 
 def update_lighting(self, context):
     if self.add_lighting_setup:
-        import_world()
+        apply_world()
     else:
         reset_world()
 
@@ -300,9 +300,11 @@ def update_lighting_gradient_scale(self, context):
 
 def update_stage(self, context):
     if self.add_stage:
-        import_stage()
-        update_stage_height_offset(self, context)
-        update_stage_subdivision(self, context)
+        if get_current_stage() is None:
+            import_stage()
+            update_stage_height_offset(self, context)
+            update_stage_subdivision(self, context)
+            update_stage_material(self, context)
     else:
         reset_stage()
 

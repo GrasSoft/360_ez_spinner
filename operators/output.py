@@ -60,7 +60,9 @@ def panel_operator_add_to_output(panel, layout):
     # send to output button
     row = layout.row()
     row.operator("object.output", 
-                    text="Send to output queue",)
+                    text="Send to output queue", icon = "RESTRICT_RENDER_OFF")
+    row = layout.row()
+    row.label(text="Currently in queue: "+ str(len(bpy.context.scene.output_list)))
 
 def panel_output_list(panel, layout):
     spin_settings = bpy.context.scene.spin_settings    

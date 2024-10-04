@@ -266,6 +266,34 @@ def update_scene_frame(collection_name = None, scene = None):
     scene.frame_start = spin_settings.start_frame
     scene.frame_end = spin_settings.start_frame + spin_settings.nr_frames    
     
+def update_current_world(collection_name = None, scene = None):
+        
+    if collection_name is None:
+        collection_name = get_current_collection().name
+    
+    if scene is None:
+        scene = bpy.context.scene
+        
+    spin_settings = getattr(scene, collection_name)
+
+    spin_settings.stage_height_offset = spin_settings.stage_height_offset
+    spin_settings.stage_subdivision = spin_settings.stage_subdivision
+    spin_settings.stage_material_color = spin_settings.stage_material_color
+    spin_settings.stage_material_roughness = spin_settings.stage_material_roughness
+    spin_settings.stage_material_reflection_intensity = spin_settings.stage_material_reflection_intensity
+    spin_settings.stage_material_contact_shadow = spin_settings.stage_material_contact_shadow
+    
+def update_current_stage(collection_name = None, scene = None):
+           
+    if collection_name is None:
+        collection_name = get_current_collection().name
+    
+    if scene is None:
+        scene = bpy.context.scene
+        
+    spin_settings = getattr(scene, collection_name)
+
+    spin_settings.add_stage = spin_settings.add_stage
 
 def update_current_selection(scene):
     global current_rename
@@ -316,7 +344,7 @@ def update_current_selection(scene):
                         scene.output_list.remove(index + 1)
                         break
                 
-                 
+               
     current_selection = bpy.context.view_layer.objects.active
     
     global old_selection
@@ -330,6 +358,10 @@ def update_current_selection(scene):
             change_perspective()
             
             update_scene_frame()
+            
+            update_current_world()
+            
+            update_current_stage()
             
             scene.spin_settings.dropdown_collections = current_selection.users_collection[0].name
         else:
@@ -640,6 +672,7 @@ def reset_default_settings():
     # camera settings
     current_settings.camera_height = default_camera_height
     current_settings.camera_focal_length = default_camera_focal_length
+    current_settings.camera_distance = get_current_camera().location.x
     
     # stage settings
     current_settings.add_stage = default_has_stage

@@ -3,7 +3,7 @@ import subprocess
 import functools
 
 from ..naming_convetions import *
-from ..helper_functions import hide_anything_but, update_scene_frame
+from ..helper_functions import hide_anything_but, update_scene_frame, update_current_world, update_current_stage
 
 
 def hide_render_others(name, scene):
@@ -164,6 +164,8 @@ class OBJECTE_OT_render(bpy.types.Operator):
                 hide_render_others(collection_name, context.scene)
                 set_current_camera_as_render(collection_name, context.scene)
                 update_scene_frame(collection_name, context.scene)
+                update_current_world(collection_name, context.scene)
+                update_current_stage(collection_name, context.scene)
                 
                 bpy.context.scene.render.filepath = scene.spin_settings.output_filepath + "/" + collection_name + "/" + collection_name + "_"
                 
