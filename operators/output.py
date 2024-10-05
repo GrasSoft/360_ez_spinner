@@ -215,6 +215,7 @@ class OBJECT_OT_rename(bpy.types.Operator):
         return {'FINISHED'}
 
 
+
 class OBJECT_OT_select(bpy.types.Operator):
     bl_idname = "object.select"
     bl_label = "Select Item"
@@ -224,6 +225,7 @@ class OBJECT_OT_select(bpy.types.Operator):
     is_selected: bpy.props.BoolProperty()
     
     def execute(self, context):
+        
         global current_rename
         current_rename = None
         collection = bpy.data.collections[self.name]

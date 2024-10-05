@@ -318,12 +318,19 @@ def update_current_selection(scene):
            item.name = name
            
     old_collection_names = [item.name for item in scene.old_collections]       
-           
+
+
     current = set(current_collection_names)
     old = set(old_collection_names)
     
     if current != old:
         
+        scene.old_collections.clear()
+        
+        for item in current_collection_names:
+            nig = scene.old_collections.add()
+            nig.name = item
+           
         # Find unique elements
         new_name = current - old
         old_name = old     - current
@@ -331,16 +338,7 @@ def update_current_selection(scene):
         if len(old_name) > 0 and len(new_name) > 0:
             new_name = list(new_name)[0]
             old_name = list(old_name)[0]
-
-            nig = scene.old_collections.add()
-            nig.name = new_name
-            
-            for index, item in enumerate(scene.old_collections):
-                if item.name == old_name:
-                    move_item(scene.old_collections, len(scene.old_collections) - 1, index)
-                    scene.old_collections.remove(index + 1)
-                    break
-                
+        
                 
             if hasattr(bpy.types.Scene, old_name):    
                 new_item = scene.collections_list.add()
@@ -357,11 +355,14 @@ def update_current_selection(scene):
                 delattr(bpy.types.Scene, old_name)
                 
                 
-                new_item = scene.output_list.add()
-                new_item.name = new_name
+                
+
                 
                 for index, item in enumerate(scene.output_list):
                     if item.name == old_name:
+                        new_item = scene.output_list.add()
+                        new_item.name = new_name
+                        
                         move_item(scene.output_list, len(scene.output_list) - 1, index)
                         scene.output_list.remove(index + 1)
                         break
