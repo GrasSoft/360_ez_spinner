@@ -270,7 +270,7 @@ def update_scene_frame(collection_name = None, scene = None):
 
     scene.frame_current = spin_settings.start_frame
     scene.frame_start = spin_settings.start_frame
-    scene.frame_end = spin_settings.start_frame + spin_settings.nr_frames    
+    scene.frame_end = spin_settings.start_frame + spin_settings.nr_frames - 1 
     
 def update_current_world(collection_name = None, scene = None):
         
@@ -531,7 +531,7 @@ def add_keyframes():
     else:
         rotation_value = radians(-360)
         
-    keyframe_point = fcurve.keyframe_points.insert(num_frames + offset , rotation_value)
+    keyframe_point = fcurve.keyframe_points.insert(num_frames + offset - 1, rotation_value)
     keyframe_point.interpolation = interpolation_type
 
     # Set the scene's end frame
@@ -642,6 +642,8 @@ def use_settings_of_other(collection_name):
     
     current_collection = get_current_collection()
     current_settings = getattr(bpy.context.scene, current_collection.name)
+    
+    current_settings.spin_direction = prev_settings.spin_direction
     
     # animation settings
     current_settings.movement_type = prev_settings.movement_type
