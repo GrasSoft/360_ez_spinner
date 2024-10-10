@@ -49,7 +49,7 @@ Go to the SpinWiz panel located in the N panel (press N to toggle it if it is no
 
 Press the Set up for Selected Object(s) button. This will automatically create a new SpinWiz setup for the selected items, including a camera, keyframes and other default settings. This setup will be created in a new collection that is named based on the active selected object.
 
-![alt text](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/01_setup.png?raw=true)
+![Setup](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/01_setup.png?raw=true)
 
 This collection will then be used as the basis for configuring camera settings, animation options, and output configurations in the subsequent steps. 
 The original object(s) will remain intact in the scene, while the setup will include duplicate(s) of it.
@@ -64,7 +64,7 @@ The visibility of collections is automatically managed by SpinWiz for convenienc
 
 To switch between multiple setups, you can use the dropdown at the top.
 
-![alt text](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/02_switch.png?raw=true)
+![Switch between selections](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/02_switch.png?raw=true)
 
 You can also simply click on one of the objects from a setup in the Outliner. This will reveal the collection in question and hide the others.
 
@@ -99,7 +99,7 @@ Defines the distance between the camera and the object. This setting works in co
 
 The Animation Options panel provides you with control over how the turntable animation is set up and executed. These settings determine the movement type, spin direction, interpolation method, and duration of the animation.
 
-![alt text](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/03_animation.png?raw=true)
+![Animation](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/03_animation.png?raw=true)
 
 Movement Type
 Allows you to select the type of movement for the turntable animation:
@@ -128,7 +128,7 @@ By Degrees: Lets you control the animation length based on the number of degrees
 
 This option in SpinWiz allows you to quickly add a stage beneath the object for which the setup is made. The stage is automatically positioned so that the bottom of the object touches the stage, ensuring the object appears grounded and centered. Also, the shape of the stage changes such that it encompasses both the object and the camera.
 
-![alt text](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/04_addstage.png?raw=true)
+![Add stage setup](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/04_addstage.png?raw=true)
 
 Stage Height: Sets the height of the stage. Adjust this value to control the stage’s vertical size, which affects the perceived scale and prominence of the object on the stage.
 
@@ -148,7 +148,7 @@ Contact Shadow: Sets the intensity of the contact shadow beneath the object. Thi
 
 This option in SpinWiz allows you to quickly add an HDR environment that is suitable for a turntable type animation.
 
-![alt text](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/05_addlighting.png?raw=true)
+![Add lighting setup](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/05_addlighting.png?raw=true)
 
 Gradient: Adds a simple gradient as an environment, allowing you control over its position and scale.
 Studio HDR: Adds a Studio HDRI map (thanks to PolyHaven!), allowing you control over its rotation and strength.
@@ -161,7 +161,7 @@ Send to Output Queue adds the current Setup to the list of Setups to be batch re
 
 Manage and configure the rendering order of your setups, as well as specify the file path where the rendered animations will be saved. This feature helps you organize the output process, ensuring that each setup is rendered in the desired sequence and saved to a location of your choice.
 
-![alt text](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/06_outputsetup.png?raw=true)
+![Output Setup](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/06_outputsetup.png?raw=true)
 
 Setup Order:
 
