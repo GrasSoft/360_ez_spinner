@@ -83,7 +83,7 @@ def progress_icons():
 
     preview_collections["progress"] = previews
 
-def import_custom_icons():
+def spinwiz_import_custom_icons():
     global icons_path
     icons_path = os.path.join(os.path.dirname(__file__), "icons")
 
@@ -97,7 +97,7 @@ def import_custom_icons():
 
 # Thumbnails
 
-def import_thumbnails():
+def spinwiz_import_thumbnails():
     global preview_collections
     
     global thumbnails_path

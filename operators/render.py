@@ -46,8 +46,8 @@ def set_current_camera_as_render(name, scene):
 
 def enable_render_button(scene):
     # renable render button
-    scene.spin_settings.enable_render = True
-    scene.spin_settings.is_rendering = False
+    scene.spinwiz_spin_settings.enable_render = True
+    scene.spinwiz_spin_settings.is_rendering = False
 
     
 def make_all_objects_not_selectable():
@@ -63,8 +63,8 @@ def get_not_selectable_objects():
     not_selectable_objects = [obj for obj in bpy.data.objects if obj.hide_select]
     return not_selectable_objects
 
-class OBJECTE_OT_render(bpy.types.Operator):
-    bl_idname = "object.render"
+class OBJECTE_OT_spinwiz_render(bpy.types.Operator):
+    bl_idname = bl_idname_render
     bl_label = "Render the list"
     bl_description = "Render the list of output objects with the appropriate settings"   
     
@@ -167,7 +167,7 @@ class OBJECTE_OT_render(bpy.types.Operator):
                 update_current_world(collection_name, context.scene)
                 update_current_stage(collection_name, context.scene)
                 
-                bpy.context.scene.render.filepath = scene.spin_settings.output_filepath + "/" + collection_name + "/" + collection_name + "_"
+                bpy.context.scene.render.filepath = scene.spinwiz_spin_settings.spinwiz_output_filepath + "/" + collection_name + "/" + collection_name + "_"
                 
                 # begin the next render
                 bpy.ops.render.render("INVOKE_DEFAULT", animation=True)
@@ -176,8 +176,8 @@ class OBJECTE_OT_render(bpy.types.Operator):
                 
     def execute(self, context):
         # disable the render button until the render ends
-        context.scene.spin_settings.enable_render = False
-        context.scene.spin_settings.is_rendering = True
+        context.scene.spinwiz_spin_settings.enable_render = False
+        context.scene.spinwiz_spin_settings.is_rendering = True
         
         bpy.app.handlers.render_pre.append(self.render_pre)
         bpy.app.handlers.render_post.append(self.render_post)   
@@ -193,7 +193,7 @@ class OBJECTE_OT_render(bpy.types.Operator):
         self.initial_active = bpy.context.view_layer.objects.active
         self.initial_selection = bpy.context.selected_objects
         
-        output_list = [item.name for item in context.scene.output_list]
+        output_list = [item.name for item in context.scene.spinwiz_output_list]
         
         self.render_queue = output_list.copy()
         

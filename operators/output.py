@@ -1,6 +1,7 @@
 import bpy
 
-from ..helper_functions import *
+from ..naming_convetions import *
+from ..helper_functions import get_current_collection, move_item, make_obj_active
 from ..blender_resources.media_setup.custom_media import *
 
 
@@ -8,7 +9,7 @@ from ..blender_resources.media_setup.custom_media import *
 
 def output_row(panel, layout, name):
     scene = bpy.context.scene
-    spin_settings = scene.spin_settings
+    spin_settings = scene.spinwiz_spin_settings
 
     collection = get_current_collection()
     collection_settings = getattr(bpy.context.scene, get_current_collection().name)
@@ -22,52 +23,52 @@ def output_row(panel, layout, name):
     up = up_down.column()
     
     index = 0
-    for i, item in enumerate(scene.output_list):
+    for i, item in enumerate(scene.spinwiz_output_list):
         if item.name == name:
             index = i
             break
     
     up.enabled = (index > 0)
-    op = up.operator("object.up_down", depress= (collection.name == name), icon= "TRIA_UP", text="")
+    op = up.operator(bl_idname_up_down, depress= (collection.name == name), icon= "TRIA_UP", text="")
     op.name = name
     op.up_down = True
     
     down = up_down.column()
-    down.enabled = (index < len(scene.output_list) - 1)
-    op = down.operator("object.up_down", depress= (collection.name == name), icon = "TRIA_DOWN", text="")
+    down.enabled = (index < len(scene.spinwiz_output_list) - 1)
+    op = down.operator(bl_idname_up_down, depress= (collection.name == name), icon = "TRIA_DOWN", text="")
     op.name = name
     op.up_down = False
     
     col = row.column()
     if spin_settings.is_rendering:
-        op = col.operator("object.select", depress= (collection.name == name), text=name, icon_value=get_render_progress_icon(name, collection.name))
+        op = col.operator(bl_idname_select, depress= (collection.name == name), text=name, icon_value=get_render_progress_icon(name, collection.name))
     else:
         global current_rename
         if current_rename == name:
             col.prop(get_current_collection(), "name", text="")     
         else:
             if collection.name == name:
-                op = col.operator("object.rename", depress= (collection.name == name), text=name)
+                op = col.operator(bl_idname_rename, depress= (collection.name == name), text=name)
             else:
-                op = col.operator("object.select", text=name)
+                op = col.operator(bl_idname_select, text=name)
     op.name = name
 
     col = row.column()
-    op = row.operator("object.remove_output", text="", icon="TRASH", depress= (collection.name == name))
+    op = row.operator(bl_idname_remove_output, text="", icon="TRASH", depress= (collection.name == name))
     op.name = name
     
 def panel_operator_add_to_output(panel, layout):
     # send to output button
     row = layout.row()
-    row.operator("object.output", 
+    row.operator(bl_idname_output,
                     text="Send to output queue", icon = "RESTRICT_RENDER_OFF")
     row = layout.row()
-    row.label(text="Currently in queue: "+ str(len(bpy.context.scene.output_list)))
+    row.label(text="Currently in queue: "+ str(len(bpy.context.scene.spinwiz_output_list)))
 
 def panel_output_list(panel, layout):
-    spin_settings = bpy.context.scene.spin_settings    
+    spin_settings = bpy.context.scene.spinwiz_spin_settings
     
-    output_list = bpy.data.scenes[0].output_list
+    output_list = bpy.data.scenes[0].spinwiz_output_list
     
     if len(output_list) == 0:
         layout.label(text="There are not items in the queue")
@@ -82,12 +83,12 @@ def panel_output_list(panel, layout):
         box = layout.box()
         split = box.split(factor=0.75)
         col = split.column()
-        col.label(text=spin_settings.output_filepath)
+        col.label(text=spin_settings.spinwiz_output_filepath)
 
         
         col = split.column()
         col.enabled = not spin_settings.is_rendering
-        col.operator("wm.open_path", text="Output path")
+        col.operator(bl_idname_open_path, text="Output path")
 
         # begin render output
         layout.separator()
@@ -96,14 +97,14 @@ def panel_output_list(panel, layout):
             layout.label(text= "Please select a valid path!")
         
         row = layout.row()
-        row.operator("object.render", text="Render output queue")
+        row.operator(bl_idname_render, text="Render output queue")
         row.enabled = spin_settings.enable_render
         
         
 #_____________________________ HELPER FUNCTIONS
 
 def get_render_progress_icon(name, current_name):
-    output_list = bpy.context.scene.output_list
+    output_list = bpy.context.scene.spinwiz_output_list
     
     just_item = 0
     current_item = 0
@@ -150,8 +151,8 @@ def get_render_progress_icon(name, current_name):
 
 #_____________________________ CLASSES
 
-class OBJECT_OT_up_down(bpy.types.Operator):
-    bl_idname = "object.up_down"
+class OBJECT_OT_spinwiz_up_down(bpy.types.Operator):
+    bl_idname = bl_idname_up_down
     bl_label = "Move the output"
     bl_description = "Move the output up and down the queue"
     
@@ -160,7 +161,7 @@ class OBJECT_OT_up_down(bpy.types.Operator):
     
     def execute(self, context):
         
-        output_list = bpy.data.scenes[0].output_list
+        output_list = bpy.data.scenes[0].spinwiz_output_list
         
         # Find the index of the string
         index = 0
@@ -180,18 +181,18 @@ class OBJECT_OT_up_down(bpy.types.Operator):
             
         return {'FINISHED'}
 
-class OBJECT_OT_open_path(bpy.types.Operator):
-    bl_idname = "wm.open_path"
+class OBJECT_OT_spinwiz_open_path(bpy.types.Operator):
+    bl_idname = bl_idname_open_path
     bl_label = "Open Path"
     bl_description = "Open path where the renders will be saved"
 
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
     
     def execute(self, context):
-        context.scene.spin_settings.output_filepath = self.filepath
+        context.scene.spinwiz_spin_settings.spinwiz_output_filepath = self.filepath
 
         if self.filepath is not None:
-            context.scene.spin_settings.enable_render = True
+            context.scene.spinwiz_spin_settings.enable_render = True
 
         return {'FINISHED'}
     
@@ -201,8 +202,8 @@ class OBJECT_OT_open_path(bpy.types.Operator):
 
 
 
-class OBJECT_OT_rename(bpy.types.Operator):
-    bl_idname = "object.rename"
+class OBJECT_OT_spinwiz_rename(bpy.types.Operator):
+    bl_idname = bl_idname_rename
     bl_label = "Rename Object"
     bl_description = "Rename the current selected collection"
     
@@ -216,8 +217,8 @@ class OBJECT_OT_rename(bpy.types.Operator):
 
 
 
-class OBJECT_OT_select(bpy.types.Operator):
-    bl_idname = "object.select"
+class OBJECT_OT_spinwiz_select(bpy.types.Operator):
+    bl_idname = bl_idname_select
     bl_label = "Select Item"
     bl_description = "Select the item to be able to modify the settings again"
     
@@ -243,13 +244,13 @@ class OBJECT_OT_select(bpy.types.Operator):
             
         return {"FINISHED"}            
 
-class OBJECT_OT_output(bpy.types.Operator):
-    bl_idname = "object.output"
+class OBJECT_OT_spinwiz_output(bpy.types.Operator):
+    bl_idname = bl_idname_output
     bl_label = "To Output Queue"
     bl_description = "Send object and settings to output queue"
 
     def execute(self, context):
-        output_list = bpy.data.scenes[0].output_list
+        output_list = bpy.data.scenes[0].spinwiz_output_list
 
         collection_name = get_current_collection().name
         
@@ -265,8 +266,8 @@ class OBJECT_OT_output(bpy.types.Operator):
         return {"FINISHED"}
     
     
-class OBJECT_OT_delete_output(bpy.types.Operator):
-    bl_idname = "object.remove_output"
+class OBJECT_OT_spinwiz_delete_output(bpy.types.Operator):
+    bl_idname = bl_idname_output
     bl_label = "Remove output item"
     bl_description = "Remove collection from output queue"
     
@@ -274,7 +275,7 @@ class OBJECT_OT_delete_output(bpy.types.Operator):
     
     def execute(self, context):
         
-        output_list = bpy.data.scenes[0].output_list
+        output_list = bpy.data.scenes[0].spinwiz_output_list
         
         for i, item in enumerate(output_list):
             if item.name == self.name:

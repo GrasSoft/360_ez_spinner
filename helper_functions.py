@@ -305,19 +305,19 @@ def update_current_stage(collection_name = None, scene = None):
         spin_settings.stage_material_contact_shadow = spin_settings.stage_material_contact_shadow
 
 @persistent
-def update_current_selection(scene):
+def spinwiz_update_current_selection(scene):
     
     global current_rename
     current_rename = None
    
     current_collection_names = [col.name for col in scene.collection.children]
       
-    if len(scene.old_collections) == 0:
+    if len(scene.spinwiz_old_collections) == 0:
         for name in current_collection_names:
-           item = scene.old_collections.add()
+           item = scene.spinwiz_old_collections.add()
            item.name = name
            
-    old_collection_names = [item.name for item in scene.old_collections]       
+    old_collection_names = [item.name for item in scene.spinwiz_old_collections]
 
 
     current = set(current_collection_names)
@@ -325,10 +325,10 @@ def update_current_selection(scene):
     
     if current != old:
         
-        scene.old_collections.clear()
+        scene.spinwiz_old_collections.clear()
         
         for item in current_collection_names:
-            nig = scene.old_collections.add()
+            nig = scene.spinwiz_old_collections.add()
             nig.name = item
            
         # Find unique elements
@@ -341,13 +341,13 @@ def update_current_selection(scene):
         
                 
             if hasattr(bpy.types.Scene, old_name):    
-                new_item = scene.collections_list.add()
+                new_item = scene.spinwiz_collections_list.add()
                 new_item.name = new_name
                 
-                for index, item in enumerate(scene.collections_list):
+                for index, item in enumerate(scene.spinwiz_collections_list):
                     if item.name == old_name:
-                        move_item(scene.collections_list, len(scene.collections_list) - 1, index)
-                        scene.collections_list.remove(index + 1)
+                        move_item(scene.spinwiz_collections_list, len(scene.spinwiz_collections_list) - 1, index)
+                        scene.spinwiz_collections_list.remove(index + 1)
                         break
                 
                 spin_settings = getattr(bpy.types.Scene, old_name)
@@ -358,13 +358,13 @@ def update_current_selection(scene):
                 
 
                 
-                for index, item in enumerate(scene.output_list):
+                for index, item in enumerate(scene.spinwiz_output_list):
                     if item.name == old_name:
-                        new_item = scene.output_list.add()
+                        new_item = scene.spinwiz_output_list.add()
                         new_item.name = new_name
                         
-                        move_item(scene.output_list, len(scene.output_list) - 1, index)
-                        scene.output_list.remove(index + 1)
+                        move_item(scene.spinwiz_output_list, len(scene.spinwiz_output_list) - 1, index)
+                        scene.spinwiz_output_list.remove(index + 1)
                         break
                 
                
@@ -372,7 +372,7 @@ def update_current_selection(scene):
     
     global old_selection
     
-    if old_selection != current_selection and not scene.is_setting_up:
+    if old_selection != current_selection and not scene.spinwiz_is_setting_up:
         
         if is_selection_setup(current_selection):
             hide_anything_but(current_selection.users_collection[0])
@@ -387,7 +387,7 @@ def update_current_selection(scene):
             
             update_current_stage()
             
-            scene.spin_settings.dropdown_collections = current_selection.users_collection[0].name
+            scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].name
         else:
             hide_anything_but(current_selection.users_collection[0], True)
             

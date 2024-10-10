@@ -1,8 +1,10 @@
 import bpy
+from mathutils import Vector
 
 from ..naming_convetions import *
 
-from ..helper_functions import *
+from ..helper_functions import get_current_collection, add_keyframes, hide_anything_but, reset_default_settings, \
+    change_perspective
 
 from ..properties import  SpinWiz_collection_properties
 
@@ -73,7 +75,7 @@ def create_copy_and_hide():
     bpy.context.scene.collection.children.link(new_collection)
     
     # add collection to collection list
-    item = bpy.context.scene.collections_list.add()
+    item = bpy.context.scene.spinwiz_collections_list.add()
     item.name = new_collection.name
 
     # Get selected objects without parents
@@ -98,16 +100,16 @@ def create_copy_and_hide():
 
 
 
-class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
-    bl_idname = "object.spin_wiz_setup"
+class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
+    bl_idname = bl_idname_setup
     bl_label = "Spin Wiz Setup"
     bl_description = "This operator creates the setup for Spin Wiz"
 
     def execute(self, context):
           
-        context.scene.is_setting_up = True 
+        context.scene.spinwiz_is_setting_up = True
                 
-        context.scene.spin_settings.menu_options = "motion_setup"
+        context.scene.spinwiz_spin_settings.menu_options = "motion_setup"
         
         collection = create_copy_and_hide()
         
@@ -124,7 +126,7 @@ class OBJECT_OT_spin_wiz_setup(bpy.types.Operator):
         
         change_perspective()
         
-        context.scene.is_setting_up = False
+        context.scene.spinwiz_is_setting_up = False
 
         return {"FINISHED"}
 

@@ -15,22 +15,17 @@ import bpy
 
 from bpy.app.handlers import persistent
 
-from bpy.types import Context
-from mathutils import Vector
-
-from .helper_functions import *
-
-from .blender_resources.media_setup.custom_media import *
-
 from .properties import *
 
-from .operators.setup_spinwiz import OBJECT_OT_spin_wiz_setup 
+from .operators.setup_spinwiz import OBJECT_OT_spinwiz_setup
 
-from .operators.copy_paste import OBJECT_OT_copy, OBJECT_OT_paste
+from .operators.copy_paste import OBJECT_OT_spinwiz_copy, OBJECT_OT_spinwiz_paste
 
-from .operators.output import *
+from .operators.output import panel_output_list, panel_operator_add_to_output, OBJECT_OT_spinwiz_rename, \
+    OBJECT_OT_spinwiz_up_down, OBJECT_OT_spinwiz_output, OBJECT_OT_spinwiz_delete_output, OBJECT_OT_spinwiz_select, \
+    OBJECT_OT_spinwiz_open_path
 
-from .operators.render import *
+from .operators.render import OBJECTE_OT_spinwiz_render
 
 from . import addon_updater_ops
 
@@ -38,10 +33,10 @@ from . import addon_updater_ops
 
 bl_info = {
     "name" : "360_spinner",
-    "author" : "VizPrime",
+    "author" : "Blender Might",
     "description" : "",
-    "blender" : (4, 1, 0),
-    "version" : (0, 0, 1),
+    "blender" : (4, 2, 0),
+    "version" : (1, 0, 0),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
@@ -155,15 +150,15 @@ def documentation(panel, layout):
                     text="Documentation",
                     icon_value=preview_collections["documentation"]["documentation"].icon_id).url = link_to_docs
 
-class VIEW3D_PT_main_panel(bpy.types.Panel):
+class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
     bl_label = "SpinWiz"
-    bl_idname = "VIEW3D_PT_main_panel"
+    bl_idname = bl_idname_mainpanel
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'SpinWiz'
 
 
-    def draw_header(self, context: Context):
+    def draw_header(self, context):
         self.layout.label(text="", icon_value=preview_collections["logo"]["logo"].icon_id)
     
     def draw(self, context):
@@ -172,7 +167,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         addon_updater_ops.check_for_update_background()
         
         scene = context.scene
-        spin_settings = scene.spin_settings
+        spin_settings = scene.spinwiz_spin_settings
                 
         current_selection = bpy.context.active_object
 
@@ -189,7 +184,7 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         else:
             if not is_selection_setup(current_selection):
                 row = layout.row()
-                row.operator("object.spin_wiz_setup",
+                row.operator(bl_idname_setup,
                          text="Set up for Selected Object(s)",
                          icon_value=preview_collections["logo"]["logo"].icon_id)
             else:
@@ -207,8 +202,8 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                         else:
                             layout.separator()
 
-                            if scene.copy_collection_name != "":
-                                layout.label(text="The current coppied collection is: " + scene.copy_collection_name)
+                            if scene.spinwiz_copy_collection_name != "":
+                                layout.label(text="The current coppied collection is: " + scene.spinwiz_copy_collection_name)
                             
 
                             layout.label(text="Select another collection")
@@ -218,8 +213,8 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
                                 
                             copy_paste = row.row(align=True)
                             copy_paste.scale_x = 1.4
-                            copy_paste.operator("object.copy", text="", icon = "COPYDOWN", depress= scene.copy_collection_name == get_current_collection().name)
-                            copy_paste.operator("object.paste", text="", icon = "PASTEDOWN")
+                            copy_paste.operator(bl_idname_copy, text="", icon = "COPYDOWN", depress=scene.spinwiz_copy_collection_name == get_current_collection().name)
+                            copy_paste.operator(bl_idname_paste, text="", icon = "PASTEDOWN")
                             
                             if is_pivot(current_selection) or is_camera(current_selection):
                                 
@@ -280,38 +275,54 @@ class VIEW3D_PT_main_panel(bpy.types.Panel):
         
 
 # Define a PropertyGroup for the list items
-class MyCollectionItem(bpy.types.PropertyGroup):
+class SpinWiz_ListCollection(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Item Name")
 
-class_list = [MyCollectionItem, UpdatePreferences, SpinWiz_properties, SpinWiz_collection_properties, VIEW3D_PT_main_panel, OBJECT_OT_spin_wiz_setup, OBJECT_OT_paste, OBJECT_OT_copy, OBJECT_OT_rename , OBJECT_OT_up_down, OBJECT_OT_output, OBJECT_OT_delete_output, OBJECT_OT_select, OBJECTE_OT_render, OBJECT_OT_open_path]     
+class_list = [
+    SpinWiz_ListCollection,
+    SpinWiz_UpdatePreferences,
+    SpinWiz_properties,
+    SpinWiz_collection_properties,
+    VIEW3D_PT_spinwiz_mainpanel,
+    OBJECT_OT_spinwiz_setup,
+    OBJECT_OT_spinwiz_paste,
+    OBJECT_OT_spinwiz_copy,
+    OBJECT_OT_spinwiz_rename,
+    OBJECT_OT_spinwiz_up_down,
+    OBJECT_OT_spinwiz_output,
+    OBJECT_OT_spinwiz_delete_output,
+    OBJECT_OT_spinwiz_select,
+    OBJECTE_OT_spinwiz_render,
+    OBJECT_OT_spinwiz_open_path
+]
 
 
 def register():    
     addon_updater_ops.register(bl_info)
     
-    import_custom_icons()
-    import_thumbnails()
+    spinwiz_import_custom_icons()
+    spinwiz_import_thumbnails()
 
     for cls in class_list:
         bpy.utils.register_class(cls)
         
-    bpy.types.Scene.copy_collection_name = bpy.props.StringProperty()
+    bpy.types.Scene.spinwiz_copy_collection_name = bpy.props.StringProperty()
         
-    bpy.types.Scene.is_setting_up = bpy.props.BoolProperty()
+    bpy.types.Scene.spinwiz_is_setting_up = bpy.props.BoolProperty()
                 
-    bpy.types.Scene.spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
+    bpy.types.Scene.spinwiz_spin_settings = bpy.props.PointerProperty(type= SpinWiz_properties)
     
-    bpy.types.Scene.old_collections = bpy.props.CollectionProperty(type= MyCollectionItem)
+    bpy.types.Scene.spinwiz_old_collections = bpy.props.CollectionProperty(type= SpinWiz_ListCollection)
     
-    bpy.types.Scene.collections_list = bpy.props.CollectionProperty(type=MyCollectionItem)
+    bpy.types.Scene.spinwiz_collections_list = bpy.props.CollectionProperty(type=SpinWiz_ListCollection)
      
-    bpy.types.Scene.output_list = bpy.props.CollectionProperty(type=MyCollectionItem)
+    bpy.types.Scene.spinwiz_output_list = bpy.props.CollectionProperty(type=SpinWiz_ListCollection)
      
-    bpy.types.Scene.output_filepath = bpy.props.StringProperty()
+    bpy.types.Scene.spinwiz_output_filepath = bpy.props.StringProperty()
     
-    bpy.app.handlers.depsgraph_update_post.append(update_current_selection)
+    bpy.app.handlers.depsgraph_update_post.append(spinwiz_update_current_selection)
     
-    bpy.app.handlers.load_post.append(on_load_post_handler)
+    bpy.app.handlers.load_post.append(spinwiz_on_load_post_handler)
     
     
     
@@ -319,7 +330,7 @@ def register():
 def delayed_property_registration():
     # Ensure the attribute is present and populated with items before registering
     scene = bpy.context.scene
-    if hasattr(scene, 'collections_list') and len(scene.collections_list) > 0:
+    if hasattr(scene, 'collections_list') and len(scene.spinwiz_collections_list) > 0:
         register_dynamic_properties()
         return None  # Stop the timer once registration is complete
     else:
@@ -336,12 +347,12 @@ def register_dynamic_properties():
         print("collections_list not found in scene.")
         return
     
-    if not scene.collections_list:
+    if not scene.spinwiz_collections_list:
         print("collections_list is present but empty. No properties to register.")
         return
 
     # Iterate through the collections list and register dynamic properties
-    for item in scene.collections_list:
+    for item in scene.spinwiz_collections_list:
         prop_name = item.name
         try:
             if not hasattr(bpy.types.Scene, prop_name):
@@ -351,7 +362,7 @@ def register_dynamic_properties():
             print(f"Failed to register property {prop_name}: {e}")
 
 @persistent
-def on_load_post_handler(dummy):
+def spinwiz_on_load_post_handler(dummy):
     print("A .blend file has been loaded. Starting delayed property registration...")
     bpy.app.timers.register(delayed_property_registration)
     
@@ -366,34 +377,34 @@ def unregister():
         
     preview_collections.clear()
     
-    if hasattr(bpy.types.Scene, "copy_collection_name"):
-        del bpy.types.Scene.copy_collection_name
+    if hasattr(bpy.types.Scene, "spinwiz_copy_collection_name"):
+        del bpy.types.Scene.spinwiz_copy_collection_name
     
-    if hasattr(bpy.types.Scene, "is_setting_up"):
-        del bpy.types.Scene.is_setting_up
+    if hasattr(bpy.types.Scene, "spinwiz_is_setting_up"):
+        del bpy.types.Scene.spinwiz_is_setting_up
     
-    if hasattr(bpy.types.Scene, "spin_settings"):
-        del bpy.types.Scene.spin_settings
+    if hasattr(bpy.types.Scene, "spinwiz_spin_settings"):
+        del bpy.types.Scene.spinwiz_spin_settings
     
-    if hasattr(bpy.types.Scene, "collections_list"):
+    if hasattr(bpy.types.Scene, "spinwiz_collections_list"):
         # delete every item in collections list first
         
-        for item in bpy.context.scene.collections_list:
+        for item in bpy.context.scene.spinwiz_collections_list:
             delattr(bpy.types.Scene, item.name)
         
-        del bpy.types.Scene.collections_list
+        del bpy.types.Scene.spinwiz_collections_list
     
-    if hasattr(bpy.types.Scene, "output_list"):
-        del bpy.types.Scene.output_list
+    if hasattr(bpy.types.Scene, "spinwiz_output_list"):
+        del bpy.types.Scene.spinwiz_output_list
         
-    if hasattr(bpy.types.Scene, "output_filepath"):
-        del bpy.types.Scene.output_filepath
+    if hasattr(bpy.types.Scene, "spinwiz_output_filepath"):
+        del bpy.types.Scene.spinwiz_output_filepath
     
-    if update_current_selection in bpy.app.handlers.depsgraph_update_post:
-        bpy.app.handlers.depsgraph_update_post.remove(update_current_selection)
+    if spinwiz_update_current_selection in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(spinwiz_update_current_selection)
         
-    if on_load_post_handler in bpy.app.handlers.depsgraph_update_post:
-        bpy.app.handlers.load_post.remove(on_load_post_handler)    
+    if spinwiz_on_load_post_handler in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.load_post.remove(spinwiz_on_load_post_handler)
     
     
     

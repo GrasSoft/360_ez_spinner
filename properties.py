@@ -1,15 +1,24 @@
+from math import radians
+
 import bpy
+from mathutils import Vector
 
 from .blender_resources.media_setup.custom_media import *
-from .helper_functions import *
+
+from .helper_functions import make_obj_active, get_current_collection, remove_camera, setup_spinobject, \
+    get_current_camera_pivot, reset_anim, setup_spincamera, get_current_pivot, change_perspective, remove_keyframes, \
+    add_keyframes, get_current_action, get_current_world, get_current_stage, get_current_material, get_current_camera, \
+    get_current_lookat_pivot
+
 from .naming_convetions import *
-from .helper_functions import *
 
-from .lighting_setup.lighting_setup import *
+from .lighting_setup.lighting_setup import apply_world, reset_world
 
-from .stage_setup.stage_setup import *
+from .stage_setup.stage_setup import import_stage, reset_stage
 
-from .settings.settings_defaults import *
+from .settings.settings_defaults import default_has_lighting_setup, default_hdr_rotation, default_hdr_strength, \
+    default_start_frame, default_length, default_gradient_height, default_gradient_scale, default_has_stage, \
+    default_color, default_roughness, default_reflection_intensity, default_contact_shadow
 
 from . import addon_updater_ops
 
@@ -65,12 +74,12 @@ def menu_items(self, context):
     
 def lighting_type_items(self, context):
     return [
-        ("HDR", "HDR Lighting", "Set up the lighting with an HDR image",preview_collections["thumbnail"]["hdr"].icon_id, 0),
+        ("HDR", "Studio HDR", "Set up the lighting with an HDR image",preview_collections["thumbnail"]["hdr"].icon_id, 0),
         ("GRADIENT", "Gradient Lighting", "Set up lighting with a gradient",preview_collections["thumbnail"]["gradient"].icon_id, 1),
     ]
     
 def dynamic_dropdown_items(self, context):
-    items = context.scene.collections_list
+    items = context.scene.spinwiz_collections_list
     
     dropdown_items = []
     
@@ -104,7 +113,7 @@ def update_current_collection(self, context):
 def update_movement_type(self, context):
     scene = context.scene
     
-    scene.is_setting_up = True
+    scene.spinwiz_is_setting_up = True
     
     current_collection = get_current_collection()
     spin_settings = getattr(scene, get_current_collection().name)
@@ -129,7 +138,7 @@ def update_movement_type(self, context):
             
     change_perspective()
             
-    scene.is_setting_up = False
+    scene.spinwiz_is_setting_up = False
             
 
 def update_adjust_keyframes(self, context):
@@ -613,7 +622,7 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
  
  
  
-class UpdatePreferences(bpy.types.AddonPreferences):
+class SpinWiz_UpdatePreferences(bpy.types.AddonPreferences):
     """Demo bare-bones preferences"""
     bl_idname = __package__
 
