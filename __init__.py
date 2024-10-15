@@ -15,7 +15,7 @@ import bpy
 
 from bpy.app.handlers import persistent
 
-from helper_functions import spinwiz_update_current_selection, is_selection_valid, is_selection_setup, is_pivot, \
+from .helper_functions import spinwiz_update_current_selection, is_selection_valid, is_selection_setup, is_pivot, \
     is_camera, is_stage
 from lighting_setup.lighting_setup import panel_lighting_setup
 from stage_setup.stage_setup import panel_stage_setup

@@ -1,6 +1,4 @@
 import bpy
-import subprocess
-import functools
 
 from ..naming_convetions import *
 from ..helper_functions import hide_anything_but, update_scene_frame, update_current_world, update_current_stage
