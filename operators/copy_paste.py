@@ -1,5 +1,7 @@
 import bpy
 from ..helper_functions import get_current_collection, use_settings_of_other
+from ..naming_convetions import *
+
 
 class OBJECT_OT_spinwiz_copy(bpy.types.Operator):
     bl_idname = bl_idname_copy

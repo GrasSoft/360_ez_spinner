@@ -309,93 +309,107 @@ def spinwiz_update_current_selection(scene):
     
     global current_rename
     current_rename = None
-   
+
     current_collection_names = [col.name for col in scene.collection.children]
-      
-    if len(scene.spinwiz_old_collections) == 0:
-        for name in current_collection_names:
-           item = scene.spinwiz_old_collections.add()
-           item.name = name
-           
-    old_collection_names = [item.name for item in scene.spinwiz_old_collections]
 
 
-    current = set(current_collection_names)
-    old = set(old_collection_names)
-    
-    if current != old:
-        
-        scene.spinwiz_old_collections.clear()
-        
-        for item in current_collection_names:
-            nig = scene.spinwiz_old_collections.add()
-            nig.name = item
-           
-        # Find unique elements
-        new_name = current - old
-        old_name = old     - current
-        
-        if len(old_name) > 0 and len(new_name) > 0:
-            new_name = list(new_name)[0]
-            old_name = list(old_name)[0]
-        
-                
-            if hasattr(bpy.types.Scene, old_name):    
-                new_item = scene.spinwiz_collections_list.add()
-                new_item.name = new_name
-                
-                for index, item in enumerate(scene.spinwiz_collections_list):
-                    if item.name == old_name:
-                        move_item(scene.spinwiz_collections_list, len(scene.spinwiz_collections_list) - 1, index)
-                        scene.spinwiz_collections_list.remove(index + 1)
-                        break
-                
-                spin_settings = getattr(bpy.types.Scene, old_name)
-                setattr(bpy.types.Scene, new_name, spin_settings)
-                delattr(bpy.types.Scene, old_name)
-                
-                
-                
+    # check if old collections are still here
+    for index, item in enumerate(scene.spinwiz_collections_list):
+        if item not in current_collection_names:
+            scene.spinwiz_collections_list.remove(index)
+            delattr(bpy.types.Scene, item)
 
-                
-                for index, item in enumerate(scene.spinwiz_output_list):
-                    if item.name == old_name:
-                        new_item = scene.spinwiz_output_list.add()
-                        new_item.name = new_name
-                        
-                        move_item(scene.spinwiz_output_list, len(scene.spinwiz_output_list) - 1, index)
-                        scene.spinwiz_output_list.remove(index + 1)
-                        break
-                
-               
-    current_selection = bpy.context.view_layer.objects.active
-    
-    global old_selection
-    
-    if old_selection != current_selection and not scene.spinwiz_is_setting_up:
-        
-        if is_selection_setup(current_selection):
-            hide_anything_but(current_selection.users_collection[0])
+    for index, item in enumerate(scene.spinwiz_old_collections):
+        if item not in current_collection_names:
+            scene.spinwiz_old_collections.remove(index)
 
-            old_selection = current_selection    
-          
-            change_perspective()
-            
-            update_scene_frame()
-            
-            update_current_world()
-            
-            update_current_stage()
-            
-            scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].name
-        else:
-            hide_anything_but(current_selection.users_collection[0], True)
-            
-            change_perspective()
-            
-            current_selection.hide_set(False)
-            
-            old_selection = current_selection
+    if len(scene.spinwiz_collections_list) > 0:
+        current_collection_names = [col.name for col in scene.collection.children]
+
+        if len(scene.spinwiz_old_collections) == 0:
+            for name in current_collection_names:
+               item = scene.spinwiz_old_collections.add()
+               item.name = name
+
+        old_collection_names = [item.name for item in scene.spinwiz_old_collections]
+
+
+        current = set(current_collection_names)
+        old = set(old_collection_names)
+
+        if current != old:
+
+            scene.spinwiz_old_collections.clear()
+
+            for item in current_collection_names:
+                nig = scene.spinwiz_old_collections.add()
+                nig.name = item
+
+            # Find unique elements
+            new_name = current - old
+            old_name = old     - current
+
+            if len(old_name) > 0 and len(new_name) > 0:
+                new_name = list(new_name)[0]
+                old_name = list(old_name)[0]
+
+
+                if hasattr(bpy.types.Scene, old_name):
+                    new_item = scene.spinwiz_collections_list.add()
+                    new_item.name = new_name
+
+                    for index, item in enumerate(scene.spinwiz_collections_list):
+                        if item.name == old_name:
+                            move_item(scene.spinwiz_collections_list, len(scene.spinwiz_collections_list) - 1, index)
+                            scene.spinwiz_collections_list.remove(index + 1)
+                            break
+
+                    spin_settings = getattr(bpy.types.Scene, old_name)
+                    setattr(bpy.types.Scene, new_name, spin_settings)
+                    delattr(bpy.types.Scene, old_name)
+
+
+
+
+
+                    for index, item in enumerate(scene.spinwiz_output_list):
+                        if item.name == old_name:
+                            new_item = scene.spinwiz_output_list.add()
+                            new_item.name = new_name
+
+                            move_item(scene.spinwiz_output_list, len(scene.spinwiz_output_list) - 1, index)
+                            scene.spinwiz_output_list.remove(index + 1)
+                            break
+
+
+        current_selection = bpy.context.view_layer.objects.active
+
+        global old_selection
+
+        if old_selection != current_selection and not scene.spinwiz_is_setting_up:
+
+            if is_selection_setup(current_selection):
+                hide_anything_but(current_selection.users_collection[0])
+
+                old_selection = current_selection
+
+                change_perspective()
+
+                update_scene_frame()
+
+                update_current_world()
+
+                update_current_stage()
+
+                scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].name
+            else:
+                hide_anything_but(current_selection.users_collection[0], True)
+
+                change_perspective()
+
+                current_selection.hide_set(False)
+
+                old_selection = current_selection
             
 def is_selection_valid():
     
