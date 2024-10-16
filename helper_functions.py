@@ -305,6 +305,18 @@ def update_current_stage(collection_name = None, scene = None):
         spin_settings.stage_material_contact_shadow = spin_settings.stage_material_contact_shadow
 
 @persistent
+def spinwiz_frame_change_handler(scene): 
+    
+    # only run it if the are any setups in the addon
+    if len(scene.spinwiz_collections_list) > 0:   
+        if get_current_collection():
+            spin_settings = getattr(scene, get_current_collection().name) 
+            spin_settings.camera_height = spin_settings.camera_height
+            spin_settings.camera_tracking_height_offset = spin_settings.camera_tracking_height_offset
+            spin_settings.camera_distance = spin_settings.camera_distance
+    return 
+
+@persistent
 def spinwiz_update_current_selection(scene):
     
     global current_rename
@@ -315,9 +327,9 @@ def spinwiz_update_current_selection(scene):
 
     # check if old collections are still here
     for index, item in enumerate(scene.spinwiz_collections_list):
-        if item not in current_collection_names:
+        if item.name not in current_collection_names:
             scene.spinwiz_collections_list.remove(index)
-            delattr(bpy.types.Scene, item)
+            delattr(bpy.types.Scene, item.name)
 
     for index, item in enumerate(scene.spinwiz_old_collections):
         if item not in current_collection_names:
@@ -393,19 +405,17 @@ def spinwiz_update_current_selection(scene):
 
                 old_selection = current_selection
 
-                change_perspective()
-
                 update_scene_frame()
 
                 update_current_world()
 
                 update_current_stage()
+                
+                set_active_collection(get_current_collection())
 
                 scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].name
             else:
                 hide_anything_but(current_selection.users_collection[0], True)
-
-                change_perspective()
 
                 current_selection.hide_set(False)
 
@@ -423,7 +433,7 @@ def is_selection_valid():
         return False
     
     for obj in bpy.context.view_layer.objects.selected:
-        if not (obj.type == 'MESH' or obj.type == "CURVE") : # and not collection_name in [col.name for col in obj.users_collection]:
+        if not (obj.type == 'MESH' or obj.type == "CURVE" or obj.type == "ARMATURE") : # and not collection_name in [col.name for col in obj.users_collection]:
             # update the current context such that the UI reflects the selection
 
             correct_selection = False
@@ -458,6 +468,19 @@ def is_pivot(current_selection):
 def is_stage(current_selection):
     return stage_name in current_selection.name
         
+def set_active_collection(collection):
+    if collection:
+
+        # Find the collection in the current view layer and set it as active
+        for layer_collection in bpy.context.view_layer.layer_collection.children:
+            if layer_collection.collection == collection:
+                bpy.context.view_layer.active_layer_collection = layer_collection
+                layer_collection.exclude = False  # Make sure it's not hidden
+                return
+
+
+
+
 
 def setup_spincamera():  
     # camera that will rotate around the object
@@ -505,15 +528,11 @@ def setup_spinobject():
     #radius = get_track_radius(obj)
     radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
-        print(pivot.location)
         camera.location = pivot.location + Vector((radius, 0, 0)) 
-        print(camera.location)
-
 
     set_camera_track()
 
     make_obj_active(pivot)
-
  
 def add_keyframes(): 
     spin_settings = getattr(bpy.context.scene, get_current_collection().name)

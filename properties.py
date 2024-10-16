@@ -394,6 +394,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         items=spin_direction_items,
         default=0,
         update = update_spin_direction,
+        options={'LIBRARY_EDITABLE'}
     ) #type: ignore
     
     degrees: bpy.props.EnumProperty(
@@ -402,6 +403,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         items=degrees_items, 
         update=update_nr_frames,
         default=3,
+        options={'LIBRARY_EDITABLE'},
     )# type: ignore
 
     nr_frames: bpy.props.IntProperty(
@@ -410,6 +412,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         min=1,
         update=update_adjust_keyframes,
         default = default_length,
+        options={'LIBRARY_EDITABLE'},
     )# type: ignore
 
     start_frame: bpy.props.IntProperty(
@@ -418,6 +421,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         min=1,
         update=update_start_frame,
         default=default_start_frame,
+        options={'LIBRARY_EDITABLE'},
     )# type: ignore
     
     movement_type : bpy.props.EnumProperty(
@@ -425,7 +429,8 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description= "Select wether the objects or the camera spins.",
         items= movement_type_items,
         update=update_movement_type,
-        default=0
+        default=0,
+        options={'LIBRARY_EDITABLE'},
     ) # type: ignore
 
     interpolation_type: bpy.props.EnumProperty(
@@ -433,14 +438,16 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description= "Select the interpolation between the keyframes.",
         items=interpolation_items,
         update=update_interpolation,
-        default=0
+        default=0,
+        options={'LIBRARY_EDITABLE'},
     ) # type: ignore
 
     length_type: bpy.props.EnumProperty(
         name= "Length",
         description= "Select the start and end keyframes or by degrees.",
         items= length_items,
-        default=0
+        default=0,
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
 
     # lighting settings
@@ -448,7 +455,8 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         name="Add Lighting Setup",
         description="See lighting setup",
         update=update_lighting,
-        default=default_has_lighting_setup
+        default=default_has_lighting_setup,
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
     
     lighting_type: bpy.props.EnumProperty(
@@ -457,34 +465,39 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         default= 1,
         items= lighting_type_items,
         update=update_lighting_type,
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
     
     lighting_hdr_rotation: bpy.props.FloatProperty(
         name= "Rotation",
         description = "Rotation of the HDRI",
         default= default_hdr_rotation,
-        update=update_lighting_hdr_rotation
+        update=update_lighting_hdr_rotation,
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
     
     lighting_hdr_strength: bpy.props.FloatProperty(
         name = "Strength",
         description = "Change the strenght of the HDRI",
         default= default_hdr_strength,
-        update=update_lighting_hdr_strength          
+        update=update_lighting_hdr_strength,
+        options={'LIBRARY_EDITABLE'}          
     ) # type: ignore
     
     lighting_gradient_height: bpy.props.FloatProperty(
         name = "Height",
         description = "Height of the gradient",
         default= default_gradient_height,
-        update=update_lighting_gradient_height
+        update=update_lighting_gradient_height,
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
     
     lighting_gradient_scale: bpy.props.FloatProperty(
         name = "Scale",
         description = "Scale of the gradient",
         default= default_gradient_scale,
-        update=update_lighting_gradient_scale
+        update=update_lighting_gradient_scale,
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
     
     #camera settings
@@ -515,7 +528,8 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         name = "Camera Focal Length",
         description= "Sets the focal length of the camera",
         default= 50,
-        update=update_camera_focal_length
+        update=update_camera_focal_length,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore
 
     # stage settings 
@@ -524,6 +538,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description="See stage menu",
         update=update_stage,
         default=default_has_stage,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore
 
     stage_height_offset: bpy.props.FloatProperty(
@@ -532,6 +547,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update=update_stage_height_offset,
         min = 0,
         default = 15,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore
 
     stage_subdivision: bpy.props.IntProperty(
@@ -540,6 +556,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         min = 1,
         default = 2,
         update = update_stage_subdivision,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore    
     
     stage_material_color: bpy.props.FloatVectorProperty(
@@ -547,7 +564,8 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         description= "Choose the color of the material",
         subtype= 'COLOR',
         default=default_color,
-        update= update_stage_material 
+        update= update_stage_material,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore
     
     stage_material_roughness: bpy.props.FloatProperty(
@@ -557,6 +575,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update= update_stage_material,
         min= 0,
         max= 1,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore
     
     stage_material_reflection_intensity: bpy.props.FloatProperty(
@@ -566,6 +585,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update= update_stage_material,
         min= 0,
         max= 1,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore
     
     stage_material_contact_shadow: bpy.props.FloatProperty(
@@ -575,6 +595,7 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update= update_stage_material,
         min= 0,
         max= 1,
+        options={'LIBRARY_EDITABLE'}
     )# type: ignore
 
 
@@ -587,7 +608,8 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
         name="Menu Options",
         items=menu_items,
         default=0,
-        update= update_menu_options, 
+        update= update_menu_options,
+        options={'LIBRARY_EDITABLE'}, 
     )# type: ignore
     
     enable_render: bpy.props.BoolProperty(
@@ -610,14 +632,16 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
     output_filepath: bpy.props.StringProperty(
         name = "Output filepath",
         description = "The filepath where the rendered images will be saved",
-        default= ""
+        default= "",
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
     
     dropdown_collections: bpy.props.EnumProperty(
         name = "Dropdown Collection",
         description = "Dropdown to select the collection you want to work on",
         items = dynamic_dropdown_items,
-        update= update_current_collection
+        update= update_current_collection,
+        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
  
  

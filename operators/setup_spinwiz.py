@@ -4,7 +4,7 @@ from mathutils import Vector
 from ..naming_convetions import *
 
 from ..helper_functions import get_current_collection, add_keyframes, hide_anything_but, reset_default_settings, \
-    change_perspective
+    change_perspective, get_collection_origin, set_active_collection
 
 from ..properties import  SpinWiz_collection_properties
 
@@ -93,9 +93,7 @@ def create_copy_and_hide():
         duplicate_object_with_hierarchy(original_obj, parent=pivot, collection=new_collection)              
                
     hide_anything_but(new_collection)
-    
-    
-                
+                    
     return new_collection
 
 
@@ -112,6 +110,7 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
         context.scene.spinwiz_spin_settings.menu_options = "motion_setup"
         
         collection = create_copy_and_hide()
+    
         
         # order matters
         setattr(bpy.types.Scene, get_current_collection().name, bpy.props.PointerProperty(type=SpinWiz_collection_properties))
@@ -126,7 +125,10 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
         
         change_perspective()
         
+        set_active_collection(collection)
+        
         context.scene.spinwiz_is_setting_up = False
+        
 
         return {"FINISHED"}
 
