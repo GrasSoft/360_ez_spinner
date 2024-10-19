@@ -39,7 +39,7 @@ def output_row(panel, layout, name):
     op.name = name
     op.up_down = False
     
-    col = row.column()
+    col = row.column() 
     if spin_settings.is_rendering:
         op = col.operator(bl_idname_select, depress= (collection.name == name), text=name, icon_value=get_render_progress_icon(name, collection.name))
     else:
@@ -58,11 +58,25 @@ def output_row(panel, layout, name):
     op.name = name
     
 def panel_operator_add_to_output(panel, layout):
+    spin_settings = bpy.context.scene.spinwiz_spin_settings
+    
+    # render current item butt = 
+    row = layout.row()
+    
+    col =  row.column()
+    col.enabled = spin_settings.enable_render
+    op = col.operator(bl_idname_render,
+                    text="Render Current", icon = "RESTRICT_RENDER_OFF")
+    op.name = get_current_collection().name
+    
     # send to output button
-    row = layout.row()
     row.operator(bl_idname_output,
-                    text="Send to output queue", icon = "RESTRICT_RENDER_OFF")
+                    text="Send to Queue", icon = "RESTRICT_RENDER_OFF")
+    
+    
+    text = "Please select a valid path" if not spin_settings.enable_render else ""
     row = layout.row()
+    row.label(text= text)
     row.label(text="Currently in queue: "+ str(len(bpy.context.scene.spinwiz_output_list)))
 
 def panel_output_list(panel, layout):
@@ -97,7 +111,9 @@ def panel_output_list(panel, layout):
             layout.label(text= "Please select a valid path!")
         
         row = layout.row()
-        row.operator(bl_idname_render, text="Render output queue")
+        op = row.operator(bl_idname_render, text="Render output queue")
+        op.render_queue =  [item.name for item in bpy.context.scene.spinwiz_output_list].copy()
+
         row.enabled = spin_settings.enable_render
         
         
@@ -267,7 +283,7 @@ class OBJECT_OT_spinwiz_output(bpy.types.Operator):
     
     
 class OBJECT_OT_spinwiz_delete_output(bpy.types.Operator):
-    bl_idname = bl_idname_output
+    bl_idname = bl_idname_remove_output
     bl_label = "Remove output item"
     bl_description = "Remove collection from output queue"
     

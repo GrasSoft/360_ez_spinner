@@ -136,8 +136,6 @@ def update_movement_type(self, context):
         if pivot is not None:
             pivot.animation_data.action = None
             
-    change_perspective()
-            
     scene.spinwiz_is_setting_up = False
             
 

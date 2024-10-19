@@ -16,7 +16,7 @@ import bpy
 from bpy.app.handlers import persistent
 
 from .helper_functions import spinwiz_frame_change_handler, spinwiz_update_current_selection, is_selection_valid, is_selection_setup, is_pivot, \
-    is_camera, is_stage
+    is_camera, is_stage, get_spinwiz_scene
 from .lighting_setup.lighting_setup import panel_lighting_setup
 from .stage_setup.stage_setup import panel_stage_setup
 from .properties import *
@@ -175,7 +175,8 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
                 
         current_selection = bpy.context.active_object
 
-        collection_settings = getattr(scene, get_current_collection().name, None)
+        if get_current_collection() is not None:
+            collection_settings = getattr(scene, get_current_collection().name, None)
         
         layout = self.layout
         
@@ -191,6 +192,8 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
                 row.operator(bl_idname_setup,
                          text="Set up for Selected Object(s)",
                          icon_value=preview_collections["logo"]["logo"].icon_id)
+                row = layout.row(align=True)
+                row.label(text= str(len(get_spinwiz_scene().spinwiz_collections_list))  + " Setups in current blend file")
             else:
                 layout.separator()
 
@@ -335,12 +338,10 @@ def register():
 def delayed_property_registration():
     # Ensure the attribute is present and populated with items before registering
     scene = bpy.context.scene
-    if hasattr(scene, 'collections_list') and len(scene.spinwiz_collections_list) > 0:
+    if hasattr(scene, 'spinwiz_collections_list') and len(scene.spinwiz_collections_list) > 0:
         register_dynamic_properties()
         return None  # Stop the timer once registration is complete
     else:
-        # Print debugging info for clarity
-        print("collections_list is either missing or empty; retrying in 1 second...")
         return 1.0  # Repeat after 1 second
 
 

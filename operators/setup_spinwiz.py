@@ -4,12 +4,12 @@ from mathutils import Vector
 from ..naming_convetions import *
 
 from ..helper_functions import get_current_collection, add_keyframes, hide_anything_but, reset_default_settings, \
-    change_perspective, get_collection_origin, set_active_collection
+    get_collection_origin, set_active_collection, create_spinwiz_scene, get_spinwiz_scene
 
 from ..properties import  SpinWiz_collection_properties
 
 from ..lighting_setup.lighting_setup import import_world
- 
+
 
 def create_action():
     # Create a new action
@@ -69,13 +69,13 @@ def duplicate_object_with_hierarchy(obj, parent=None, collection=None):
 
 # create a new collection, copy the selected objects inside it and hide the rest of the scene objects  
 def create_copy_and_hide():
-
+    scene = get_spinwiz_scene()
     # Create a new collection for the copied objects
     new_collection = bpy.data.collections.new(collection_name + bpy.context.selected_objects[0].name)
     bpy.context.scene.collection.children.link(new_collection)
     
     # add collection to collection list
-    item = bpy.context.scene.spinwiz_collections_list.add()
+    item = scene.spinwiz_collections_list.add()
     item.name = new_collection.name
 
     # Get selected objects without parents
@@ -91,9 +91,7 @@ def create_copy_and_hide():
     for original_obj in selected_objects: 
         # Create a new object by copying the original
         duplicate_object_with_hierarchy(original_obj, parent=pivot, collection=new_collection)              
-               
-    hide_anything_but(new_collection)
-                    
+                                   
     return new_collection
 
 
@@ -104,10 +102,12 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
     bl_description = "This operator creates the setup for Spin Wiz"
 
     def execute(self, context):
+        
+        scene = create_spinwiz_scene()
           
-        context.scene.spinwiz_is_setting_up = True
+        scene.spinwiz_is_setting_up = True
                 
-        context.scene.spinwiz_spin_settings.menu_options = "motion_setup"
+        scene.spinwiz_spin_settings.menu_options = "motion_setup"
         
         collection = create_copy_and_hide()
     
@@ -122,12 +122,17 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
         # use global settings
         # use_settings_of_other(collection_name)
         reset_default_settings()
-        
-        change_perspective()
-        
+                
         set_active_collection(collection)
         
-        context.scene.spinwiz_is_setting_up = False
+        scene.collection.children.link(collection)
+        
+        context.scene.collection.children.unlink(collection)
+        
+        hide_anything_but(collection)
+
+        
+        scene.spinwiz_is_setting_up = False
         
 
         return {"FINISHED"}

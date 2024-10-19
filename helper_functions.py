@@ -15,6 +15,19 @@ current_rename = None
 #__________________________________________ CONTEXT FUNCTIONS
 # functions that help setup and update the correct objects and properties
 
+def get_spinwiz_scene():
+    return create_spinwiz_scene()
+
+def create_spinwiz_scene():
+    # Check if the scene exists
+    scene = scene_name
+    if scene_name not in bpy.data.scenes:
+        # Create the scene if it does not exist
+        bpy.data.scenes.new(name=scene)
+        
+    return bpy.data.scenes[scene_name]
+
+
 def get_current_lookat_pivot():
     collection = get_current_collection()
     
@@ -111,30 +124,34 @@ def get_current_action():
 
 def hide_anything_but(new_collection, only_collections = False):
     
+    scene = get_spinwiz_scene()
     # Hide all collections except the new one
-    for collection in bpy.context.scene.collection.children:
+    for collection in scene.collection.children:
         # Hide the collection in the active view layer
-        for view_layer in bpy.context.scene.view_layers:
+        for view_layer in scene.view_layers:
             layer_collection = view_layer.layer_collection.children.get(collection.name)
         
             if layer_collection:
                 if collection != new_collection:
                     layer_collection.hide_viewport = True
+                    collection.hide_render = True
                 else:
                     layer_collection.hide_viewport = False
+                    collection.hide_render = False
             
             
     if not only_collections:   
         
         # Get the default "Scene Collection"
-        scene_collection = bpy.context.scene.collection
+        scene_collection = scene.collection
     
         # Iterate through all objects in the scene
-        for obj in bpy.context.scene.objects:
+        for obj in scene.objects:
             # Check if the object is only in the "Scene Collection" and not in any other collections
             if len(obj.users_collection) == 1 and scene_collection in obj.users_collection:
                 # Hide the object from the viewport using hide_set
                 obj.hide_set(True)
+                obj.hide_render = True
  
  
 def get_collection_origin(objects):
@@ -319,124 +336,130 @@ def spinwiz_frame_change_handler(scene):
 @persistent
 def spinwiz_update_current_selection(scene):
     
-    global current_rename
-    current_rename = None
+    if scene.name == scene_name:
+    
+        global current_rename
+        current_rename = None
 
-    current_collection_names = [col.name for col in scene.collection.children]
-
-
-    # check if old collections are still here
-    for index, item in enumerate(scene.spinwiz_collections_list):
-        if item.name not in current_collection_names:
-            scene.spinwiz_collections_list.remove(index)
-            delattr(bpy.types.Scene, item.name)
-
-    for index, item in enumerate(scene.spinwiz_old_collections):
-        if item not in current_collection_names:
-            scene.spinwiz_old_collections.remove(index)
-
-    if len(scene.spinwiz_collections_list) > 0:
         current_collection_names = [col.name for col in scene.collection.children]
 
-        if len(scene.spinwiz_old_collections) == 0:
-            for name in current_collection_names:
-               item = scene.spinwiz_old_collections.add()
-               item.name = name
 
-        old_collection_names = [item.name for item in scene.spinwiz_old_collections]
+        # check if old collections are still here
+        for index, item in enumerate(scene.spinwiz_collections_list):
+            if item.name not in current_collection_names:
+                scene.spinwiz_collections_list.remove(index)
+                delattr(bpy.types.Scene, item.name)
 
+        for index, item in enumerate(scene.spinwiz_old_collections):
+            if item not in current_collection_names:
+                scene.spinwiz_old_collections.remove(index)
 
-        current = set(current_collection_names)
-        old = set(old_collection_names)
+        if len(scene.spinwiz_collections_list) > 0:
+            current_collection_names = [col.name for col in scene.collection.children]
 
-        if current != old:
+            if len(scene.spinwiz_old_collections) == 0:
+                for name in current_collection_names:
+                    item = scene.spinwiz_old_collections.add()
+                    item.name = name
 
-            scene.spinwiz_old_collections.clear()
-
-            for item in current_collection_names:
-                nig = scene.spinwiz_old_collections.add()
-                nig.name = item
-
-            # Find unique elements
-            new_name = current - old
-            old_name = old     - current
-
-            if len(old_name) > 0 and len(new_name) > 0:
-                new_name = list(new_name)[0]
-                old_name = list(old_name)[0]
+            old_collection_names = [item.name for item in scene.spinwiz_old_collections]
 
 
-                if hasattr(bpy.types.Scene, old_name):
-                    new_item = scene.spinwiz_collections_list.add()
-                    new_item.name = new_name
+            current = set(current_collection_names)
+            old = set(old_collection_names)
 
-                    for index, item in enumerate(scene.spinwiz_collections_list):
-                        if item.name == old_name:
-                            move_item(scene.spinwiz_collections_list, len(scene.spinwiz_collections_list) - 1, index)
-                            scene.spinwiz_collections_list.remove(index + 1)
-                            break
+            if current != old:
 
-                    spin_settings = getattr(bpy.types.Scene, old_name)
-                    setattr(bpy.types.Scene, new_name, spin_settings)
-                    delattr(bpy.types.Scene, old_name)
+                scene.spinwiz_old_collections.clear()
 
+                for item in current_collection_names:
+                    nig = scene.spinwiz_old_collections.add()
+                    nig.name = item
 
+                # Find unique elements
+                new_name = current - old
+                old_name = old     - current
 
-
-
-                    for index, item in enumerate(scene.spinwiz_output_list):
-                        if item.name == old_name:
-                            new_item = scene.spinwiz_output_list.add()
-                            new_item.name = new_name
-
-                            move_item(scene.spinwiz_output_list, len(scene.spinwiz_output_list) - 1, index)
-                            scene.spinwiz_output_list.remove(index + 1)
-                            break
+                if len(old_name) > 0 and len(new_name) > 0:
+                    new_name = list(new_name)[0]
+                    old_name = list(old_name)[0]
 
 
-        current_selection = bpy.context.view_layer.objects.active
+                    if hasattr(bpy.types.Scene, old_name):
+                        new_item = scene.spinwiz_collections_list.add()
+                        new_item.name = new_name
 
-        global old_selection
+                        for index, item in enumerate(scene.spinwiz_collections_list):
+                            if item.name == old_name:
+                                move_item(scene.spinwiz_collections_list, len(scene.spinwiz_collections_list) - 1, index)
+                                scene.spinwiz_collections_list.remove(index + 1)
+                                break
 
-        if old_selection != current_selection and not scene.spinwiz_is_setting_up:
+                        spin_settings = getattr(bpy.types.Scene, old_name)
+                        setattr(bpy.types.Scene, new_name, spin_settings)
+                        delattr(bpy.types.Scene, old_name)
 
-            if is_selection_setup(current_selection):
-                hide_anything_but(current_selection.users_collection[0])
 
-                old_selection = current_selection
 
-                update_scene_frame()
 
-                update_current_world()
 
-                update_current_stage()
-                
-                set_active_collection(get_current_collection())
+                        for index, item in enumerate(scene.spinwiz_output_list):
+                            if item.name == old_name:
+                                new_item = scene.spinwiz_output_list.add()
+                                new_item.name = new_name
 
-                scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].name
-            else:
-                hide_anything_but(current_selection.users_collection[0], True)
+                                move_item(scene.spinwiz_output_list, len(scene.spinwiz_output_list) - 1, index)
+                                scene.spinwiz_output_list.remove(index + 1)
+                                break
 
-                current_selection.hide_set(False)
 
-                old_selection = current_selection
+            current_selection = bpy.context.view_layer.objects.active
+
+            global old_selection
+
+            if old_selection != current_selection and not scene.spinwiz_is_setting_up:
+
+                if is_selection_setup(current_selection):
+                    hide_anything_but(current_selection.users_collection[0])
+
+                    old_selection = current_selection
+
+                    update_scene_frame()
+
+                    update_current_world()
+
+                    update_current_stage()
+                    
+                    set_active_collection(get_current_collection())
+
+                    change_perspective()
+
+                    scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].namie
+                else:
+                    hide_anything_but(current_selection.users_collection[0], True)
+
+                    current_selection.hide_set(False)
+
+                    old_selection = current_selection
             
 def is_selection_valid():
     
     # Iterate through the selected objects
     correct_selection = True
     
-    if is_selection_setup(bpy.context.active_object):
+    if is_selection_setup(bpy.context.active_object) and len(bpy.context.scene.spinwiz_collections_list) > 0:
         return True
     
     if len(bpy.context.view_layer.objects.selected) == 0:
         return False
     
     for obj in bpy.context.view_layer.objects.selected:
-        if not (obj.type == 'MESH' or obj.type == "CURVE" or obj.type == "ARMATURE") : # and not collection_name in [col.name for col in obj.users_collection]:
+        if not (obj.type in ["MESH", "CURVE", "EMPTY", "ARMATURE", "SURFACE", "TEXT", "POINTCLOUD"]) or not (obj.name in bpy.context.scene.objects): # and not collection_name in [col.name for col in obj.users_collection]:
             # update the current context such that the UI reflects the selection
-
             correct_selection = False
+    
+   
+            
     return correct_selection
 
 

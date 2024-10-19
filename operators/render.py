@@ -5,29 +5,8 @@ from ..helper_functions import hide_anything_but, update_scene_frame, update_cur
 
 
 def hide_render_others(name, scene):
-
     # hide them in the view port
     hide_anything_but(bpy.data.collections[name])
-
-    # hide the objects first
-    scene_collection = scene.collection
-    for obj in scene.objects:
-        # Get the collections that the object is in (excluding the scene collection)
-        collections = [col for col in obj.users_collection if col != scene_collection]
-
-        # If the object is only in the scene collection (no other collections), hide it from render
-        if not collections:
-            obj.hide_render = True
-
-    # hide the other collections and make the current one visible
-
-
-    for collection in bpy.data.collections:
-        
-        if collection.name != name:
-            collection.hide_render = True
-        else:
-            collection.hide_render = False
 
 def set_current_camera_as_render(name, scene):
 
@@ -65,6 +44,8 @@ class OBJECTE_OT_spinwiz_render(bpy.types.Operator):
     bl_idname = bl_idname_render
     bl_label = "Render the list"
     bl_description = "Render the list of output objects with the appropriate settings"   
+    
+    name: bpy.props.StringProperty()
     
     rendering = False
     render_queue = []
@@ -191,9 +172,12 @@ class OBJECTE_OT_spinwiz_render(bpy.types.Operator):
         self.initial_active = bpy.context.view_layer.objects.active
         self.initial_selection = bpy.context.selected_objects
         
-        output_list = [item.name for item in context.scene.spinwiz_output_list]
-        
-        self.render_queue = output_list.copy()
+        if self.name == "":
+            output_list = [item.name for item in context.scene.spinwiz_output_list]
+        else:
+            output_list = [self.name]
+            
+        self.render_queue = output_list
         
         self.rendering = False
         

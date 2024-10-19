@@ -6,6 +6,7 @@ cam_pivot_object_name = "SpinWiz_Mvr_Cam"
 collection_name = "SpinWiz_"
 action_name = "SpinWiz_Action"
 stage_name = "SpinWiz_Stage"
+scene_name = "SpinWiz_Scene"
 
 link_to_docs = "https://github.com/GrasSoft/360_ez_spinner"
 
