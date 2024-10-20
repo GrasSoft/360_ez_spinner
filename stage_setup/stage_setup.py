@@ -20,7 +20,7 @@ def import_stage():
         autoselect = False
     )
 
-    link_stage_to_collection()
+    # link_stage_to_collection()
 
     set_origin()
 
@@ -30,8 +30,8 @@ def import_stage():
 
 def link_stage_to_collection():
     object = None
-    for obj in bpy.context.scene.objects:
-        if len(obj.users_collection) == 1 and obj.users_collection[0] == bpy.context.scene.collection and stage_name in obj.name:
+    for obj in get_spinwiz_scene().objects:
+        if len(obj.users_collection) == 1 and obj.users_collection[0] == get_spinwiz_scene().collection and stage_name in obj.name:
             object = obj
             break
 

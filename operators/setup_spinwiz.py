@@ -40,7 +40,7 @@ def duplicate_object_with_hierarchy(obj, parent=None, collection=None):
     # Duplicate the object
     duplicate_obj = obj.copy()
     duplicate_obj.location = Vector()
-    duplicate_obj.data = obj.data.copy() if obj.data else None
+    duplicate_obj.data = obj.data if obj.data else None
 
 
     # Remove the new object from all collections it is currently part of
@@ -123,14 +123,13 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
         # use_settings_of_other(collection_name)
         reset_default_settings()
                 
-        set_active_collection(collection)
+        # set_active_collection(collection)
         
         scene.collection.children.link(collection)
         
         context.scene.collection.children.unlink(collection)
         
-        hide_anything_but(collection)
-
+        # hide_anything_but(collection)
         
         scene.spinwiz_is_setting_up = False
         

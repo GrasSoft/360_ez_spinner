@@ -339,7 +339,6 @@ def spinwiz_frame_change_handler(scene):
 def spinwiz_update_current_selection(scene):
     
     if scene.name == scene_name:
-    
         global current_rename
         current_rename = None
 
@@ -437,7 +436,9 @@ def spinwiz_update_current_selection(scene):
                     change_perspective()
 
                     scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].name
-                else:
+                    
+                elif current_selection:
+                    
                     hide_anything_but(current_selection.users_collection[0], True)
 
                     current_selection.hide_set(False)
@@ -522,9 +523,6 @@ def setup_spincamera():
     
     pivot.animation_data.action = get_current_action()
 
-    # TODO: temp change
-    # radius = get_track_radius(obj)
-    # create_bezier_circle(radius, obj.location)
     radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
         camera.location = pivot.location + Vector((radius, 0, 0))
@@ -550,11 +548,11 @@ def setup_spinobject():
 
     pivot.animation_data.action = get_current_action() 
 
-    # TODO: temp change
-    #radius = get_track_radius(obj)
     radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
         camera.location = pivot.location + Vector((radius, 0, 0)) 
+        print(camera.location.x)
+
 
     set_camera_track()
 
@@ -740,7 +738,8 @@ def use_settings_of_other(collection_name):
     
 def reset_default_settings():
     current_collection = get_current_collection()
-    current_settings = getattr(bpy.context.scene, current_collection.name)
+    
+    current_settings = getattr(get_spinwiz_scene(), current_collection.name)
     
     # animation settings
     current_settings.movement_type = default_movement_type
