@@ -244,7 +244,9 @@ def create_cam_pivot():
     return empty_obj
 
 def make_obj_active(obj):
-    obj.select_set(True)
+    bpy.ops.object.select_all(action='DESELECT')
+    if obj is not None:
+        obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
     
 
@@ -434,7 +436,7 @@ def spinwiz_update_current_selection(scene):
 
                     change_perspective()
 
-                    scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].namie
+                    scene.spinwiz_spin_settings.dropdown_collections = current_selection.users_collection[0].name
                 else:
                     hide_anything_but(current_selection.users_collection[0], True)
 
@@ -458,7 +460,8 @@ def is_selection_valid():
             # update the current context such that the UI reflects the selection
             correct_selection = False
     
-   
+    if get_spinwiz_scene().spinwiz_spin_settings.dropdown_collections == "NONE" and bpy.context.scene == get_spinwiz_scene():
+        return False
             
     return correct_selection
 

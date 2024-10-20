@@ -31,6 +31,8 @@ from .operators.output import panel_output_list, panel_operator_add_to_output, O
 
 from .operators.render import OBJECTE_OT_spinwiz_render
 
+from .operators.switch_scene import OBJECT_OT_spinwiz_switch_scene
+
 from . import addon_updater_ops
 
 
@@ -146,6 +148,27 @@ def no_selection_warning(panel, layout):
     row = layout.row(align=True)
     row.alignment = "CENTER"
     row.label(text="Please select a suitable object")  
+    
+def dropdown_collection(panel, layout, no_copy_paste = False):
+    scene = bpy.context.scene
+    spin_settings = scene.spinwiz_spin_settings
+
+
+    if not no_copy_paste:    
+        if scene.spinwiz_copy_collection_name != "":
+            layout.label(text="The current coppied collection is: " + scene.spinwiz_copy_collection_name)
+    
+
+    layout.label(text="Select a spinwiz collection")
+                                
+    row = layout.row()
+    row.prop(spin_settings, "dropdown_collections", text="")
+
+    if not no_copy_paste:        
+        copy_paste = row.row(align=True)
+        copy_paste.scale_x = 1.4
+        copy_paste.operator(bl_idname_copy, text="", icon = "COPYDOWN", depress=scene.spinwiz_copy_collection_name == get_current_collection().name)
+        copy_paste.operator(bl_idname_paste, text="", icon = "PASTEDOWN")
 
 def documentation(panel, layout):
     # documentation button
@@ -174,7 +197,8 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         spin_settings = scene.spinwiz_spin_settings
                 
         current_selection = bpy.context.active_object
-
+        
+        
         if get_current_collection() is not None:
             collection_settings = getattr(scene, get_current_collection().name, None)
         
@@ -182,10 +206,19 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         
         layout.scale_y = 1.2
         
+        if len(get_spinwiz_scene().spinwiz_collections_list) > 0:
+            row = layout.row()
+            
+            row.operator(bl_idname_switch_scene, text= "Switch to old scene" if bpy.context.scene == get_spinwiz_scene() else "Switch to SpinWiz scene")
+            layout.separator()
+            
         
-        # check if there are any selected objects (TODO: check if the selected object is an actual object)
         if not is_selection_valid():
-            no_selection_warning(self, layout)      
+            if scene == get_spinwiz_scene():
+                dropdown_collection(self, layout, True) 
+                layout.separator()
+            else:
+                no_selection_warning(self, layout)      
         else:
             if not is_selection_setup(current_selection):
                 row = layout.row()
@@ -208,20 +241,8 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
                             layout.label(text= "To cancel, close the render window")
                         else:
                             layout.separator()
-
-                            if scene.spinwiz_copy_collection_name != "":
-                                layout.label(text="The current coppied collection is: " + scene.spinwiz_copy_collection_name)
                             
-
-                            layout.label(text="Select another collection")
-                                                        
-                            row = layout.row()
-                            row.prop(spin_settings, "dropdown_collections", text="")
-                                
-                            copy_paste = row.row(align=True)
-                            copy_paste.scale_x = 1.4
-                            copy_paste.operator(bl_idname_copy, text="", icon = "COPYDOWN", depress=scene.spinwiz_copy_collection_name == get_current_collection().name)
-                            copy_paste.operator(bl_idname_paste, text="", icon = "PASTEDOWN")
+                            dropdown_collection(self, layout)
                             
                             if is_pivot(current_selection) or is_camera(current_selection):
                                 
@@ -300,7 +321,9 @@ class_list = [
     OBJECT_OT_spinwiz_delete_output,
     OBJECT_OT_spinwiz_select,
     OBJECTE_OT_spinwiz_render,
-    OBJECT_OT_spinwiz_open_path
+    OBJECT_OT_spinwiz_open_path,
+    OBJECT_OT_spinwiz_switch_scene
+    
 ]
 
 
@@ -312,6 +335,8 @@ def register():
 
     for cls in class_list:
         bpy.utils.register_class(cls)
+        
+    bpy.types.Scene.spinwiz_old_scene = bpy.props.StringProperty()
         
     bpy.types.Scene.spinwiz_copy_collection_name = bpy.props.StringProperty()
         
@@ -382,6 +407,9 @@ def unregister():
         bpy.utils.previews.remove(pcoll)
         
     preview_collections.clear()
+    
+    if hasattr(bpy.types.Scene, "spinwiz_old_scene"):
+        del bpy.types.Scene.spinwiz_old_scene
     
     if hasattr(bpy.types.Scene, "spinwiz_copy_collection_name"):
         del bpy.types.Scene.spinwiz_copy_collection_name

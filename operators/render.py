@@ -146,7 +146,7 @@ class OBJECTE_OT_spinwiz_render(bpy.types.Operator):
                 update_current_world(collection_name, context.scene)
                 update_current_stage(collection_name, context.scene)
                 
-                bpy.context.scene.render.filepath = scene.spinwiz_spin_settings.spinwiz_output_filepath + "/" + collection_name + "/" + collection_name + "_"
+                bpy.context.scene.render.filepath = scene.spinwiz_output_filepath + "/" + collection_name + "/" + collection_name + "_"
                 
                 # begin the next render
                 bpy.ops.render.render("INVOKE_DEFAULT", animation=True)

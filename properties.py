@@ -81,7 +81,7 @@ def lighting_type_items(self, context):
 def dynamic_dropdown_items(self, context):
     items = context.scene.spinwiz_collections_list
     
-    dropdown_items = []
+    dropdown_items = [("NONE", "Please Select a Collection", "")]
     
     for item in items:
         dropdown_items.append((item.name, item.name, ""))
@@ -97,6 +97,10 @@ def update_menu_options(self, context):
     current_rename = None
 
 def update_current_collection(self, context):
+    if self.dropdown_collections == "NONE":
+        make_obj_active(None)
+        return 
+    
     collection = bpy.data.collections[self.dropdown_collections]
     
     pivot = None
@@ -107,7 +111,7 @@ def update_current_collection(self, context):
             break
     
     # make the pivot as the selected object
-    if pivot is not None and pivot not in context.selected_objects:
+    if pivot is not None :
         make_obj_active(pivot)
 
 def update_movement_type(self, context):
@@ -625,13 +629,6 @@ class SpinWiz_properties(bpy.types.PropertyGroup):
     current_rendered_collection: bpy.props.StringProperty(
         name = "Collection Name",
         description = "Name of current collection being rendered",
-    ) # type: ignore
-
-    output_filepath: bpy.props.StringProperty(
-        name = "Output filepath",
-        description = "The filepath where the rendered images will be saved",
-        default= "",
-        options={'LIBRARY_EDITABLE'}
     ) # type: ignore
     
     dropdown_collections: bpy.props.EnumProperty(

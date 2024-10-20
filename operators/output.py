@@ -1,7 +1,7 @@
 import bpy
 
 from ..naming_convetions import *
-from ..helper_functions import get_current_collection, move_item, make_obj_active
+from ..helper_functions import get_current_collection, move_item, make_obj_active, get_spinwiz_scene
 from ..blender_resources.media_setup.custom_media import *
 
 
@@ -80,9 +80,23 @@ def panel_operator_add_to_output(panel, layout):
     row.label(text="Currently in queue: "+ str(len(bpy.context.scene.spinwiz_output_list)))
 
 def panel_output_list(panel, layout):
-    spin_settings = bpy.context.scene.spinwiz_spin_settings
+    spin_settings = get_spinwiz_scene().spinwiz_spin_settings
     
-    output_list = bpy.data.scenes[0].spinwiz_output_list
+    output_list = get_spinwiz_scene().spinwiz_output_list
+
+    # output path selection            
+    box = layout.box()
+    split = box.split(factor=0.75)
+    col = split.column()
+    col.label(text=get_spinwiz_scene().spinwiz_output_filepath if get_spinwiz_scene().spinwiz_output_filepath != "" else "Please select a valid path!")
+
+    
+    col = split.column()
+    col.enabled = not spin_settings.is_rendering
+    col.operator(bl_idname_open_path, text="Output path")
+
+    layout.separator()
+    
     
     if len(output_list) == 0:
         layout.label(text="There are not items in the queue")
@@ -91,25 +105,8 @@ def panel_output_list(panel, layout):
         for item in output_list:
             output_row(panel, box, item.name)
 
-        # output path selection            
-        layout.separator()
-
-        box = layout.box()
-        split = box.split(factor=0.75)
-        col = split.column()
-        col.label(text=spin_settings.spinwiz_output_filepath)
-
-        
-        col = split.column()
-        col.enabled = not spin_settings.is_rendering
-        col.operator(bl_idname_open_path, text="Output path")
-
-        # begin render output
-        layout.separator()
-        
-        if spin_settings.enable_render is False and spin_settings.is_rendering is False:
-            layout.label(text= "Please select a valid path!")
-        
+ 
+        # render  
         row = layout.row()
         op = row.operator(bl_idname_render, text="Render output queue")
         op.render_queue =  [item.name for item in bpy.context.scene.spinwiz_output_list].copy()
@@ -205,7 +202,7 @@ class OBJECT_OT_spinwiz_open_path(bpy.types.Operator):
     filepath: bpy.props.StringProperty(subtype="FILE_PATH")
     
     def execute(self, context):
-        context.scene.spinwiz_spin_settings.spinwiz_output_filepath = self.filepath
+        context.scene.spinwiz_output_filepath = self.filepath
 
         if self.filepath is not None:
             context.scene.spinwiz_spin_settings.enable_render = True

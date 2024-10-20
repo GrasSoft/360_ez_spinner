@@ -26,3 +26,5 @@ bl_idname_render = "object.spinwiz_render"
 bl_idname_setup = "object.spinwiz_setup"
 
 bl_idname_mainpanel = "VIEW3D_PT_spinwiz_mainpanel"
+
+bl_idname_switch_scene = "object.spinwiz_switch_scene"
