@@ -56,6 +56,7 @@ def get_current_collection():
     if active_collection is not None and not bpy.context.scene.collection:
         return bpy.data.collections[active_collection.name]
     
+    
     if bpy.context.object is not None:
         return bpy.context.object.users_collection[0]
 
@@ -76,10 +77,11 @@ def get_current_material():
 
 def get_current_camera():
     collection = get_current_collection()
-        
-    for obj in collection.objects:
-        if camera_object_name in obj.name:
-            return obj
+
+    if collection is not None:        
+        for obj in collection.objects:
+            if camera_object_name in obj.name:
+                return obj
 
     return None
   
@@ -123,6 +125,9 @@ def get_current_action():
 #__________________________________________ HELPER FUNCTIONS
 
 def hide_anything_but(new_collection, only_collections = False):
+    
+    if new_collection is None:
+        change_perspective('PERSP')
     
     scene = get_spinwiz_scene()
     # Hide all collections except the new one
@@ -443,7 +448,7 @@ def spinwiz_update_current_selection(scene):
 
                     current_selection.hide_set(False)
 
-                    old_selection = current_selection
+                old_selection = current_selection
             
 def is_selection_valid():
     
@@ -457,8 +462,9 @@ def is_selection_valid():
         return False
     
     for obj in bpy.context.view_layer.objects.selected:
-        if not (obj.type in ["MESH", "CURVE", "EMPTY", "ARMATURE", "SURFACE", "TEXT", "POINTCLOUD"]) or not (obj.name in bpy.context.scene.objects): # and not collection_name in [col.name for col in obj.users_collection]:
+        if not (obj.type in ["MESH", "CURVE", "CURVES", "EMPTY", "ARMATURE", "SURFACE", "TEXT", "POINTCLOUD"]) or not (obj.name in bpy.context.scene.objects): # and not collection_name in [col.name for col in obj.users_collection]:
             # update the current context such that the UI reflects the selection
+            print(obj.type)
             correct_selection = False
     
     if get_spinwiz_scene().spinwiz_spin_settings.dropdown_collections == "NONE" and bpy.context.scene == get_spinwiz_scene():
@@ -525,7 +531,7 @@ def setup_spincamera():
 
     radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
-        camera.location = pivot.location + Vector((radius, 0, 0))
+        camera.location = pivot.location + Vector((radius, 0, get_current_lookat_pivot().location.z))
         
     # set the pivot point as the parent so that the rotation is the same
     camera.parent = pivot
@@ -550,9 +556,7 @@ def setup_spinobject():
 
     radius = get_track_radius()
     if camera.location.x < pivot.location.x + radius: 
-        camera.location = pivot.location + Vector((radius, 0, 0)) 
-        print(camera.location.x)
-
+        camera.location = pivot.location + Vector((radius, 0, get_current_lookat_pivot().location.z)) 
 
     set_camera_track()
 
@@ -761,6 +765,7 @@ def reset_default_settings():
     current_settings.camera_height = get_current_camera().location.z
     current_settings.camera_focal_length = default_camera_focal_length
     current_settings.camera_distance = get_current_camera().location.x
+    current_settings.camera_tracking_height_offset = get_current_camera().location.z
     
     # stage settings
     current_settings.add_stage = default_has_stage

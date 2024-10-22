@@ -8,7 +8,7 @@ from .blender_resources.media_setup.custom_media import *
 from .helper_functions import make_obj_active, get_current_collection, remove_camera, setup_spinobject, \
     get_current_camera_pivot, reset_anim, setup_spincamera, get_current_pivot, change_perspective, remove_keyframes, \
     add_keyframes, get_current_action, get_current_world, get_current_stage, get_current_material, get_current_camera, \
-    get_current_lookat_pivot
+    get_current_lookat_pivot, hide_anything_but
 
 from .naming_convetions import *
 
@@ -99,6 +99,7 @@ def update_menu_options(self, context):
 def update_current_collection(self, context):
     if self.dropdown_collections == "NONE":
         make_obj_active(None)
+        hide_anything_but(None)
         return 
     
     collection = bpy.data.collections[self.dropdown_collections]

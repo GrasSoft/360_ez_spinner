@@ -9,7 +9,7 @@ original_world = None
 world_name = "SpinWiz_Wrld"
 
 #_____________________________ HELPER FUNCTIONS
-def import_world():
+def import_world(collection = None):
     blender_file_path = os.path.join(os.path.dirname(__file__), '../blender_resources/SpinWiz_Master.blend')
     
     # List of objects before appending
@@ -28,7 +28,8 @@ def import_world():
     # get appended world by checking the difference between the 2 lists
     current_world = (list(set(bpy.data.worlds) - objects_before))[0]
     
-    collection = get_current_collection()
+    if collection is None:
+        collection = get_current_collection()
     
     if bpy.context.scene.world is not None:
         collection["original_world"] = bpy.context.scene.world.name
