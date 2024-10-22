@@ -71,7 +71,7 @@ def panel_operator_add_to_output(panel, layout):
     
     # send to output button
     row.operator(bl_idname_output,
-                    text="Send to Queue", icon = "RESTRICT_RENDER_OFF")
+                    text="Send to Queue", icon_value = preview_collections["menu"]["add_queue"].icon_id)
     
     
     text = "Please select a valid path" if not spin_settings.enable_render else ""

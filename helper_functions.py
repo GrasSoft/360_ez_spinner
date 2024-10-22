@@ -331,13 +331,14 @@ def update_current_stage(collection_name = None, scene = None):
 @persistent
 def spinwiz_frame_change_handler(scene): 
     
-    # only run it if the are any setups in the addon
-    if len(scene.spinwiz_collections_list) > 0:   
-        if get_current_collection():
-            spin_settings = getattr(scene, get_current_collection().name) 
-            spin_settings.camera_height = spin_settings.camera_height
-            spin_settings.camera_tracking_height_offset = spin_settings.camera_tracking_height_offset
-            spin_settings.camera_distance = spin_settings.camera_distance
+    if not scene.spinwiz_spin_settings.is_rendering:
+        # only run it if the are any setups in the addon
+        if len(scene.spinwiz_collections_list) > 0:   
+            if get_current_collection():
+                spin_settings = getattr(scene, get_current_collection().name) 
+                spin_settings.camera_height = spin_settings.camera_height
+                spin_settings.camera_tracking_height_offset = spin_settings.camera_tracking_height_offset
+                spin_settings.camera_distance = spin_settings.camera_distance
     return 
 
 @persistent

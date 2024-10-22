@@ -55,8 +55,10 @@ def menu_icons():
     global icons_path
     global preview_collections
 
-    previews.load("motion_menu", os.path.join(icons_path, "Motion Setup.png"), "IMAGE")
-    previews.load("output_menu", os.path.join(icons_path, "output.png"), "IMAGE")
+    previews.load("motion_menu",  os.path.join(icons_path, "Motion Setup.png"), "IMAGE")
+    previews.load("output_menu",  os.path.join(icons_path, "output.png"), "IMAGE")
+    previews.load("switch_scene", os.path.join(icons_path, "Switch_Scene.png"), "IMAGE")
+    previews.load("add_queue",    os.path.join(icons_path, "Add to Queue.png"), "IMAGE")
 
     preview_collections["menu"] = previews
 

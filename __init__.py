@@ -209,7 +209,7 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         if len(get_spinwiz_scene().spinwiz_collections_list) > 0:
             row = layout.row()
             
-            row.operator(bl_idname_switch_scene, text= "Switch to old scene" if bpy.context.scene == get_spinwiz_scene() else "Switch to SpinWiz scene")
+            row.operator(bl_idname_switch_scene, text= "Switch to old scene" if bpy.context.scene == get_spinwiz_scene() else "Switch to SpinWiz scene", icon_value=preview_collections["menu"]["switch_scene"].icon_id)
             layout.separator()
             
         
