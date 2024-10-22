@@ -51,6 +51,19 @@ def get_parent_chain(obj, parent_set=None):
     return parent_set
 
 
+def add_children_to_list(objects):
+    all_objects = objects.copy()  # Copy the list to avoid modifying it while iterating
+
+    for obj in objects:
+        if obj.children:
+            for child in obj.children:
+                if child not in all_objects:
+                    all_objects.append(child)
+                    # Instead of a single child, pass all current children for deeper recursion
+                    all_objects = add_children_to_list(all_objects)
+
+    return all_objects
+
 # create a new collection, copy the selected objects inside it and hide the rest of the scene objects  
 def create_copy_and_hide():
     scene = get_spinwiz_scene()
@@ -72,7 +85,7 @@ def create_copy_and_hide():
         all_parents.update(parent_chain)
 
     # Convert the set to a list if needed
-    all_parents_list = list(all_parents)
+    all_parents_list = add_children_to_list(list(all_parents))
         
     pivot = create_pivot(new_collection, pivot_object_name, (0, 0, 0))
     pivot.empty_display_type = "ARROWS"
@@ -118,8 +131,6 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
     def execute(self, context):
         
         scene = create_spinwiz_scene()
-        
-     
           
         scene.spinwiz_is_setting_up = True
                 
