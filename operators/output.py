@@ -4,6 +4,7 @@ from ..naming_convetions import *
 from ..helper_functions import get_current_collection, move_item, make_obj_active, get_spinwiz_scene
 from ..blender_resources.media_setup.custom_media import *
 
+current_rename = None
 
 #____________________________ PANEL FUNCTIONS
 
@@ -263,7 +264,7 @@ class OBJECT_OT_spinwiz_output(bpy.types.Operator):
     bl_description = "Send object and settings to output queue"
 
     def execute(self, context):
-        output_list = bpy.data.scenes[0].spinwiz_output_list
+        output_list = get_spinwiz_scene().spinwiz_output_list
 
         collection_name = get_current_collection().name
         

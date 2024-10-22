@@ -335,6 +335,8 @@ def register():
 
     for cls in class_list:
         bpy.utils.register_class(cls)
+    
+    bpy.types.Scene.spinwiz_last_looked = bpy.props.StringProperty()
         
     bpy.types.Scene.spinwiz_old_scene = bpy.props.StringProperty()
         
@@ -407,6 +409,9 @@ def unregister():
         bpy.utils.previews.remove(pcoll)
         
     preview_collections.clear()
+    
+    if hasattr(bpy.types.Scene, "spinwiz_last_looked"):
+        del bpy.types.Scene.spinwiz_last_looked
     
     if hasattr(bpy.types.Scene, "spinwiz_old_scene"):
         del bpy.types.Scene.spinwiz_old_scene

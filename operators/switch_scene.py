@@ -1,6 +1,6 @@
 import bpy
 from ..naming_convetions import *
-from ..helper_functions import get_spinwiz_scene
+from ..helper_functions import get_spinwiz_scene, change_perspective, hide_anything_but, get_current_collection
 
 class OBJECT_OT_spinwiz_switch_scene(bpy.types.Operator):
     bl_idname = bl_idname_switch_scene
@@ -11,10 +11,24 @@ class OBJECT_OT_spinwiz_switch_scene(bpy.types.Operator):
         if context.scene == get_spinwiz_scene():
           
             bpy.context.window.scene = bpy.data.scenes[context.scene.spinwiz_old_scene]
+ 
+            change_perspective("PERSP")
         else:
                     
-            get_spinwiz_scene().spinwiz_old_scene = bpy.context.scene.name
-            bpy.context.window.scene = get_spinwiz_scene()       
+            scene = get_spinwiz_scene()
+            
+            scene.spinwiz_old_scene = bpy.context.scene.name
+
+            change_perspective()
+            
+            str = scene.spinwiz_last_looked
+            
+            if str == "NONE" or str == "":
+                hide_anything_but(None)
+            else:
+                hide_anything_but(bpy.data.collections[ str ])
+                                    
+            bpy.context.window.scene = scene      
         
         return {'FINISHED'}
     
