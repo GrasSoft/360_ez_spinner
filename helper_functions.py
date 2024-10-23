@@ -564,7 +564,7 @@ def setup_spinobject():
     make_obj_active(pivot)
  
 def add_keyframes(): 
-    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
+    spin_settings = getattr(get_spinwiz_scene(), get_current_collection().name)
     
     num_frames = (spin_settings.nr_frames)
     action = get_current_action()
@@ -595,14 +595,15 @@ def add_keyframes():
         
     rotation_value = rotation_value * spin_settings.spin_amount
     
-    num_frames *= spin_settings.spin_amount
-        
-    keyframe_point = fcurve.keyframe_points.insert(num_frames + offset - 1, rotation_value)
+    num_frames = num_frames * spin_settings.spin_amount
+            
+    keyframe_point = fcurve.keyframe_points.insert(num_frames + offset , rotation_value)
+    
     keyframe_point.interpolation = interpolation_type
 
     # Set the scene's end frame
-    bpy.context.scene.frame_start = offset
-    bpy.context.scene.frame_end = num_frames + offset
+    get_spinwiz_scene().frame_start = offset
+    get_spinwiz_scene().frame_end = num_frames
 
 def remove_keyframes():
     action = get_current_action()
