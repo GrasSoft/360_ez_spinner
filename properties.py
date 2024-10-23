@@ -107,10 +107,13 @@ def update_current_collection(self, context):
         hide_anything_but(None)
         return 
     
-    collection = bpy.data.collections[self.dropdown_collections]
+    collection = bpy.data.collections[self.dropdown_collections]   
+    
+    if context.active_object is not None and context.active_object.name in collection.objects:
+        return 
     
     pivot = None
-    
+
     for obj in collection.objects:
         if pivot_object_name in obj.name:
             pivot = obj
@@ -300,7 +303,7 @@ def update_lighting_hdr_strength(self, context):
     
     nodes = world.node_tree.nodes
     
-    nodes["Background"].inputs[1].default_value = self.lighting_hdr_strength
+    nodes["Background.001"].inputs[1].default_value = self.lighting_hdr_strength
     
 def update_lighting_gradient_height(self, context):
     world = get_current_world()

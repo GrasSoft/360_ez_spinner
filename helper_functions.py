@@ -15,16 +15,55 @@ current_rename = None
 #__________________________________________ CONTEXT FUNCTIONS
 # functions that help setup and update the correct objects and properties
 
+def switch_to_spinwiz():
+                
+    scene = get_spinwiz_scene()
+    
+    scene.spinwiz_old_scene = bpy.context.scene.name
+
+    change_perspective()
+    
+    str = scene.spinwiz_last_looked
+    
+    if str == "NONE" or str == "":
+        hide_anything_but(None)
+    else:
+        hide_anything_but(bpy.data.collections[ str ])
+                            
+    bpy.context.window.scene = scene
+              
+
 def get_spinwiz_scene():
-    return create_spinwiz_scene()
+    if scene_name in bpy.data.scenes:
+        return bpy.data.scenes[scene_name] 
+    return None
 
 def create_spinwiz_scene():
     # Check if the scene exists
-    scene = scene_name
     if scene_name not in bpy.data.scenes:
-        # Create the scene if it does not exist
-        bpy.data.scenes.new(name=scene)
         
+        # get the current scene
+        source_scene = bpy.context.scene
+        
+        # Create the scene if it does not exist
+        bpy.data.scenes.new(name=scene_name)
+        
+        # set target scene
+        target_scene = bpy.data.scenes[scene_name]
+        
+        # copy the render settings of old scenes
+        
+        # Copy Render Engine
+        target_scene.render.engine = source_scene.render.engine
+        
+        # Check if the source scene uses Cycles before copying Cycles settings
+        if source_scene.render.engine == 'CYCLES':
+            # Copy Feature Set (SUPPORTED or EXPERIMENTAL)
+            target_scene.cycles.feature_set = source_scene.cycles.feature_set
+            
+            # Copy Device (CPU or GPU)
+            target_scene.cycles.device = source_scene.cycles.device
+                
     return bpy.data.scenes[scene_name]
 
 
@@ -282,7 +321,15 @@ def change_perspective(perspective = 'CAMERA'):
                     space.region_3d.view_perspective = perspective
                     break
 
+old_collection = None
+
 def update_scene_frame(collection_name = None, scene = None):
+    global old_collection
+    
+    if old_collection == get_current_collection().name: 
+        return 
+
+    old_collection = get_current_collection().name
     
     if collection_name is None:
         collection_name = get_current_collection().name
@@ -350,16 +397,21 @@ def spinwiz_update_current_selection(scene):
 
         current_collection_names = [col.name for col in scene.collection.children]
 
+        if len(current_collection_names) !=  len(scene.spinwiz_collections_list):
+            # check if old collections are still here
+            for index, item in enumerate(scene.spinwiz_collections_list):
+                if item.name not in current_collection_names:
+                    delattr(bpy.types.Scene, item.name)
+                    scene.spinwiz_collections_list.remove(index)
+                    
 
-        # check if old collections are still here
-        for index, item in enumerate(scene.spinwiz_collections_list):
-            if item.name not in current_collection_names:
-                scene.spinwiz_collections_list.remove(index)
-                delattr(bpy.types.Scene, item.name)
+            for index, item in enumerate(scene.spinwiz_old_collections):
+                if item not in current_collection_names:
+                    scene.spinwiz_old_collections.remove(index)
 
-        for index, item in enumerate(scene.spinwiz_old_collections):
-            if item not in current_collection_names:
-                scene.spinwiz_old_collections.remove(index)
+            # in the case where the collection removed is the one we looked at, it will not siplay anything so by defalut we 
+            # switch the dropdown value to please select a collection so we dont display garbage
+            scene.spinwiz_spin_settings.dropdown_collections = "NONE"
 
         if len(scene.spinwiz_collections_list) > 0:
             current_collection_names = [col.name for col in scene.collection.children]
@@ -387,6 +439,8 @@ def spinwiz_update_current_selection(scene):
                 new_name = current - old
                 old_name = old     - current
 
+              
+                    
                 if len(old_name) > 0 and len(new_name) > 0:
                     new_name = list(new_name)[0]
                     old_name = list(old_name)[0]
@@ -429,8 +483,6 @@ def spinwiz_update_current_selection(scene):
                 if is_selection_setup(current_selection):
                     hide_anything_but(current_selection.users_collection[0])
 
-                    old_selection = current_selection
-
                     update_scene_frame()
 
                     update_current_world()
@@ -468,7 +520,7 @@ def is_selection_valid():
             print(obj.type)
             correct_selection = False
     
-    if get_spinwiz_scene().spinwiz_spin_settings.dropdown_collections == "NONE" and bpy.context.scene == get_spinwiz_scene():
+    if get_spinwiz_scene() is not None and get_spinwiz_scene().spinwiz_spin_settings.dropdown_collections == "NONE" and bpy.context.scene == get_spinwiz_scene():
         return False
             
     return correct_selection

@@ -214,7 +214,7 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         
         layout.scale_y = 1.2
         
-        if len(get_spinwiz_scene().spinwiz_collections_list) > 0:
+        if get_spinwiz_scene() is not None and (len(get_spinwiz_scene().spinwiz_collections_list) > 0 or bpy.context.scene == get_spinwiz_scene()):
             row = layout.row()
             
             row.operator(bl_idname_switch_scene, text= "Switch to old scene" if bpy.context.scene == get_spinwiz_scene() else "Switch to SpinWiz scene", icon_value=preview_collections["menu"]["switch_scene"].icon_id)
@@ -234,7 +234,7 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
                          text="Set up for Selected Object(s)",
                          icon_value=preview_collections["logo"]["logo"].icon_id)
                 row = layout.row(align=True)
-                row.label(text= str(len(get_spinwiz_scene().spinwiz_collections_list))  + " Setups in current blend file")
+                row.label(text= str(len(get_spinwiz_scene().spinwiz_collections_list) if get_spinwiz_scene() is not None else 0)  + " Setups in current blend file")
             else:
                 layout.separator()
 

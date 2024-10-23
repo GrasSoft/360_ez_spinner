@@ -3,8 +3,8 @@ from mathutils import Vector
 
 from ..naming_convetions import *
 
-from ..helper_functions import get_current_collection, add_keyframes, hide_anything_but, reset_default_settings, \
-    get_collection_origin, set_active_collection, create_spinwiz_scene, get_spinwiz_scene
+from ..helper_functions import get_current_collection, add_keyframes, reset_default_settings, \
+    get_collection_origin, create_spinwiz_scene, get_spinwiz_scene, switch_to_spinwiz
 
 from ..properties import  SpinWiz_collection_properties
 
@@ -91,7 +91,7 @@ def create_copy_and_hide():
     pivot.empty_display_type = "ARROWS"
     
     # the pivot we look at is different than the pivot that holds the objects
-    look_at_pivot = create_pivot(new_collection, pivot_track_name,  get_collection_origin(all_parents_list)) 
+    look_at_pivot = create_pivot(new_collection, pivot_track_name,  (0, 0, get_collection_origin(all_parents_list).z)) 
     
     bpy.ops.object.select_all(action="DESELECT")
     
@@ -131,13 +131,13 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
     def execute(self, context):
         
         scene = create_spinwiz_scene()
-          
+                  
         scene.spinwiz_is_setting_up = True
                 
         scene.spinwiz_spin_settings.menu_options = "motion_setup"
         
         collection = create_copy_and_hide()
-    
+            
         # order matters
         setattr(bpy.types.Scene, collection.name, bpy.props.PointerProperty(type=SpinWiz_collection_properties))    
 
@@ -146,11 +146,8 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
         import_world()
         
         # use global settings
-        # use_settings_of_other(collection_name)
         reset_default_settings()
                 
-        # set_active_collection(collection)
-        
         scene.collection.children.link(collection)
         
         context.scene.collection.children.unlink(collection)
@@ -158,7 +155,7 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
         if len(scene.spinwiz_collections_list) == 1:
             scene.spinwiz_spin_settings.dropdown_collections = "NONE"
         
-        # hide_anything_but(collection)
+        switch_to_spinwiz() 
         
         scene.spinwiz_is_setting_up = False
         
