@@ -13,6 +13,8 @@ class OBJECT_OT_spinwiz_switch_scene(bpy.types.Operator):
             bpy.context.window.scene = bpy.data.scenes[context.scene.spinwiz_old_scene]
  
             change_perspective("PERSP")
+            
+            self.report({'INFO'}, "Switched to scene you were previously in: "+ context.scene.spinwiz_old_scene)
         else:
                     
             scene = get_spinwiz_scene()
@@ -28,7 +30,9 @@ class OBJECT_OT_spinwiz_switch_scene(bpy.types.Operator):
             else:
                 hide_anything_but(bpy.data.collections[ str ])
                                     
-            bpy.context.window.scene = scene      
+            bpy.context.window.scene = scene
+            
+            self.report({'INFO'}, "Switched to SpinWiz_Scene")      
         
         return {'FINISHED'}
     

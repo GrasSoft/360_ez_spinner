@@ -207,6 +207,8 @@ class OBJECT_OT_spinwiz_open_path(bpy.types.Operator):
 
         if self.filepath is not None:
             context.scene.spinwiz_spin_settings.enable_render = True
+            
+        self.report({'INFO'}, "Your renders will be saved in: "+ self.filepath)
 
         return {'FINISHED'}
     
@@ -255,6 +257,7 @@ class OBJECT_OT_spinwiz_select(bpy.types.Operator):
         # make the pivot as the selected object
         if pivot is not None:
             make_obj_active(pivot)
+            self.report({'INFO'}, "You have selected the "+ self.name + " collection!")
             
         return {"FINISHED"}            
 
@@ -275,7 +278,9 @@ class OBJECT_OT_spinwiz_output(bpy.types.Operator):
         
         if ok:
             item = output_list.add()
-            item.name = collection_name        
+            item.name = collection_name       
+        else:
+            self.report({'WARNING'}, "The collection is already in the output queue!") 
         
         return {"FINISHED"}
     

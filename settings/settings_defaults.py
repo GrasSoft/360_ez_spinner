@@ -10,6 +10,9 @@ default_interpolation = "LINEAR"
 # movement type
 default_movement_type = "object"
 
+# nr of spins
+default_spin_amount = 1
+
 # has stage
 default_has_stage = False
 default_stage_height_offset = 15

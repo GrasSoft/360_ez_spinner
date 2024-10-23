@@ -90,6 +90,14 @@ def select_interpolation_type(panel, layout):
     row.label(text="Interpolation")
     row.prop(spin_settings, "interpolation_type", expand=True, icon_only=True)
 
+def select_spin_amount(panel, layout):
+    current_collection = get_current_collection()
+    spin_settings = getattr(bpy.context.scene, get_current_collection().name)
+
+    row = layout.split(factor=0.8)
+    row.label(text = "Number of spins")
+    row.prop(spin_settings, "spin_amount", text="")
+
 def select_length_type(panel, layout):
     current_collection = get_current_collection()
     spin_settings = getattr(bpy.context.scene, get_current_collection().name)
@@ -258,6 +266,7 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
                                 select_movement_type(self, options)
                                 select_spin_direction(self, options)
                                 select_interpolation_type(self, options)
+                                select_spin_amount(self, options)
                                 select_length_type(self, options)
                                 
                                 

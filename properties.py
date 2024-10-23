@@ -18,7 +18,7 @@ from .stage_setup.stage_setup import import_stage, reset_stage
 
 from .settings.settings_defaults import default_has_lighting_setup, default_hdr_rotation, default_hdr_strength, \
     default_start_frame, default_length, default_gradient_height, default_gradient_scale, default_has_stage, \
-    default_color, default_roughness, default_reflection_intensity, default_contact_shadow
+    default_color, default_roughness, default_reflection_intensity, default_contact_shadow, default_spin_amount
 
 from . import addon_updater_ops
 
@@ -88,6 +88,9 @@ def dynamic_dropdown_items(self, context):
         
     return dropdown_items
 #____________________________ UPDATE FUNCTIONS
+
+def update_spin_amount(self, context):
+    update_interpolation(self, context)
 
 def update_spin_direction(self, context):
     update_interpolation(self, context)
@@ -249,6 +252,7 @@ def update_interpolation(self, context):
     if self.interpolation_type == "BEZIER_FAST":
         fast_bezier(self, context)
         return
+
 
 #_________________________________ LIGHTING            
 
@@ -445,6 +449,16 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         update=update_interpolation,
         default=0,
         options={'LIBRARY_EDITABLE'},
+    ) # type: ignore
+
+    spin_amount: bpy.props.IntProperty(
+        name = "Spin amount",
+        description= "Number of times the object spins around",
+        default= default_spin_amount,
+        update= update_spin_amount,
+        min= 1,
+        max= 20,
+        options= {'LIBRARY_EDITABLE'}
     ) # type: ignore
 
     length_type: bpy.props.EnumProperty(

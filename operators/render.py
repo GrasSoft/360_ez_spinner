@@ -96,6 +96,9 @@ class OBJECTE_OT_spinwiz_render(bpy.types.Operator):
             
             # enable the render button after canceling
             enable_render_button(context.scene)
+            
+            self.report({'WARNING'}, "The render was cancelled!")
+            
             return {"CANCELLED"}
         
         if event.type == "TIMER":
@@ -147,6 +150,8 @@ class OBJECTE_OT_spinwiz_render(bpy.types.Operator):
                 update_current_stage(collection_name, context.scene)
                 
                 bpy.context.scene.render.filepath = scene.spinwiz_output_filepath + "/" + collection_name + "/" + collection_name + "_"
+               
+                self.report({'INFO'}, "Starting render for "+ collection_name)
                 
                 # begin the next render
                 bpy.ops.render.render("INVOKE_DEFAULT", animation=True)

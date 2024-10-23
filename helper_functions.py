@@ -593,6 +593,10 @@ def add_keyframes():
     else:
         rotation_value = radians(-360)
         
+    rotation_value = rotation_value * spin_settings.spin_amount
+    
+    num_frames *= spin_settings.spin_amount
+        
     keyframe_point = fcurve.keyframe_points.insert(num_frames + offset - 1, rotation_value)
     keyframe_point.interpolation = interpolation_type
 
@@ -714,6 +718,7 @@ def use_settings_of_other(collection_name):
     current_settings.start_frame = prev_settings.start_frame
     current_settings.interpolation_type = prev_settings.interpolation_type
     current_settings.length_type = prev_settings.length_type
+    current_settings.spin_amount = prev_settings.spin_amount
     
     # lighting settings
     if prev_settings.add_lighting_setup:
@@ -753,6 +758,7 @@ def reset_default_settings():
     current_settings.start_frame = default_start_frame
     current_settings.interpolation_type = default_interpolation
     current_settings.length_type = default_length_type
+    current_settings.spin_amount = default_spin_amount
     
     #lighting settings
     current_settings.add_lighting_setup = default_has_lighting_setup
