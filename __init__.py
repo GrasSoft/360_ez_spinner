@@ -229,12 +229,21 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
                 no_selection_warning(self, layout)      
         else:
             if not is_selection_setup(current_selection):
-                row = layout.row()
-                row.operator(bl_idname_setup,
-                         text="Set up for Selected Object(s)",
-                         icon_value=preview_collections["logo"]["logo"].icon_id)
-                row = layout.row(align=True)
-                row.label(text= str(len(get_spinwiz_scene().spinwiz_collections_list) if get_spinwiz_scene() is not None else 0)  + " Setups in current blend file")
+                if bpy.context.scene == get_spinwiz_scene():
+                    row = layout.row()
+                    row.label(text="You can not setup an object in the SpinWiz scene")
+                    
+                    layout.separator()
+                    dropdown_collection(self, layout, True)
+                    layout.separator()
+                    
+                else:
+                    row = layout.row()
+                    row.operator(bl_idname_setup,
+                            text="Set up for Selected Object(s)",
+                            icon_value=preview_collections["logo"]["logo"].icon_id)
+                    row = layout.row(align=True)
+                    row.label(text= str(len(get_spinwiz_scene().spinwiz_collections_list) if get_spinwiz_scene() is not None else 0)  + " Setups in current blend file")
             else:
                 layout.separator()
 

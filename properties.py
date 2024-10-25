@@ -81,7 +81,7 @@ def lighting_type_items(self, context):
 def dynamic_dropdown_items(self, context):
     items = context.scene.spinwiz_collections_list
     
-    dropdown_items = [("NONE", "Please Select a Collection", "")]
+    dropdown_items = [("NONE", "No collection selected", "")]
     
     for item in items:
         dropdown_items.append((item.name, item.name, ""))
@@ -107,7 +107,7 @@ def update_current_collection(self, context):
         hide_anything_but(None)
         return 
     
-    collection = bpy.data.collections[self.dropdown_collections]   
+    collection = bpy.data.collections[self.dropdown_collections]
     
     if context.active_object is not None and context.active_object.name in collection.objects:
         return 

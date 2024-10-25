@@ -18,19 +18,33 @@ current_rename = None
 def switch_to_spinwiz():
                 
     scene = get_spinwiz_scene()
-    
+        
     scene.spinwiz_old_scene = bpy.context.scene.name
+
+    bpy.context.window.scene = scene
 
     change_perspective()
     
     str = scene.spinwiz_last_looked
     
     if str == "NONE" or str == "":
-        hide_anything_but(None)
+        if len(scene.collection.children) > 0: 
+            pivot = None
+            for obj in scene.collection.children[0].objects:
+                if pivot_object_name in obj.name:
+                    pivot = obj
+                    break
+            
+            if pivot is not None:
+                make_obj_active(pivot)
+            else:
+                scene.spinwiz_spin_settings.dropdown_collections = "NONE"
+            
+            # hide_anything_but(scene.collection.children[0])
     else:
         hide_anything_but(bpy.data.collections[ str ])
                             
-    bpy.context.window.scene = scene
+   
               
 
 def get_spinwiz_scene():
