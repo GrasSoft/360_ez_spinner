@@ -110,7 +110,7 @@ def panel_output_list(panel, layout):
         # render  
         row = layout.row()
         op = row.operator(bl_idname_render, text="Render output queue")
-        op.render_queue =  [item.name for item in bpy.context.scene.spinwiz_output_list].copy()
+        # op.render_queue =  [item.name for item in bpy.context.scene.spinwiz_output_list].copy()
 
         row.enabled = spin_settings.enable_render
         
@@ -294,7 +294,7 @@ class OBJECT_OT_spinwiz_delete_output(bpy.types.Operator):
     
     def execute(self, context):
         
-        output_list = bpy.data.scenes[0].spinwiz_output_list
+        output_list = get_spinwiz_scene().spinwiz_output_list
         
         for i, item in enumerate(output_list):
             if item.name == self.name:

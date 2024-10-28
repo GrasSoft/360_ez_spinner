@@ -218,6 +218,10 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
             row = layout.row()
             
             row.operator(bl_idname_switch_scene, text= "Switch to old scene" if bpy.context.scene == get_spinwiz_scene() else "Switch to SpinWiz scene", icon_value=preview_collections["menu"]["switch_scene"].icon_id)
+            
+            row = layout.row()
+            row.label(text= str(len(get_spinwiz_scene().spinwiz_collections_list) if get_spinwiz_scene() is not None else 0)  + " Setups in current blend file")
+
             layout.separator()
             
         
@@ -382,7 +386,7 @@ def register():
 # Timer function to delay the registration of dynamic properties
 def delayed_property_registration():
     # Ensure the attribute is present and populated with items before registering
-    scene = bpy.context.scene
+    scene = get_spinwiz_scene()
     if hasattr(scene, 'spinwiz_collections_list') and len(scene.spinwiz_collections_list) > 0:
         register_dynamic_properties()
         return None  # Stop the timer once registration is complete
@@ -393,10 +397,12 @@ def delayed_property_registration():
 
 # Function to register dynamic properties based on the items in collections_list
 def register_dynamic_properties():
-    scene = bpy.context.scene
+    scene = get_spinwiz_scene()
     if not hasattr(scene, 'collections_list'):
         print("collections_list not found in scene.")
         return
+   
+    print(scene.spinwiz_collections_list)
     
     if not scene.spinwiz_collections_list:
         print("collections_list is present but empty. No properties to register.")
@@ -404,6 +410,7 @@ def register_dynamic_properties():
 
     # Iterate through the collections list and register dynamic properties
     for item in scene.spinwiz_collections_list:
+        print(prop_name)
         prop_name = item.name
         try:
             if not hasattr(bpy.types.Scene, prop_name):
