@@ -27,22 +27,24 @@ def switch_to_spinwiz():
     
     str = scene.spinwiz_last_looked
     
-    if str == "NONE" or str == "":
-        if len(scene.collection.children) > 0: 
-            pivot = None
-            for obj in scene.collection.children[0].objects:
-                if pivot_object_name in obj.name:
-                    pivot = obj
-                    break
-            
-            if pivot is not None:
-                make_obj_active(pivot)
-            else:
-                scene.spinwiz_spin_settings.dropdown_collections = "NONE"
-            
-            # hide_anything_but(scene.collection.children[0])
-    else:
-        hide_anything_but(bpy.data.collections[ str ])
+    
+    
+    if len(scene.collection.children) > 0: 
+        pivot = None
+        for obj in bpy.data.collections[str].objects:
+            if pivot_object_name in obj.name:
+                pivot = obj
+                break
+        
+        if pivot is not None:
+            make_obj_active(pivot)
+            return 
+    
+
+    scene.spinwiz_spin_settings.dropdown_collections = "None"        
+        # hide_anything_but(scene.collection.children[0])
+
+        # hide_anything_but(bpy.data.collections[ str ])
                             
    
               

@@ -155,7 +155,10 @@ class OBJECT_OT_spinwiz_setup(bpy.types.Operator):
         if len(scene.spinwiz_collections_list) == 1:
             scene.spinwiz_spin_settings.dropdown_collections = "NONE"
         
-        switch_to_spinwiz() 
+        
+        scene.spinwiz_last_looked = collection.name
+        
+        switch_to_spinwiz()
         
         scene.spinwiz_is_setting_up = False
         
