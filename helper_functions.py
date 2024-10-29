@@ -460,6 +460,8 @@ def spinwiz_update_current_selection(scene):
                 if len(old_name) > 0 and len(new_name) > 0:
                     new_name = list(new_name)[0]
                     old_name = list(old_name)[0]
+                    
+                    scene.spinwiz_last_looked = new_name
 
 
                     if hasattr(bpy.types.Scene, old_name):
@@ -472,12 +474,9 @@ def spinwiz_update_current_selection(scene):
                                 scene.spinwiz_collections_list.remove(index + 1)
                                 break
 
-                        spin_settings = getattr(bpy.types.Scene, old_name)
+                        spin_settings = getattr(scene, old_name)
                         setattr(bpy.types.Scene, new_name, spin_settings)
                         delattr(bpy.types.Scene, old_name)
-
-
-
 
 
                         for index, item in enumerate(scene.spinwiz_output_list):
@@ -773,10 +772,11 @@ def create_camera():
         active_objects.select_set(True)
         
 def use_settings_of_other(collection_name):
-    prev_settings = getattr(bpy.context.scene, collection_name)
+    prev_settings = getattr(get_spinwiz_scene(), collection_name)
     
+
     current_collection = get_current_collection()
-    current_settings = getattr(bpy.context.scene, current_collection.name)
+    current_settings = getattr(get_spinwiz_scene(), current_collection.name)
     
     current_settings.spin_direction = prev_settings.spin_direction
     
