@@ -400,11 +400,10 @@ def delayed_property_registration():
 # Function to register dynamic properties based on the items in collections_list
 def register_dynamic_properties():
     scene = get_spinwiz_scene()
-    if not hasattr(scene, 'collections_list'):
+    if not hasattr(scene, 'spinwiz_collections_list'):
         print("collections_list not found in scene.")
         return
    
-    print(scene.spinwiz_collections_list)
     
     if not scene.spinwiz_collections_list:
         print("collections_list is present but empty. No properties to register.")
@@ -412,8 +411,8 @@ def register_dynamic_properties():
 
     # Iterate through the collections list and register dynamic properties
     for item in scene.spinwiz_collections_list:
-        print(prop_name)
         prop_name = item.name
+
         try:
             if not hasattr(bpy.types.Scene, prop_name):
                 setattr(bpy.types.Scene, prop_name, bpy.props.PointerProperty(type=SpinWiz_collection_properties))
