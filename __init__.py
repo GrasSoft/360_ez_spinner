@@ -205,12 +205,15 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         spin_settings = scene.spinwiz_spin_settings
                 
         current_selection = bpy.context.active_object
+       
         
         
         if get_current_collection() is not None:
             collection_settings = getattr(scene, get_current_collection().name, None)
         
         layout = self.layout
+        
+        layout.label(text="This text is texting also updating") 
         
         layout.scale_y = 1.2
         
