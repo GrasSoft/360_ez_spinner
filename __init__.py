@@ -42,7 +42,7 @@ bl_info = {
     "author" : "Blender Might",
     "description" : "",
     "blender" : (4, 2, 0),
-    "version" : (1, 0, 0),
+    "version" : (1, 0, 1),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
