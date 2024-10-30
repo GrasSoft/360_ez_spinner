@@ -213,7 +213,6 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         
         layout = self.layout
         
-        layout.label(text="This text is texting also updating") 
         
         layout.scale_y = 1.2
         
