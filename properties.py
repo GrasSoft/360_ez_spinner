@@ -587,7 +587,9 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         subtype= 'COLOR',
         default=default_color,
         update= update_stage_material,
-        options={'LIBRARY_EDITABLE'}
+        options={'LIBRARY_EDITABLE'},
+        min=0.0,  # Set the minimum value
+        max=1.0   # Set the maximum value
     )# type: ignore
     
     stage_material_roughness: bpy.props.FloatProperty(
@@ -620,6 +622,13 @@ class SpinWiz_collection_properties(bpy.types.PropertyGroup):
         options={'LIBRARY_EDITABLE'}
     )# type: ignore
 
+
+    unlinked: bpy.props.BoolProperty(
+        name = "Unlinked",
+        description= "Unlink the objects in the collection from their original",
+        default= False,
+        options= {'LIBRARY_EDITABLE'}
+    )# type: ignore
 
 
 

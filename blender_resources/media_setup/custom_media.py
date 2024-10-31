@@ -7,7 +7,17 @@ thumbnails_path = ""
 
 preview_collections = {}
 
+def spin_unlink_unlinked_icons():
+    previews = bpy.utils.previews.new()
+    
+    global icons_path
+    global preview_collections
+    
+    previews.load("unlinked", os.path.join(icons_path, "unlinked.png"), "IMAGE")
+    previews.load("unlink", os.path.join(icons_path, "unlink.png"), "IMAGE")
 
+    preview_collections["linked"] = previews
+    
 # Icons   
 def spin_direction_icons():
     previews = bpy.utils.previews.new()
@@ -91,7 +101,8 @@ def spinwiz_import_custom_icons():
 
     keyframe_icons()
     progress_icons()   
-    spin_direction_icons() 
+    spin_direction_icons()
+    spin_unlink_unlinked_icons() 
     logo_icon()
     interpolation_icons()
     menu_icons()

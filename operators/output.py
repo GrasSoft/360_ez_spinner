@@ -175,7 +175,7 @@ class OBJECT_OT_spinwiz_up_down(bpy.types.Operator):
     
     def execute(self, context):
         
-        output_list = bpy.data.scenes[0].spinwiz_output_list
+        output_list = get_spinwiz_scene().spinwiz_output_list
         
         # Find the index of the string
         index = 0

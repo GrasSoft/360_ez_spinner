@@ -99,8 +99,8 @@ def create_copy_and_hide():
     for obj in all_parents_list:
         obj.select_set(True)
         
-    # this will copy all selected objects
-    bpy.ops.object.duplicate()
+    # this will copy all selected objects and link them
+    bpy.ops.object.duplicate(linked= True)
     
     # get selected objects which are duplicated now
     copied_objects = bpy.context.selected_objects

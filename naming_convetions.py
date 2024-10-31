@@ -21,6 +21,8 @@ bl_idname_select = "object.spinwiz_select"
 bl_idname_output = "object.spinwiz_output"
 bl_idname_remove_output = "object.spinwiz_remove_output"
 
+bl_idname_unlink = "object.spinwiz_unlink"
+
 bl_idname_render = "object.spinwiz_render"
 
 bl_idname_setup = "object.spinwiz_setup"

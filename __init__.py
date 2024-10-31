@@ -28,6 +28,8 @@ from .operators.copy_paste import OBJECT_OT_spinwiz_copy, OBJECT_OT_spinwiz_past
 from .operators.output import panel_output_list, panel_operator_add_to_output, OBJECT_OT_spinwiz_rename, \
     OBJECT_OT_spinwiz_up_down, OBJECT_OT_spinwiz_output, OBJECT_OT_spinwiz_delete_output, OBJECT_OT_spinwiz_select, \
     OBJECT_OT_spinwiz_open_path
+    
+from .operators.unlink import OBJECT_OT_spinwiz_unlinked
 
 from .operators.render import OBJECTE_OT_spinwiz_render
 
@@ -42,7 +44,7 @@ bl_info = {
     "author" : "Blender Might",
     "description" : "",
     "blender" : (4, 2, 0),
-    "version" : (1, 0, 1),
+    "version" : (1, 0, 0),
     "location" : "",
     "warning" : "",
     "category" : "Generic"
@@ -205,7 +207,6 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         spin_settings = scene.spinwiz_spin_settings
                 
         current_selection = bpy.context.active_object
-       
         
         
         if get_current_collection() is not None:
@@ -213,13 +214,12 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
         
         layout = self.layout
         
-        
         layout.scale_y = 1.2
         
         if get_spinwiz_scene() is not None and (len(get_spinwiz_scene().spinwiz_collections_list) > 0 or bpy.context.scene == get_spinwiz_scene()):
             row = layout.row()
             
-            row.operator(bl_idname_switch_scene, text= "Switch to old scene" if bpy.context.scene == get_spinwiz_scene() else "Switch to SpinWiz scene", icon_value=preview_collections["menu"]["switch_scene"].icon_id)
+            row.operator(bl_idname_switch_scene, text= "Switch to your scene" if bpy.context.scene == get_spinwiz_scene() else "Switch to SpinWiz scene", icon_value=preview_collections["menu"]["switch_scene"].icon_id)
             
             row = layout.row()
             row.label(text= str(len(get_spinwiz_scene().spinwiz_collections_list) if get_spinwiz_scene() is not None else 0)  + " Setups in current blend file")
@@ -299,9 +299,18 @@ class VIEW3D_PT_spinwiz_mainpanel(bpy.types.Panel):
                             layout.separator()
                             
                             layout.label(text="Change the current collection name")
+                            
+                            
                             box = layout.box()
                             row = box.row()
                             row.prop(get_current_collection(), "name", text="")
+                            
+                            row = row.row(align=True)
+                            row.scale_x = 1.6
+                            row.enabled = not collection_settings.unlinked
+                            row.operator(bl_idname_unlink, text="", icon_value=preview_collections["linked"]["unlink"].icon_id if not collection_settings.unlinked else preview_collections["linked"]["unlinked"].icon_id )
+
+                            layout.label(text= "Objects are linked with the originals" if not collection_settings.unlinked else "Objects are not linked to the originals")
 
                             layout.separator()
 
@@ -346,7 +355,8 @@ class_list = [
     OBJECT_OT_spinwiz_select,
     OBJECTE_OT_spinwiz_render,
     OBJECT_OT_spinwiz_open_path,
-    OBJECT_OT_spinwiz_switch_scene
+    OBJECT_OT_spinwiz_switch_scene,
+    OBJECT_OT_spinwiz_unlinked
     
 ]
 

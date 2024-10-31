@@ -79,6 +79,23 @@ def create_spinwiz_scene():
             
             # Copy Device (CPU or GPU)
             target_scene.cycles.device = source_scene.cycles.device
+            
+            # Copy render settings
+            target_scene.render.use_square_samples = source_scene.render.use_square_samples
+            target_scene.render.noise_threshold = source_scene.render.noise_threshold
+            target_scene.render.max_samples = source_scene.render.max_samples
+            target_scene.render.min_samples = source_scene.render.min_samples
+            target_scene.render.time_limit = source_scene.render.time_limit
+
+            # Copy denoise settings
+            target_scene.render.denoise.use_denoising = source_scene.render.denoise.use_denoising
+            target_scene.render.denoise.denoiser = source_scene.render.denoise.denoiser
+            target_scene.render.denoise.pass_albedo_normal = source_scene.render.denoise.pass_albedo_normal
+            target_scene.render.denoise.prefilter = source_scene.render.denoise.prefilter
+            target_scene.render.denoise.quality = source_scene.render.denoise.quality
+            target_scene.render.denoise.use_gpu = source_scene.render.denoise.use_gpu
+                
+
                 
     return bpy.data.scenes[scene_name]
 
