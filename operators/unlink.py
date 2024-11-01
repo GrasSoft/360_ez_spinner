@@ -22,6 +22,8 @@ class OBJECT_OT_spinwiz_unlinked(bpy.types.Operator):
         
         if pivot is not None:
             # Apply the operations recursively
+            bpy.ops.object.select_all(action="DESELECT")
+            
             self.make_single_user_recursive(pivot)
             
             make_obj_active(pivot)
@@ -32,7 +34,14 @@ class OBJECT_OT_spinwiz_unlinked(bpy.types.Operator):
     def make_single_user_recursive(self, obj):
         # Make Single User for the current object
         bpy.context.view_layer.objects.active = obj
-        bpy.ops.object.make_single_user(type='ALL', object=True)
+        
+        print(obj.name)
+        
+        obj.select_set(True)
+        
+        bpy.ops.object.make_single_user(type='ALL', object=True, obdata=True, obdata_animation=True)
+        
+        obj.select_set(False)
 
         # Recursively call for all children
         for child in obj.children:
