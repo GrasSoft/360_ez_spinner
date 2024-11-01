@@ -108,11 +108,12 @@ def create_copy_and_hide():
     
     no_parent_obj = [obj for obj in copied_objects if obj.parent == None]
 
-    collection_to_remove = [col for col in copied_objects[0].users_collection if col != new_collection][0]
+    # collection_to_remove = [col for col in copied_objects[0].users_collection if col != new_collection][0]
     
     for obj in copied_objects:
+        obj.users_collection[0].objects.unlink(obj)
         new_collection.objects.link(obj)
-        collection_to_remove.objects.unlink(obj)
+        
         
     # set the parent to the others     
     for obj in no_parent_obj:
