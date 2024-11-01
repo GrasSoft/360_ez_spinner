@@ -80,21 +80,32 @@ def create_spinwiz_scene():
             # Copy Device (CPU or GPU)
             target_scene.cycles.device = source_scene.cycles.device
             
-            # Copy render settings
-            target_scene.render.use_square_samples = source_scene.render.use_square_samples
-            target_scene.render.noise_threshold = source_scene.render.noise_threshold
-            target_scene.render.max_samples = source_scene.render.max_samples
-            target_scene.render.min_samples = source_scene.render.min_samples
-            target_scene.render.time_limit = source_scene.render.time_limit
-
-            # Copy denoise settings
-            target_scene.render.denoise.use_denoising = source_scene.render.denoise.use_denoising
-            target_scene.render.denoise.denoiser = source_scene.render.denoise.denoiser
-            target_scene.render.denoise.pass_albedo_normal = source_scene.render.denoise.pass_albedo_normal
-            target_scene.render.denoise.prefilter = source_scene.render.denoise.prefilter
-            target_scene.render.denoise.quality = source_scene.render.denoise.quality
-            target_scene.render.denoise.use_gpu = source_scene.render.denoise.use_gpu
-                
+            target_scene.cycles.use_preview_adaptive_sampling = source_scene.cycles.use_preview_adaptive_sampling
+            target_scene.cycles.preview_adaptive_threshold = source_scene.cycles.preview_adaptive_threshold
+            target_scene.cycles.preview_samples = source_scene.cycles.preview_samples
+            target_scene.cycles.preview_adaptive_min_samples = source_scene.cycles.preview_adaptive_min_samples
+            
+            target_scene.cycles.use_preview_denoising = source_scene.cycles.use_preview_denoising
+            target_scene.cycles.preview_denoiser = source_scene.cycles.preview_denoiser
+            target_scene.cycles.preview_denoising_input_passes = source_scene.cycles.preview_denoising_input_passes
+            target_scene.cycles.preview_denoising_start_sample = source_scene.cycles.preview_denoising_start_sample
+            
+            target_scene.cycles.use_adaptive_sampling = source_scene.cycles.use_adaptive_sampling
+            target_scene.cycles.adaptive_threshold = source_scene.cycles.adaptive_threshold
+            target_scene.cycles.samples = source_scene.cycles.samples
+            target_scene.cycles.adaptive_min_samples = source_scene.cycles.adaptive_min_samples
+            target_scene.cycles.time_limit = source_scene.cycles.time_limit
+            
+            target_scene.cycles.use_denoising = source_scene.cycles.use_denoising
+            target_scene.cycles.denoiser = source_scene.cycles.denoiser
+            target_scene.cycles.denoising_input_passes = source_scene.cycles.denoising_input_passes
+            target_scene.cycles.denoising_prefilter = source_scene.cycles.denoising_prefilter
+            target_scene.cycles.denoising_use_gpu = source_scene.cycles.denoising_use_gpu
+            
+        if source_scene.render.engine == "EEVEE":
+            target_scene.eevee.taa_render_samples = source_scene.eevee.taa_render_samples
+            target_scene.eevee.taa_samples = source_scene.eevee.taa_samples
+            target_scene.eevee.use_taa_reprojection = source_scene.eevee.use_taa_reprojection
 
                 
     return bpy.data.scenes[scene_name]
