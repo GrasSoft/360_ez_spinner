@@ -1,7 +1,8 @@
 # Introduction
+
 SpinWiz provides an intuitive interface that enables you to set up camera motion, lighting, and animation for one or more objects in just a few clicks.
 
-Please refer to this video for a quick intro tutorial
+Please refer to this video for a quick intro tutorial.
 
 # Features Overview
 
@@ -36,7 +37,6 @@ After enabling SpinWiz, a new panel named SpinWiz should appear in the 3D Viewpo
 # Update
 
 SpinWiz includes a built-in updater that allows you to keep the add-on up to date with the latest features and bug fixes. 
-Update Directly to Main: Instantly download and install the latest version of SpinWiz directly from the main branch.
 
 # Setting up a Turntable Animation
 
@@ -54,9 +54,20 @@ Press the Set up for Selected Object(s) button. This will automatically create a
 This collection will then be used as the basis for configuring camera settings, animation options, and output configurations in the subsequent steps. 
 The original object(s) will remain intact in the scene, while the setup will include duplicate(s) of it.
 
+# Changing the name of your setup and Unlinking objects
+
+You can change the name of your setup using the box at the bottom.
+
+# TODO: add the images for the unlinking screenshot
+
+You can also unlink the objects in the SpinWiz_Scene from the ones in your original scene using the Unlink button at the right og the rename box, such that modifying one no longer affects its duplicate. 
+
 # Setting up multiple Turntable Animations
 
-This simple setup process can be applied multiple times to different objects in your scene. Once a new setup is created, it will appear as a separate collection in your scene. 
+
+This simple setup process can be applied multiple times to different objects in your scene. Once a new setup is created, it will be added to a separate scene called SpinWiz_Scene. You can easily switch back to your own scene using the Switch to your scene button.
+
+# TODO images
 
 The visibility of collections is automatically managed by SpinWiz for convenience. The setup you are currently working on is the only one automatically made visible in the viewport.
 
@@ -101,25 +112,26 @@ The Animation Options panel provides you with control over how the turntable ani
 
 ![Animation](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/03_animation.png?raw=true)
 
-Movement Type
+### Movement Type
 Allows you to select the type of movement for the turntable animation:
 Object Rotates: The object itself rotates around its axis while the camera remains stationary.
 Camera Rotates: The camera rotates around the object, providing a 360° view of the object without changing the object’s position.
 
-Spin Direction
+### Spin Direction
 Defines the direction in which the object or camera rotates:
 Clockwise: The object or camera spins in a clockwise direction.
 Counter-clockwise: The object or camera spins in a counter-clockwise direction.
-Interpolation
 
-
+### Interpolation
 Determines how the animation transitions between keyframes. Options include:
 Smooth/Linear: The object moves at a constant speed.
 Slow-Fast-Slow: The object’s speed varies, moving slowly at the beginning, then progressively faster, then slowing down again towards the end of the animation.
 Fast-Slow-Fast: The object’s speed varies, moving fast at the beginning, then slowing down, then speeding back up towards the end of the animation.
 
+### Number of spins
+Determines how many times the 360 degree movement is repeated within the timeline. It indirectly affects the Length of the animation, as the Number of Keyframes is multiplied by the Number of spins.
 
-Length
+### Length
 Specifies the duration of the animation in one of two ways:
 By Number of Keyframes: Allows you to manually set the number of frames and the starting frame. This method is ideal when you have a specific number of frames in mind or want to synchronize the animation with other elements in the scene.
 By Degrees: Lets you control the animation length based on the number of degrees the object should rotate between two frames. The user can set the number of degrees (e.g., 2, 5, 10) and SpinWiz will automatically calculate the number of frames required for a full 360° rotation based on this value.

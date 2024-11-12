@@ -267,13 +267,16 @@ def get_collection_bounding_box(pivot):
     min_corner = [float('inf'), float('inf'), float('inf')]
     max_corner = [-float('inf'), -float('inf'), -float('inf')]
 
-    for obj in pivot.children:
-        bounding_box = obj.bound_box
+    for obj in pivot.children:        
+        # Get the local bounding box corners
+        local_bbox = [Vector(corner) for corner in obj.bound_box]
 
-        for corner in bounding_box:
-            for i in range(3):  # X, Y, Z axes
+        global_bbox = [obj.matrix_world @ corner for corner in local_bbox]
+        for corner in global_bbox:
+            for i in range(3):  # X, Y, Z axes 
                 min_corner[i] = min(min_corner[i], corner[i])
                 max_corner[i] = max(max_corner[i], corner[i])
+
 
     return (min_corner, max_corner)
 

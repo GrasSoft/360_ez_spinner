@@ -49,7 +49,7 @@ def add_camera():
 
 def set_origin():
     (min_corner, _) = get_collection_bounding_box(get_current_pivot())
-    
+        
     stage = get_current_stage()
     stage.location.z = min_corner[2]
 
