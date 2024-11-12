@@ -58,7 +58,8 @@ The original object(s) will remain intact in the scene, while the setup will inc
 
 You can change the name of your setup using the box at the bottom.
 
-# TODO: add the images for the unlinking screenshot
+![Rename and unlink](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/unlink.png?raw=true)
+
 
 You can also unlink the objects in the SpinWiz_Scene from the ones in your original scene using the Unlink button at the right og the rename box, such that modifying one no longer affects its duplicate. 
 
@@ -67,7 +68,8 @@ You can also unlink the objects in the SpinWiz_Scene from the ones in your origi
 
 This simple setup process can be applied multiple times to different objects in your scene. Once a new setup is created, it will be added to a separate scene called SpinWiz_Scene. You can easily switch back to your own scene using the Switch to your scene button.
 
-# TODO images
+![Switch between scenes](https://github.com/GrasSoft/360_ez_spinner/blob/main/screenshots/switch_scene.png?raw=true)
+
 
 The visibility of collections is automatically managed by SpinWiz for convenience. The setup you are currently working on is the only one automatically made visible in the viewport.
 
